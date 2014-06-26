@@ -40,13 +40,13 @@
 
  #include <QApplication>
 
- #include "imageviewer.h"
+ #include "ImageRectificator.h"
 
  int main(int argc, char *argv[])
  {
      QApplication app(argc, argv);
-     ImageViewer imageViewer;
-     imageViewer.show();
+     ImageRectificator imageRectificator;
+     imageRectificator.show();
      
      return app.exec();
  }

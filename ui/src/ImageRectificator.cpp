@@ -39,6 +39,16 @@
  ****************************************************************************/
 
  #include <QtGui>
+ #include <QLabel>
+ #include <QScrollArea>
+ #include <QMessageBox>
+ #include <QAction>
+ #include <QString>
+ #include <QPrintDialog>
+ #include <QFileDialog>
+ #include <QMenu>
+ #include <QMenuBar>
+ #include <QScrollBar>
 
  #include "ImageRectificator.h"
 

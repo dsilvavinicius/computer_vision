@@ -23,8 +23,10 @@ set (FORM_DIR "form")
 # Set include dirs.
 find_package (Qt5Gui REQUIRED)
 find_package (Qt5Widgets REQUIRED)
+find_package (Qt5PrintSupport REQUIRED)
 include_directories (${Qt5Gui_INCLUDE_DIRS})
 include_directories (${Qt5Widgets_INCLUDE_DIRS})
+include_directories (${Qt5PrintSupport_INCLUDE_DIRS})
 
 include_directories (${UI_DIR}/${HEADER_DIR}/)
 include_directories (${MODEL_DIR}/${HEADER_DIR}/)
@@ -47,3 +49,4 @@ add_executable (Computer_Vision
 # Use the Widgets module from Qt 5.
 target_link_libraries (Computer_Vision Qt5::Gui)
 target_link_libraries (Computer_Vision Qt5::Widgets)
+target_link_libraries (Computer_Vision Qt5::PrintSupport)
