@@ -1,248 +1,248 @@
- /****************************************************************************
- **
- ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
- ** Contact: http://www.qt-project.org/legal
- **
- ** This file is part of the examples of the Qt Toolkit.
- **
- ** $QT_BEGIN_LICENSE:BSD$
- ** You may use this file under the terms of the BSD license as follows:
- **
- ** "Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are
- ** met:
- **   * Redistributions of source code must retain the above copyright
- **     notice, this list of conditions and the following disclaimer.
- **   * Redistributions in binary form must reproduce the above copyright
- **     notice, this list of conditions and the following disclaimer in
- **     the documentation and/or other materials provided with the
- **     distribution.
- **   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
- **     of its contributors may be used to endorse or promote products derived
- **     from this software without specific prior written permission.
- **
- **
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- ** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- ** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- ** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- ** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- ** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- ** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
- **
- ** $QT_END_LICENSE$
- **
- ****************************************************************************/
+/****************************************************************************
+**
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the examples of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
+**
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
+**     of its contributors may be used to endorse or promote products derived
+**     from this software without specific prior written permission.
+**
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
- #include <QtGui>
- #include <QLabel>
- #include <QScrollArea>
- #include <QMessageBox>
- #include <QAction>
- #include <QString>
- #include <QPrintDialog>
- #include <QFileDialog>
- #include <QMenu>
- #include <QMenuBar>
- #include <QScrollBar>
+#include <QtGui>
+#include <QLabel>
+#include <QScrollArea>
+#include <QMessageBox>
+#include <QAction>
+#include <QString>
+#include <QFileDialog>
+#include <QMenu>
+#include <QMenuBar>
+#include <QScrollBar>
+#include <QDesktopWidget>
+#include <QRect>
+#include <QBoxLayout>
 
- #include "ImageRectificator.h"
+#include "ImageRectificator.h"
 
- ImageRectificator::ImageRectificator()
- {
-     imageLabel = new QLabel;
-     imageLabel->setBackgroundRole(QPalette::Base);
-     imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-     imageLabel->setScaledContents(true);
+ImageRectificator::ImageRectificator()
+{
+    QLabel* inputImageSubtitle = new QLabel();
+    inputImageSubtitle->setText("Input image");
 
-     scrollArea = new QScrollArea;
-     scrollArea->setBackgroundRole(QPalette::Dark);
-     scrollArea->setWidget(imageLabel);
-     setCentralWidget(scrollArea);
+    inputImageLabel = new QLabel;
+    inputImageLabel->setBackgroundRole(QPalette::Base);
+    inputImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    inputImageLabel->setScaledContents(true);
 
-     createActions();
-     createMenus();
+    inputScroll = new QScrollArea;
+    inputScroll->setBackgroundRole(QPalette::Dark);
+    inputScroll->setAlignment(Qt::AlignCenter);
+    inputScroll->setWidget(inputImageLabel);
 
-     setWindowTitle(tr("Image Viewer"));
-     resize(500, 400);
- }
+    QLabel* rectifiedImageSubtitle = new QLabel();
+    rectifiedImageSubtitle->setText("Rectified image");
 
- void ImageRectificator::open()
- {
-     QString fileName = QFileDialog::getOpenFileName(this,
-                                     tr("Open File"), QDir::currentPath());
-     if (!fileName.isEmpty()) {
-         QImage image(fileName);
-         if (image.isNull()) {
-             QMessageBox::information(this, tr("Image Viewer"),
-                                      tr("Cannot load %1.").arg(fileName));
-             return;
-         }
-         imageLabel->setPixmap(QPixmap::fromImage(image));
-         scaleFactor = 1.0;
+    rectifiedImageLabel = new QLabel;
+    rectifiedImageLabel->setBackgroundRole(QPalette::Base);
+    rectifiedImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    rectifiedImageLabel->setScaledContents(true);
 
-         printAct->setEnabled(true);
-         fitToWindowAct->setEnabled(true);
-         updateActions();
+    rectifiedScroll = new QScrollArea;
+    rectifiedScroll->setBackgroundRole(QPalette::Dark);
+    rectifiedScroll->setWidget(rectifiedImageLabel);
+    rectifiedScroll->setAlignment(Qt::AlignCenter);
 
-         if (!fitToWindowAct->isChecked())
-             imageLabel->adjustSize();
-     }
- }
+    QBoxLayout *imagesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 
- void ImageRectificator::print()
- {
-     Q_ASSERT(imageLabel->pixmap());
- #ifndef QT_NO_PRINTER
-     QPrintDialog dialog(&printer, this);
-     if (dialog.exec()) {
-         QPainter painter(&printer);
-         QRect rect = painter.viewport();
-         QSize size = imageLabel->pixmap()->size();
-         size.scale(rect.size(), Qt::KeepAspectRatio);
-         painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
-         painter.setWindow(imageLabel->pixmap()->rect());
-         painter.drawPixmap(0, 0, *imageLabel->pixmap());
-     }
- #endif
- }
+    imagesLayout->addWidget(inputImageSubtitle);
+    imagesLayout->addWidget(inputScroll);
+    imagesLayout->addWidget(rectifiedImageSubtitle);
+    imagesLayout->addWidget(rectifiedScroll);
 
- void ImageRectificator::zoomIn()
- {
-     scaleImage(1.25);
- }
+    QWidget *window = new QWidget();
+    window->setLayout(imagesLayout);
 
- void ImageRectificator::zoomOut()
- {
-     scaleImage(0.8);
- }
+    setCentralWidget(window);
 
- void ImageRectificator::normalSize()
- {
-     imageLabel->adjustSize();
-     scaleFactor = 1.0;
- }
+    createActions();
+    createMenus();
 
- void ImageRectificator::fitToWindow()
- {
-     bool fitToWindow = fitToWindowAct->isChecked();
-     scrollArea->setWidgetResizable(fitToWindow);
-     if (!fitToWindow) {
-         normalSize();
-     }
-     updateActions();
- }
+    setWindowTitle(tr("Image Rectificator"));
 
- void ImageRectificator::about()
- {
-     QMessageBox::about(this, tr("About Image Viewer"),
-             tr("<p>The <b>Image Viewer</b> example shows how to combine QLabel "
-                "and QScrollArea to display an image. QLabel is typically used "
-                "for displaying a text, but it can also display an image. "
-                "QScrollArea provides a scrolling view around another widget. "
-                "If the child widget exceeds the size of the frame, QScrollArea "
-                "automatically provides scroll bars. </p><p>The example "
-                "demonstrates how QLabel's ability to scale its contents "
-                "(QLabel::scaledContents), and QScrollArea's ability to "
-                "automatically resize its contents "
-                "(QScrollArea::widgetResizable), can be used to implement "
-                "zooming and scaling features. </p><p>In addition the example "
-                "shows how to use QPainter to print an image.</p>"));
- }
+    QDesktopWidget desktop;
+    QRect res = desktop.availableGeometry(desktop.primaryScreen());
+    resize(res.width(), res.height());
+}
 
- void ImageRectificator::createActions()
- {
-     openAct = new QAction(tr("&Open..."), this);
-     openAct->setShortcut(tr("Ctrl+O"));
-     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+void ImageRectificator::open()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                             tr("Open File"), QDir::currentPath());
+    if (!fileName.isEmpty()) {
+        QImage image(fileName);
+        if (image.isNull()) {
+            QMessageBox::information(this, tr("Image Viewer"),
+                                  tr("Cannot load %1.").arg(fileName));
+            return;
+        }
+        inputImageLabel->setPixmap(QPixmap::fromImage(image));
+        scaleFactor = 1.0;
 
-     printAct = new QAction(tr("&Print..."), this);
-     printAct->setShortcut(tr("Ctrl+P"));
-     printAct->setEnabled(false);
-     connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
+        fitToWindowAct->setEnabled(true);
+        updateActions();
 
-     exitAct = new QAction(tr("E&xit"), this);
-     exitAct->setShortcut(tr("Ctrl+Q"));
-     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+        if (!fitToWindowAct->isChecked())
+            inputImageLabel->adjustSize();
+    }
+}
 
-     zoomInAct = new QAction(tr("Zoom &In (25%)"), this);
-     zoomInAct->setShortcut(tr("Ctrl++"));
-     zoomInAct->setEnabled(false);
-     connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
+void ImageRectificator::zoomIn()
+{
+    scaleImage(1.25);
+}
 
-     zoomOutAct = new QAction(tr("Zoom &Out (25%)"), this);
-     zoomOutAct->setShortcut(tr("Ctrl+-"));
-     zoomOutAct->setEnabled(false);
-     connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
+void ImageRectificator::zoomOut()
+{
+    scaleImage(0.8);
+}
 
-     normalSizeAct = new QAction(tr("&Normal Size"), this);
-     normalSizeAct->setShortcut(tr("Ctrl+S"));
-     normalSizeAct->setEnabled(false);
-     connect(normalSizeAct, SIGNAL(triggered()), this, SLOT(normalSize()));
+void ImageRectificator::normalSize()
+{
+    inputImageLabel->adjustSize();
+    scaleFactor = 1.0;
+}
 
-     fitToWindowAct = new QAction(tr("&Fit to Window"), this);
-     fitToWindowAct->setEnabled(false);
-     fitToWindowAct->setCheckable(true);
-     fitToWindowAct->setShortcut(tr("Ctrl+F"));
-     connect(fitToWindowAct, SIGNAL(triggered()), this, SLOT(fitToWindow()));
+void ImageRectificator::fitToWindow()
+{
+    bool fitToWindow = fitToWindowAct->isChecked();
+    inputScroll->setWidgetResizable(fitToWindow);
+    if (!fitToWindow) {
+        normalSize();
+    }
+    updateActions();
+}
 
-     aboutAct = new QAction(tr("&About"), this);
-     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+void ImageRectificator::about()
+{
+QMessageBox::about(this, tr("About Image Viewer"),
+    tr("<p>The <b>Image Rectificator</b> rectifies an image, eliminating its perspective.<br>"
+    "<br><b>Usage</b>:"
+    "<ul>"
+    "<li>Open File menu, choose Open to open an image to be rectified.</li>"
+    "<li>Click in 4 points of the image that should form a rectangle in the real world.</li>"
+    "</ul>"
+    "</p>"));
+}
 
-     aboutQtAct = new QAction(tr("About &Qt"), this);
-     connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
- }
+void ImageRectificator::createActions()
+{
+    openAct = new QAction(tr("&Open..."), this);
+    openAct->setShortcut(tr("Ctrl+O"));
+    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
- void ImageRectificator::createMenus()
- {
-     fileMenu = new QMenu(tr("&File"), this);
-     fileMenu->addAction(openAct);
-     fileMenu->addAction(printAct);
-     fileMenu->addSeparator();
-     fileMenu->addAction(exitAct);
+    exitAct = new QAction(tr("E&xit"), this);
+    exitAct->setShortcut(tr("Ctrl+Q"));
+    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-     viewMenu = new QMenu(tr("&View"), this);
-     viewMenu->addAction(zoomInAct);
-     viewMenu->addAction(zoomOutAct);
-     viewMenu->addAction(normalSizeAct);
-     viewMenu->addSeparator();
-     viewMenu->addAction(fitToWindowAct);
+    zoomInAct = new QAction(tr("Zoom &In (25%)"), this);
+    zoomInAct->setShortcut(tr("Ctrl++"));
+    zoomInAct->setEnabled(false);
+    connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
 
-     helpMenu = new QMenu(tr("&Help"), this);
-     helpMenu->addAction(aboutAct);
-     helpMenu->addAction(aboutQtAct);
+    zoomOutAct = new QAction(tr("Zoom &Out (25%)"), this);
+    zoomOutAct->setShortcut(tr("Ctrl+-"));
+    zoomOutAct->setEnabled(false);
+    connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
 
-     menuBar()->addMenu(fileMenu);
-     menuBar()->addMenu(viewMenu);
-     menuBar()->addMenu(helpMenu);
- }
+    normalSizeAct = new QAction(tr("&Normal Size"), this);
+    normalSizeAct->setShortcut(tr("Ctrl+S"));
+    normalSizeAct->setEnabled(false);
+    connect(normalSizeAct, SIGNAL(triggered()), this, SLOT(normalSize()));
 
- void ImageRectificator::updateActions()
- {
-     zoomInAct->setEnabled(!fitToWindowAct->isChecked());
-     zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
-     normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
- }
+    fitToWindowAct = new QAction(tr("&Fit to Window"), this);
+    fitToWindowAct->setEnabled(false);
+    fitToWindowAct->setCheckable(true);
+    fitToWindowAct->setShortcut(tr("Ctrl+F"));
+    connect(fitToWindowAct, SIGNAL(triggered()), this, SLOT(fitToWindow()));
 
- void ImageRectificator::scaleImage(double factor)
- {
-     Q_ASSERT(imageLabel->pixmap());
-     scaleFactor *= factor;
-     imageLabel->resize(scaleFactor * imageLabel->pixmap()->size());
+    aboutAct = new QAction(tr("&About"), this);
+    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+}
 
-     adjustScrollBar(scrollArea->horizontalScrollBar(), factor);
-     adjustScrollBar(scrollArea->verticalScrollBar(), factor);
+void ImageRectificator::createMenus()
+{
+    fileMenu = new QMenu(tr("&File"), this);
+    fileMenu->addAction(openAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAct);
 
-     zoomInAct->setEnabled(scaleFactor < 3.0);
-     zoomOutAct->setEnabled(scaleFactor > 0.333);
- }
+    viewMenu = new QMenu(tr("&View"), this);
+    viewMenu->addAction(zoomInAct);
+    viewMenu->addAction(zoomOutAct);
+    viewMenu->addAction(normalSizeAct);
+    viewMenu->addSeparator();
+    viewMenu->addAction(fitToWindowAct);
 
- void ImageRectificator::adjustScrollBar(QScrollBar *scrollBar, double factor)
- {
-     scrollBar->setValue(int(factor * scrollBar->value()
-                             + ((factor - 1) * scrollBar->pageStep()/2)));
- }
+    helpMenu = new QMenu(tr("&Help"), this);
+    helpMenu->addAction(aboutAct);
+
+    menuBar()->addMenu(fileMenu);
+    menuBar()->addMenu(viewMenu);
+    menuBar()->addMenu(helpMenu);
+}
+
+void ImageRectificator::updateActions()
+{
+    zoomInAct->setEnabled(!fitToWindowAct->isChecked());
+    zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
+    normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
+}
+
+void ImageRectificator::scaleImage(double factor)
+{
+    Q_ASSERT(inputImageLabel->pixmap());
+    scaleFactor *= factor;
+    inputImageLabel->resize(scaleFactor * inputImageLabel->pixmap()->size());
+
+    adjustScrollBar(inputScroll->horizontalScrollBar(), factor);
+    adjustScrollBar(inputScroll->verticalScrollBar(), factor);
+
+    zoomInAct->setEnabled(scaleFactor < 3.0);
+    zoomOutAct->setEnabled(scaleFactor > 0.333);
+}
+
+void ImageRectificator::adjustScrollBar(QScrollBar *scrollBar, double factor)
+{
+    scrollBar->setValue(int(factor * scrollBar->value()
+                        + ((factor - 1) * scrollBar->pageStep()/2)));
+}
