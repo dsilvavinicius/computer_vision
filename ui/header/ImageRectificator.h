@@ -47,44 +47,49 @@
 #include <QMenu>
 #include <QScrollArea>
 
-class ImageRectificator : public QMainWindow
+namespace ui
 {
-    Q_OBJECT
+    class ImageRectificator : public QMainWindow
+    {
+        Q_OBJECT
 
-public:
-    ImageRectificator();
+    public:
+        ImageRectificator();
 
-private slots:
-    void open();
-    void zoomIn();
-    void zoomOut();
-    void normalSize();
-    void fitToWindow();
-    void about();
+    private slots:
+        void open();
+        void zoomIn();
+        void zoomOut();
+        void normalSize();
+        void fitToWindow();
+        void about();
 
-private:
-    void createActions();
-    void createMenus();
-    void updateActions();
-    void scaleImage(double factor);
-    void adjustScrollBar(QScrollBar *scrollBar, double factor);
+    private:
+        void createActions();
+        void createMenus();
+        void updateActions();
+        void scaleImage(double factor);
+        void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
-    QLabel *inputImageLabel;
-    QLabel *rectifiedImageLabel;
-    QScrollArea *inputScroll;
-    QScrollArea *rectifiedScroll;
-    double scaleFactor;
-    QAction *openAct;
-    QAction *exitAct;
-    QAction *zoomInAct;
-    QAction *zoomOutAct;
-    QAction *normalSizeAct;
-    QAction *fitToWindowAct;
-    QAction *aboutAct;
+        QLabel *inputImageLabel;
+        QLabel *rectifiedImageLabel;
+        QScrollArea *inputScroll;
+        QScrollArea *rectifiedScroll;
+        double scaleFactor;
+        
+        QAction *openAct;
+        QAction *exitAct;
+        QAction *zoomInAct;
+        QAction *zoomOutAct;
+        QAction *normalSizeAct;
+        QAction *fitToWindowAct;
+        QAction *clearSelectedPixAct;
+        QAction *aboutAct;
 
-    QMenu *fileMenu;
-    QMenu *viewMenu;
-    QMenu *helpMenu;
-};
+        QMenu *fileMenu;
+        QMenu *viewMenu;
+        QMenu *helpMenu;
+    };
+}
 
 #endif

@@ -53,196 +53,208 @@
 #include <QBoxLayout>
 
 #include "ImageRectificator.h"
+#include "ClickablePixMap.h"
 
-ImageRectificator::ImageRectificator()
+namespace ui
 {
-    QLabel* inputImageSubtitle = new QLabel();
-    inputImageSubtitle->setText("Input image");
+    ImageRectificator::ImageRectificator()
+    {
+        QLabel* inputImageSubtitle = new QLabel();
+        inputImageSubtitle->setText("Input image");
 
-    inputImageLabel = new QLabel;
-    inputImageLabel->setBackgroundRole(QPalette::Base);
-    inputImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    inputImageLabel->setScaledContents(true);
+        inputImageLabel = new QLabel;
+        inputImageLabel->setBackgroundRole(QPalette::Base);
+        inputImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+        inputImageLabel->setScaledContents(true);
 
-    inputScroll = new QScrollArea;
-    inputScroll->setBackgroundRole(QPalette::Dark);
-    inputScroll->setAlignment(Qt::AlignCenter);
-    inputScroll->setWidget(inputImageLabel);
+        inputScroll = new QScrollArea;
+        inputScroll->setBackgroundRole(QPalette::Dark);
+        inputScroll->setAlignment(Qt::AlignCenter);
+        inputScroll->setWidget(inputImageLabel);
 
-    QLabel* rectifiedImageSubtitle = new QLabel();
-    rectifiedImageSubtitle->setText("Rectified image");
+        QLabel* rectifiedImageSubtitle = new QLabel();
+        rectifiedImageSubtitle->setText("Rectified image");
 
-    rectifiedImageLabel = new QLabel;
-    rectifiedImageLabel->setBackgroundRole(QPalette::Base);
-    rectifiedImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    rectifiedImageLabel->setScaledContents(true);
+        rectifiedImageLabel = new QLabel;
+        rectifiedImageLabel->setBackgroundRole(QPalette::Base);
+        rectifiedImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+        rectifiedImageLabel->setScaledContents(true);
 
-    rectifiedScroll = new QScrollArea;
-    rectifiedScroll->setBackgroundRole(QPalette::Dark);
-    rectifiedScroll->setWidget(rectifiedImageLabel);
-    rectifiedScroll->setAlignment(Qt::AlignCenter);
+        rectifiedScroll = new QScrollArea;
+        rectifiedScroll->setBackgroundRole(QPalette::Dark);
+        rectifiedScroll->setWidget(rectifiedImageLabel);
+        rectifiedScroll->setAlignment(Qt::AlignCenter);
 
-    QBoxLayout *imagesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+        QBoxLayout *imagesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
 
-    imagesLayout->addWidget(inputImageSubtitle);
-    imagesLayout->addWidget(inputScroll);
-    imagesLayout->addWidget(rectifiedImageSubtitle);
-    imagesLayout->addWidget(rectifiedScroll);
+        imagesLayout->addWidget(inputImageSubtitle);
+        imagesLayout->addWidget(inputScroll);
+        imagesLayout->addWidget(rectifiedImageSubtitle);
+        imagesLayout->addWidget(rectifiedScroll);
 
-    QWidget *window = new QWidget();
-    window->setLayout(imagesLayout);
+        QWidget *window = new QWidget();
+        window->setLayout(imagesLayout);
 
-    setCentralWidget(window);
+        setCentralWidget(window);
 
-    createActions();
-    createMenus();
+        createActions();
+        createMenus();
 
-    setWindowTitle(tr("Image Rectificator"));
+        setWindowTitle(tr("Image Rectificator"));
 
-    QDesktopWidget desktop;
-    QRect res = desktop.availableGeometry(desktop.primaryScreen());
-    resize(res.width(), res.height());
-}
+        QDesktopWidget desktop;
+        QRect res = desktop.availableGeometry(desktop.primaryScreen());
+        resize(res.width(), res.height());
+    }
 
-void ImageRectificator::open()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-                             tr("Open File"), QDir::currentPath());
-    if (!fileName.isEmpty()) {
-        QImage image(fileName);
-        if (image.isNull()) {
-            QMessageBox::information(this, tr("Image Viewer"),
-                                  tr("Cannot load %1.").arg(fileName));
-            return;
+    void ImageRectificator::open()
+    {
+        QString fileName = QFileDialog::getOpenFileName(this,
+                                 tr("Open File"), QDir::currentPath());
+        if (!fileName.isEmpty()) {
+            ClickablePixMap pixMap = ClickablePixMap(fileName, 4);
+            if (pixMap.isNull()) {
+                QMessageBox::information(this, tr("Image Rectificator"),
+                                      tr("Cannot load %1.").arg(fileName));
+                return;
+            }
+
+            inputImageLabel->setPixmap(pixMap);
+            scaleFactor = 1.0;
+
+            fitToWindowAct->setEnabled(true);
+            updateActions();
+
+            if (!fitToWindowAct->isChecked())
+                inputImageLabel->adjustSize();
         }
-        inputImageLabel->setPixmap(QPixmap::fromImage(image));
+    }
+
+    void ImageRectificator::zoomIn()
+    {
+        scaleImage(1.25);
+    }
+
+    void ImageRectificator::zoomOut()
+    {
+        scaleImage(0.8);
+    }
+
+    void ImageRectificator::normalSize()
+    {
+        inputImageLabel->adjustSize();
         scaleFactor = 1.0;
+    }
 
-        fitToWindowAct->setEnabled(true);
+    void ImageRectificator::fitToWindow()
+    {
+        bool fitToWindow = fitToWindowAct->isChecked();
+        inputScroll->setWidgetResizable(fitToWindow);
+        if (!fitToWindow) {
+            normalSize();
+        }
         updateActions();
-
-        if (!fitToWindowAct->isChecked())
-            inputImageLabel->adjustSize();
     }
-}
 
-void ImageRectificator::zoomIn()
-{
-    scaleImage(1.25);
-}
-
-void ImageRectificator::zoomOut()
-{
-    scaleImage(0.8);
-}
-
-void ImageRectificator::normalSize()
-{
-    inputImageLabel->adjustSize();
-    scaleFactor = 1.0;
-}
-
-void ImageRectificator::fitToWindow()
-{
-    bool fitToWindow = fitToWindowAct->isChecked();
-    inputScroll->setWidgetResizable(fitToWindow);
-    if (!fitToWindow) {
-        normalSize();
+    void ImageRectificator::about()
+    {
+        QMessageBox::about(this, tr("About Image Viewer"),
+            tr("<p>The <b>Image Rectificator</b> rectifies an image, eliminating its perspective.<br>"
+            "<br><b>Usage</b>:"
+            "<ul>"
+            "<li>Open File menu, choose Open to open an image to be rectified.</li>"
+            "<li>Click in 4 points of the image that should form a rectangle in the real world.</li>"
+            "</ul>"
+            "</p>"));
     }
-    updateActions();
-}
 
-void ImageRectificator::about()
-{
-QMessageBox::about(this, tr("About Image Viewer"),
-    tr("<p>The <b>Image Rectificator</b> rectifies an image, eliminating its perspective.<br>"
-    "<br><b>Usage</b>:"
-    "<ul>"
-    "<li>Open File menu, choose Open to open an image to be rectified.</li>"
-    "<li>Click in 4 points of the image that should form a rectangle in the real world.</li>"
-    "</ul>"
-    "</p>"));
-}
+    void ImageRectificator::createActions()
+    {
+        openAct = new QAction(tr("&Open..."), this);
+        openAct->setShortcut(tr("Ctrl+O"));
+        connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-void ImageRectificator::createActions()
-{
-    openAct = new QAction(tr("&Open..."), this);
-    openAct->setShortcut(tr("Ctrl+O"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+        exitAct = new QAction(tr("E&xit"), this);
+        exitAct->setShortcut(tr("Ctrl+Q"));
+        connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    exitAct = new QAction(tr("E&xit"), this);
-    exitAct->setShortcut(tr("Ctrl+Q"));
-    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+        zoomInAct = new QAction(tr("Zoom &In (25%)"), this);
+        zoomInAct->setShortcut(tr("Ctrl++"));
+        zoomInAct->setEnabled(false);
+        connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
 
-    zoomInAct = new QAction(tr("Zoom &In (25%)"), this);
-    zoomInAct->setShortcut(tr("Ctrl++"));
-    zoomInAct->setEnabled(false);
-    connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
+        zoomOutAct = new QAction(tr("Zoom &Out (25%)"), this);
+        zoomOutAct->setShortcut(tr("Ctrl+-"));
+        zoomOutAct->setEnabled(false);
+        connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
 
-    zoomOutAct = new QAction(tr("Zoom &Out (25%)"), this);
-    zoomOutAct->setShortcut(tr("Ctrl+-"));
-    zoomOutAct->setEnabled(false);
-    connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
+        normalSizeAct = new QAction(tr("&Normal Size"), this);
+        normalSizeAct->setShortcut(tr("Ctrl+S"));
+        normalSizeAct->setEnabled(false);
+        connect(normalSizeAct, SIGNAL(triggered()), this, SLOT(normalSize()));
 
-    normalSizeAct = new QAction(tr("&Normal Size"), this);
-    normalSizeAct->setShortcut(tr("Ctrl+S"));
-    normalSizeAct->setEnabled(false);
-    connect(normalSizeAct, SIGNAL(triggered()), this, SLOT(normalSize()));
+        fitToWindowAct = new QAction(tr("&Fit to Window"), this);
+        fitToWindowAct->setEnabled(false);
+        fitToWindowAct->setCheckable(true);
+        fitToWindowAct->setShortcut(tr("Ctrl+F"));
+        connect(fitToWindowAct, SIGNAL(triggered()), this, SLOT(fitToWindow()));
 
-    fitToWindowAct = new QAction(tr("&Fit to Window"), this);
-    fitToWindowAct->setEnabled(false);
-    fitToWindowAct->setCheckable(true);
-    fitToWindowAct->setShortcut(tr("Ctrl+F"));
-    connect(fitToWindowAct, SIGNAL(triggered()), this, SLOT(fitToWindow()));
+        clearSelectedPixAct = new QAction(tr("Clear selected pixels"), this);
+        zoomOutAct->setShortcut(tr("Ctrl+P"));
+        zoomOutAct->setEnabled(true);
+        connect(clearSelectedPixAct, SIGNAL(triggered()), this, SLOT(inputImageLabel->pixmap->clearSelectedPix()));
 
-    aboutAct = new QAction(tr("&About"), this);
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
-}
+        aboutAct = new QAction(tr("&About"), this);
+        connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    }
 
-void ImageRectificator::createMenus()
-{
-    fileMenu = new QMenu(tr("&File"), this);
-    fileMenu->addAction(openAct);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
+    void ImageRectificator::createMenus()
+    {
+        fileMenu = new QMenu(tr("&File"), this);
+        fileMenu->addAction(openAct);
+        fileMenu->addSeparator();
+        fileMenu->addAction(exitAct);
 
-    viewMenu = new QMenu(tr("&View"), this);
-    viewMenu->addAction(zoomInAct);
-    viewMenu->addAction(zoomOutAct);
-    viewMenu->addAction(normalSizeAct);
-    viewMenu->addSeparator();
-    viewMenu->addAction(fitToWindowAct);
+        viewMenu = new QMenu(tr("&View"), this);
+        viewMenu->addAction(zoomInAct);
+        viewMenu->addAction(zoomOutAct);
+        viewMenu->addAction(normalSizeAct);
+        viewMenu->addSeparator();
+        viewMenu->addAction(fitToWindowAct);
+        viewMenu->addSeparator();
+        viewMenu->addAction(clearSelectedPixAct);
 
-    helpMenu = new QMenu(tr("&Help"), this);
-    helpMenu->addAction(aboutAct);
+        helpMenu = new QMenu(tr("&Help"), this);
+        helpMenu->addAction(aboutAct);
 
-    menuBar()->addMenu(fileMenu);
-    menuBar()->addMenu(viewMenu);
-    menuBar()->addMenu(helpMenu);
-}
+        menuBar()->addMenu(fileMenu);
+        menuBar()->addMenu(viewMenu);
+        menuBar()->addMenu(helpMenu);
+    }
 
-void ImageRectificator::updateActions()
-{
-    zoomInAct->setEnabled(!fitToWindowAct->isChecked());
-    zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
-    normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
-}
+    void ImageRectificator::updateActions()
+    {
+        zoomInAct->setEnabled(!fitToWindowAct->isChecked());
+        zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
+        normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
+    }
 
-void ImageRectificator::scaleImage(double factor)
-{
-    Q_ASSERT(inputImageLabel->pixmap());
-    scaleFactor *= factor;
-    inputImageLabel->resize(scaleFactor * inputImageLabel->pixmap()->size());
+    void ImageRectificator::scaleImage(double factor)
+    {
+        Q_ASSERT(inputImageLabel->pixmap());
+        scaleFactor *= factor;
+        inputImageLabel->resize(scaleFactor * inputImageLabel->pixmap()->size());
 
-    adjustScrollBar(inputScroll->horizontalScrollBar(), factor);
-    adjustScrollBar(inputScroll->verticalScrollBar(), factor);
+        adjustScrollBar(inputScroll->horizontalScrollBar(), factor);
+        adjustScrollBar(inputScroll->verticalScrollBar(), factor);
 
-    zoomInAct->setEnabled(scaleFactor < 3.0);
-    zoomOutAct->setEnabled(scaleFactor > 0.333);
-}
+        zoomInAct->setEnabled(scaleFactor < 3.0);
+        zoomOutAct->setEnabled(scaleFactor > 0.333);
+    }
 
-void ImageRectificator::adjustScrollBar(QScrollBar *scrollBar, double factor)
-{
-    scrollBar->setValue(int(factor * scrollBar->value()
-                        + ((factor - 1) * scrollBar->pageStep()/2)));
+    void ImageRectificator::adjustScrollBar(QScrollBar *scrollBar, double factor)
+    {
+        scrollBar->setValue(int(factor * scrollBar->value()
+                            + ((factor - 1) * scrollBar->pageStep()/2)));
+    }
 }
