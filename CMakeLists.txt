@@ -45,7 +45,8 @@ source_group (utils FILES ${UTILS})
 # Add the executable
 add_executable (Computer_Vision
 	${UI_DIR}/${HEADER_DIR}/ImageRectificator.h	${UI_DIR}/${CPP_DIR}/ImageRectificator.cpp
-	${UI_DIR}/${HEADER_DIR}/ClickablePixMap.h	${UI_DIR}/${CPP_DIR}/ClickablePixMap.cpp
+	${UI_DIR}/${HEADER_DIR}/ClickableLabel.h	${UI_DIR}/${CPP_DIR}/ClickableLabel.cpp
+	${UI_DIR}/${HEADER_DIR}/SelectedPixel.h		${UI_DIR}/${CPP_DIR}/SelectedPixel.cpp
 	${UTILS_DIR}/${HEADER_DIR}/CircularList.h	${UTILS_DIR}/${CPP_DIR}/CircularList.cpp	
 	./main.cpp)
 

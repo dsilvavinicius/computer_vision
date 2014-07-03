@@ -53,7 +53,7 @@
 #include <QBoxLayout>
 
 #include "ImageRectificator.h"
-#include "ClickablePixMap.h"
+#include "ClickableLabel.h"
 
 namespace ui
 {
@@ -62,7 +62,9 @@ namespace ui
         QLabel* inputImageSubtitle = new QLabel();
         inputImageSubtitle->setText("Input image");
 
-        inputImageLabel = new QLabel;
+        // TODO: eliminate these magic constants.
+        const QString& iconFileName = tr("images/icon.png");
+        inputImageLabel = new ClickableLabel(4, iconFileName, this);
         inputImageLabel->setBackgroundRole(QPalette::Base);
         inputImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
         inputImageLabel->setScaledContents(true);
@@ -112,7 +114,7 @@ namespace ui
         QString fileName = QFileDialog::getOpenFileName(this,
                                  tr("Open File"), QDir::currentPath());
         if (!fileName.isEmpty()) {
-            ClickablePixMap pixMap = ClickablePixMap(fileName, 4);
+            QPixmap pixMap = QPixmap(fileName);
             if (pixMap.isNull()) {
                 QMessageBox::information(this, tr("Image Rectificator"),
                                       tr("Cannot load %1.").arg(fileName));

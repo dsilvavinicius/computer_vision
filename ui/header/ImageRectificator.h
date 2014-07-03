@@ -47,6 +47,8 @@
 #include <QMenu>
 #include <QScrollArea>
 
+#include "ClickableLabel.h"
+
 namespace ui
 {
     class ImageRectificator : public QMainWindow
@@ -71,7 +73,7 @@ namespace ui
         void scaleImage(double factor);
         void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
-        QLabel *inputImageLabel;
+        ClickableLabel *inputImageLabel;
         QLabel *rectifiedImageLabel;
         QScrollArea *inputScroll;
         QScrollArea *rectifiedScroll;
