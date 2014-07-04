@@ -47,7 +47,7 @@ add_executable (Computer_Vision
 	${UI_DIR}/${HEADER_DIR}/ImageRectificator.h	${UI_DIR}/${CPP_DIR}/ImageRectificator.cpp
 	${UI_DIR}/${HEADER_DIR}/ClickableLabel.h	${UI_DIR}/${CPP_DIR}/ClickableLabel.cpp
 	${UI_DIR}/${HEADER_DIR}/SelectedPixel.h		${UI_DIR}/${CPP_DIR}/SelectedPixel.cpp
-	${UTILS_DIR}/${HEADER_DIR}/CircularList.h	${UTILS_DIR}/${CPP_DIR}/CircularList.cpp	
+	${UTILS_DIR}/${HEADER_DIR}/CircularList.h
 	./main.cpp)
 
 # Use the Widgets module from Qt 5.

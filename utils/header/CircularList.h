@@ -12,10 +12,11 @@ namespace utils
 	*	(in this case, elements of the beginning of the list are overwritten). Every access is modulated
 	*	by the maximum size of the list. */
 	template <typename T>
-	class CircularList 
+	class CircularList
 	{
 	public:
 		CircularList(const int& maxSize);
+        ~CircularList();
 		T operator [] (int i);
 		void pushBack(const T& element);
 		void clear();
@@ -37,6 +38,12 @@ namespace utils
 	}
 
 	template <typename T>
+	CircularList<T>::~CircularList()
+	{
+        clear();
+	}
+
+	template <typename T>
 	T CircularList<T>::operator [] (int i)
 	{
 		return *m_container[i % m_maxSize];
@@ -51,7 +58,7 @@ namespace utils
 	template <typename T>
 	void CircularList<T>::clear()
 	{
-		m_container->clear();
+        while(!m_container->empty()) delete m_container->back(), m_container->pop_back();
 	}
 }
 

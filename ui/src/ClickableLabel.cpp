@@ -5,9 +5,14 @@ namespace ui
 	ClickableLabel::ClickableLabel(const int& maxSelectedPix,
 		const QString& iconFileName, QWidget* parent) : QLabel(parent)
 	{
-		m_selectedPix = make_shared<CircularList<QPoint>>(maxSelectedPix);
-		m_selectionIcon = make_shared<QIcon>(iconFileName);
+		m_selectedPix = make_shared<CircularList<SelectedPixel*>>(maxSelectedPix);
+		m_selectionIcon = new QIcon(iconFileName);
 	}
+
+    ClickableLabel::~ClickableLabel()
+    {
+        delete m_selectionIcon;
+    }
 
 	void ClickableLabel::clearSelectedPix()
 	{
@@ -18,8 +23,8 @@ namespace ui
 	{
 		if (event->button() == Qt::LeftButton)
 		{
-			SelectedPixel pixel = SelectedPixel(event->pos(), m_selectionIcon);
-			m_selectedPix->pushBack(pos);
+			SelectedPixel* pixel = new SelectedPixel(event->pos(), m_selectionIcon, this);
+			m_selectedPix->pushBack(pixel);
 		}
 	}
 }

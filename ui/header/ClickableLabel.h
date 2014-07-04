@@ -6,10 +6,10 @@
 #include <QMouseEvent>
 #include <QPoint>
 #include <set>
-#include "SelectedPixel.h"
 #include "CircularList.h"
+#include "SelectedPixel.h"
 
-using namespace utils; 
+using namespace utils;
 
 namespace ui
 {
@@ -19,13 +19,13 @@ namespace ui
 	public slots:
 		void clearSelectedPix();
 	public:
-		ClickableLabel(const int& maxSelectedPix, const QString& iconFileName,
-			QWidget* parent = 0);		
+		ClickableLabel(const int& maxSelectedPix, const QString& iconFileName, QWidget* parent = 0);
+        ~ClickableLabel();
 	protected:
 		virtual void mousePressEvent(QMouseEvent *event);
 
-		CircularListPtr<SelectedPixel> m_selectedPix;
-		shared_ptr<QIcon> m_selectionIcon;
+		CircularListPtr<SelectedPixel*> m_selectedPix;
+		QIcon* m_selectionIcon;
 	};
 }
 

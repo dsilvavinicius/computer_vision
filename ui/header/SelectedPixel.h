@@ -2,23 +2,24 @@
 #define SELECTED_PIXEL_H
 
 #include <memory>
+#include <QWidget>
+#include <QPoint>
+#include <QLabel>
+#include <QIcon>
 
 using namespace std;
 
 namespace ui
 {
-	class SelectedPixel
+	class SelectedPixel : public QWidget
 	{
+        Q_OBJECT
 	public:
-		SelectedPixel(QPoint pos, shared_ptr<QIcon>& icon);
-		QPoint& getPos();
-		QLabel& getLabel();
+		SelectedPixel(QPoint pos, QIcon* icon, QWidget* parent = 0);
+		QLabel* getLabel();
 	private:
-		QPoint m_pos;
-		shared_ptr<QIcon> m_icon;
+		QLabel* m_label;
 	};
-
-	typedef shared_ptr<SelectedPixel> SelectedPixelPtr;
 }
 
 #endif
