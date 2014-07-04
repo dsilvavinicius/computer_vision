@@ -2,12 +2,14 @@
 
 namespace ui
 {
-	SelectedPixel::SelectedPixel(QPoint pos, QIcon* icon, QWidget* parent)
+	SelectedPixel::SelectedPixel(QPoint pos, QPixmap* pixmap, QWidget* parent)
 	: QWidget(parent)
 	{
         m_label = new QLabel(this);
-        m_label->setPixmap(icon->pixmap(10));
+        m_label->setPixmap(*pixmap);
         m_label->move(pos);
+        m_label->show();
+        show();
 	}
 
 	QLabel* SelectedPixel::getLabel() { return m_label; }

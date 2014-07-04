@@ -63,8 +63,9 @@ namespace ui
         inputImageSubtitle->setText("Input image");
 
         // TODO: eliminate these magic constants.
-        const QString& iconFileName = tr("images/icon.png");
-        inputImageLabel = new ClickableLabel(4, iconFileName, this);
+        QDir::setCurrent(QCoreApplication::applicationDirPath());
+        const QString& iconFileName = tr("../../images/icon.png");
+        inputImageLabel = new ClickableLabel(4, iconFileName);
         inputImageLabel->setBackgroundRole(QPalette::Base);
         inputImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
         inputImageLabel->setScaledContents(true);
@@ -125,6 +126,7 @@ namespace ui
             scaleFactor = 1.0;
 
             fitToWindowAct->setEnabled(true);
+            clearSelectedPixAct->setEnabled(true);
             updateActions();
 
             if (!fitToWindowAct->isChecked())
@@ -145,6 +147,7 @@ namespace ui
     void ImageRectificator::normalSize()
     {
         inputImageLabel->adjustSize();
+        rectifiedImageLabel->adjustSize();
         scaleFactor = 1.0;
     }
 
@@ -202,9 +205,10 @@ namespace ui
         connect(fitToWindowAct, SIGNAL(triggered()), this, SLOT(fitToWindow()));
 
         clearSelectedPixAct = new QAction(tr("Clear selected pixels"), this);
-        zoomOutAct->setShortcut(tr("Ctrl+P"));
-        zoomOutAct->setEnabled(true);
-        connect(clearSelectedPixAct, SIGNAL(triggered()), this, SLOT(inputImageLabel->pixmap->clearSelectedPix()));
+        clearSelectedPixAct->setShortcut(tr("Ctrl+P"));
+        clearSelectedPixAct->setEnabled(false);
+        connect(clearSelectedPixAct, SIGNAL(triggered()), inputImageLabel,
+            SLOT(clearSelectedPix()));
 
         aboutAct = new QAction(tr("&About"), this);
         connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -244,11 +248,19 @@ namespace ui
     void ImageRectificator::scaleImage(double factor)
     {
         Q_ASSERT(inputImageLabel->pixmap());
+
         scaleFactor *= factor;
-        inputImageLabel->resize(scaleFactor * inputImageLabel->pixmap()->size());
+        inputImageLabel->scale(factor);
 
         adjustScrollBar(inputScroll->horizontalScrollBar(), factor);
         adjustScrollBar(inputScroll->verticalScrollBar(), factor);
+
+        if (rectifiedImageLabel->pixmap())
+        {
+            rectifiedImageLabel->resize(scaleFactor * rectifiedImageLabel->pixmap()->size());
+            adjustScrollBar(rectifiedScroll->horizontalScrollBar(), factor);
+            adjustScrollBar(rectifiedScroll->verticalScrollBar(), factor);
+        }
 
         zoomInAct->setEnabled(scaleFactor < 3.0);
         zoomOutAct->setEnabled(scaleFactor > 0.333);

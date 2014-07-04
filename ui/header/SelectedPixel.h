@@ -15,7 +15,7 @@ namespace ui
 	{
         Q_OBJECT
 	public:
-		SelectedPixel(QPoint pos, QIcon* icon, QWidget* parent = 0);
+		SelectedPixel(QPoint pos, QPixmap* pixmap, QWidget* parent = 0);
 		QLabel* getLabel();
 	private:
 		QLabel* m_label;

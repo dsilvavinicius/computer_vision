@@ -2,7 +2,7 @@
 #define CLICKABLE_LABEL_H
 
 #include <QLabel>
-#include <QIcon>
+#include <QPixmap>
 #include <QMouseEvent>
 #include <QPoint>
 #include <set>
@@ -19,13 +19,14 @@ namespace ui
 	public slots:
 		void clearSelectedPix();
 	public:
-		ClickableLabel(const int& maxSelectedPix, const QString& iconFileName, QWidget* parent = 0);
+		ClickableLabel(const int& maxSelectedPix, const QString& pixmapFileName, QWidget* parent = 0);
         ~ClickableLabel();
+        void scale(double factor);
 	protected:
 		virtual void mousePressEvent(QMouseEvent *event);
 
-		CircularListPtr<SelectedPixel*> m_selectedPix;
-		QIcon* m_selectionIcon;
+		CircularList<SelectedPixel*>* m_selectedPix;
+		QPixmap* m_selectionPixmap;
 	};
 }
 

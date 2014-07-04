@@ -1,30 +1,52 @@
 #include "ClickableLabel.h"
+#include <sstream>
 
 namespace ui
 {
 	ClickableLabel::ClickableLabel(const int& maxSelectedPix,
-		const QString& iconFileName, QWidget* parent) : QLabel(parent)
+		const QString& pixmapFileName, QWidget* parent) : QLabel(parent)
 	{
-		m_selectedPix = make_shared<CircularList<SelectedPixel*>>(maxSelectedPix);
-		m_selectionIcon = new QIcon(iconFileName);
+		m_selectedPix = new CircularList<SelectedPixel*>(maxSelectedPix);
+		m_selectionPixmap = new QPixmap(pixmapFileName);
+		*m_selectionPixmap = m_selectionPixmap->scaled(10, 10);
+		if(m_selectionPixmap->isNull())
+		{
+            throw logic_error("Cannot find icon image: " + pixmapFileName.toStdString());
+		}
 	}
 
     ClickableLabel::~ClickableLabel()
     {
-        delete m_selectionIcon;
+        clearSelectedPix();
+        delete m_selectedPix;
+        delete m_selectionPixmap;
+    }
+
+    void ClickableLabel::scale(double factor)
+    {
+        for (int i = 0; i < m_selectedPix->size(); ++i)
+        {
+            SelectedPixel* pixel = (*m_selectedPix)[i];
+            pixel->move(factor * pixel->pos());
+        }
+        resize(factor * pixmap()->size());
     }
 
 	void ClickableLabel::clearSelectedPix()
 	{
-		m_selectedPix->clear();
+        vector<SelectedPixel*> selectedPixels = m_selectedPix->clear();
+        for (SelectedPixel* pixel : selectedPixels) { delete pixel; }
 	}
 
 	void ClickableLabel::mousePressEvent(QMouseEvent *event)
 	{
 		if (event->button() == Qt::LeftButton)
 		{
-			SelectedPixel* pixel = new SelectedPixel(event->pos(), m_selectionIcon, this);
-			m_selectedPix->pushBack(pixel);
+			SelectedPixel* pixel = new SelectedPixel(event->pos(), m_selectionPixmap, this);
+			SelectedPixel* previous = m_selectedPix->push(pixel);
+			delete previous;
 		}
 	}
+
+
 }
