@@ -24,6 +24,7 @@ namespace ui
         void scale(double factor);
 	protected:
 		virtual void mousePressEvent(QMouseEvent *event);
+		virtual void resizeEvent(QResizeEvent * event);
 
 		CircularList<SelectedPixel*>* m_selectedPix;
 		QPixmap* m_selectionPixmap;

@@ -56,11 +56,18 @@ namespace utils
 	template <typename T>
 	T CircularList<T>::operator [] (int i)
 	{
-        if (i >= size())
+        if (i >= m_size)
         {
             throw logic_error("Index out of bounds.");
         }
-		return (*m_container)[(m_pointer + i) % m_maxSize];
+        if (m_size < m_maxSize)
+        {
+            return (*m_container)[i];
+        }
+        else
+        {
+            return (*m_container)[(m_pointer + i) % m_maxSize];
+        }
 	}
 
 	template <typename T>
@@ -74,7 +81,7 @@ namespace utils
 
 		(*m_container)[m_pointer] = element;
 		incrementPointer(1);
-		++m_size;
+		if (m_size < m_maxSize) { ++m_size; }
 
 		return previousElement;
 	}
@@ -89,7 +96,7 @@ namespace utils
         else
         {
             m_pointer = incrementPointer(-1);
-            --m_size;
+            if (m_size > 0) { --m_size; };
             return m_container[m_pointer];
         }
 
@@ -110,8 +117,8 @@ namespace utils
 	template <typename T>
 	vector<T> CircularList<T>::clear()
 	{
-        vector<T> elements;
         int size = m_size;
+        vector<T> elements(size);
         for (int i = 0; i < size; ++i)
         {
             elements[i] = (*this)[i];

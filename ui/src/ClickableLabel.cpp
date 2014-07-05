@@ -24,11 +24,6 @@ namespace ui
 
     void ClickableLabel::scale(double factor)
     {
-        for (int i = 0; i < m_selectedPix->size(); ++i)
-        {
-            SelectedPixel* pixel = (*m_selectedPix)[i];
-            pixel->move(factor * pixel->pos());
-        }
         resize(factor * pixmap()->size());
     }
 
@@ -48,5 +43,24 @@ namespace ui
 		}
 	}
 
+    void ClickableLabel::resizeEvent(QResizeEvent* event)
+    {
+        QSize oldSize = event->oldSize();
+        QSize newSize = event->size();
+        for (int i = 0; i < m_selectedPix->size(); ++i)
+        {
+            SelectedPixel* pixel = (*m_selectedPix)[i];
 
+            QPoint oldPos = pixel->getPos();
+            QPoint normalizedPos;
+            normalizedPos.setX(oldPos.x() / oldSize.rwidth());
+            normalizedPos.setY(oldPos.y() / oldSize.rheight());
+
+            QPoint newPos;
+            newPos.setX(normalizedPos.x() * newSize.rwidth());
+            newPos.setY(normalizedPos.y() * newSize.rheight());
+
+            pixel->move(newPos);
+        }
+    }
 }
