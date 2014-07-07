@@ -59,7 +59,7 @@ namespace ui
         ImageRectificator();
 
     private slots:
-        void open();
+        void open(QLabel* targetLabel);
         void zoomIn();
         void zoomOut();
         void normalSize();
@@ -73,13 +73,16 @@ namespace ui
         void scaleImage(double factor);
         void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
-        ClickableLabel *inputImageLabel;
+        ClickableLabel *projectedImageLabel;
+		ClickableLabel *worldImageLabel;
         QLabel *rectifiedImageLabel;
-        QScrollArea *inputScroll;
+        QScrollArea *projectedScroll;
+		QScrollArea *worldScroll;
         QScrollArea *rectifiedScroll;
         double scaleFactor;
         
-        QAction *openAct;
+        QAction *openProjectedAct;
+		QAction *openWorldAct;
         QAction *exitAct;
         QAction *zoomInAct;
         QAction *zoomOutAct;

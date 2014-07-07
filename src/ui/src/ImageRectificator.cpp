@@ -50,7 +50,7 @@
 #include <QScrollBar>
 #include <QDesktopWidget>
 #include <QRect>
-#include <QBoxLayout>
+#include <QGridLayout>
 
 #include "ImageRectificator.h"
 #include "ClickableLabel.h"
@@ -59,21 +59,35 @@ namespace ui
 {
     ImageRectificator::ImageRectificator()
     {
-        QLabel* inputImageSubtitle = new QLabel();
-        inputImageSubtitle->setText("Input image");
+        QLabel* projectedImageSubtitle = new QLabel();
+        projectedImageSubtitle->setText("Projected image");
 
         // TODO: eliminate these magic constants.
         QDir::setCurrent(QCoreApplication::applicationDirPath());
         const QString& iconFileName = tr("../../src/images/icon.png");
-        inputImageLabel = new ClickableLabel(4, iconFileName);
-        inputImageLabel->setBackgroundRole(QPalette::Base);
-        inputImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-        inputImageLabel->setScaledContents(true);
+		int maxSelectedPixels = 4;
+        projectedImageLabel = new ClickableLabel(maxSelectedPixels, iconFileName);
+        projectedImageLabel->setBackgroundRole(QPalette::Base);
+        projectedImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+        projectedImageLabel->setScaledContents(true);
 
-        inputScroll = new QScrollArea;
-        inputScroll->setBackgroundRole(QPalette::Dark);
-        inputScroll->setAlignment(Qt::AlignCenter);
-        inputScroll->setWidget(inputImageLabel);
+        projectedScroll = new QScrollArea;
+        projectedScroll->setBackgroundRole(QPalette::Dark);
+        projectedScroll->setAlignment(Qt::AlignCenter);
+        projectedScroll->setWidget(projectedImageLabel);
+		
+		QLabel* worldImageSubtitle = new QLabel();
+        worldImageSubtitle->setText("World image");
+		
+		worldImageLabel = new ClickableLabel(maxSelectedPixels, iconFileName);
+		worldImageLabel->setBackgroundRole(QPalette::Base);
+        worldImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+        worldImageLabel->setScaledContents(true);
+		
+		worldScroll = new QScrollArea;
+		worldScroll->setBackgroundRole(QPalette::Dark);
+        worldScroll->setAlignment(Qt::AlignCenter);
+        worldScroll->setWidget(worldImageLabel);
 
         QLabel* rectifiedImageSubtitle = new QLabel();
         rectifiedImageSubtitle->setText("Rectified image");
@@ -88,12 +102,14 @@ namespace ui
         rectifiedScroll->setWidget(rectifiedImageLabel);
         rectifiedScroll->setAlignment(Qt::AlignCenter);
 
-        QBoxLayout *imagesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+        QGridLayout *imagesLayout = new QGridLayout();
 
-        imagesLayout->addWidget(inputImageSubtitle);
-        imagesLayout->addWidget(inputScroll);
-        imagesLayout->addWidget(rectifiedImageSubtitle);
-        imagesLayout->addWidget(rectifiedScroll);
+        imagesLayout->addWidget(projectedImageSubtitle, 0, 0);
+        imagesLayout->addWidget(projectedScroll, 1, 0);
+		imagesLayout->addWidget(worldImageSubtitle, 0, 1);
+        imagesLayout->addWidget(worldScroll, 1, 1);
+        imagesLayout->addWidget(rectifiedImageSubtitle, 0, 2);
+        imagesLayout->addWidget(rectifiedScroll, 1, 2);
 
         QWidget *window = new QWidget();
         window->setLayout(imagesLayout);
@@ -110,7 +126,7 @@ namespace ui
         resize(res.width(), res.height());
     }
 
-    void ImageRectificator::open()
+    void ImageRectificator::open(QLabel* targetLabel)
     {
         QString fileName = QFileDialog::getOpenFileName(this,
                                  tr("Open File"), QDir::currentPath());
@@ -122,7 +138,7 @@ namespace ui
                 return;
             }
 
-            inputImageLabel->setPixmap(pixMap);
+            targetLabel->setPixmap(pixMap);
             scaleFactor = 1.0;
 
             fitToWindowAct->setEnabled(true);
@@ -130,7 +146,7 @@ namespace ui
             updateActions();
 
             if (!fitToWindowAct->isChecked())
-                inputImageLabel->adjustSize();
+                targetLabel->adjustSize();
         }
     }
 
@@ -146,7 +162,7 @@ namespace ui
 
     void ImageRectificator::normalSize()
     {
-        inputImageLabel->adjustSize();
+        projectedImageLabel->adjustSize();
         rectifiedImageLabel->adjustSize();
         scaleFactor = 1.0;
     }
@@ -154,7 +170,7 @@ namespace ui
     void ImageRectificator::fitToWindow()
     {
         bool fitToWindow = fitToWindowAct->isChecked();
-        inputScroll->setWidgetResizable(fitToWindow);
+        projectedScroll->setWidgetResizable(fitToWindow);
         if (!fitToWindow) {
             normalSize();
         }
@@ -175,9 +191,13 @@ namespace ui
 
     void ImageRectificator::createActions()
     {
-        openAct = new QAction(tr("&Open..."), this);
-        openAct->setShortcut(tr("Ctrl+O"));
-        connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+        openProjectedAct = new QAction(tr("&Open Projected Image..."), this);
+        openProjectedAct->setShortcut(tr("Ctrl+O"));
+        connect(openProjectedAct, SIGNAL(triggered()), this, SLOT(open(projectedImageLabel)));
+		
+		openWorldAct = new QAction(tr("&Open World Image..."), this);
+        openWorldAct->setShortcut(tr("Ctrl+I"));
+        connect(openWorldAct, SIGNAL(triggered()), this, SLOT(open(worldImageLabel)));
 
         exitAct = new QAction(tr("E&xit"), this);
         exitAct->setShortcut(tr("Ctrl+Q"));
@@ -207,7 +227,7 @@ namespace ui
         clearSelectedPixAct = new QAction(tr("Clear selected pixels"), this);
         clearSelectedPixAct->setShortcut(tr("Ctrl+P"));
         clearSelectedPixAct->setEnabled(false);
-        connect(clearSelectedPixAct, SIGNAL(triggered()), inputImageLabel,
+        connect(clearSelectedPixAct, SIGNAL(triggered()), projectedImageLabel,
             SLOT(clearSelectedPix()));
 
         aboutAct = new QAction(tr("&About"), this);
@@ -217,7 +237,8 @@ namespace ui
     void ImageRectificator::createMenus()
     {
         fileMenu = new QMenu(tr("&File"), this);
-        fileMenu->addAction(openAct);
+        fileMenu->addAction(openProjectedAct);
+		fileMenu->addAction(openWorldAct);
         fileMenu->addSeparator();
         fileMenu->addAction(exitAct);
 
@@ -247,13 +268,13 @@ namespace ui
 
     void ImageRectificator::scaleImage(double factor)
     {
-        Q_ASSERT(inputImageLabel->pixmap());
+        Q_ASSERT(projectedImageLabel->pixmap());
 
         scaleFactor *= factor;
-        inputImageLabel->scale(factor);
+        projectedImageLabel->scale(factor);
 
-        adjustScrollBar(inputScroll->horizontalScrollBar(), factor);
-        adjustScrollBar(inputScroll->verticalScrollBar(), factor);
+        adjustScrollBar(projectedScroll->horizontalScrollBar(), factor);
+        adjustScrollBar(projectedScroll->verticalScrollBar(), factor);
 
         if (rectifiedImageLabel->pixmap())
         {
