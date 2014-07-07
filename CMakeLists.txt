@@ -20,13 +20,18 @@ set (UTILS_DIR "utils")
 set (HEADER_DIR "header")
 set (CPP_DIR "src")
 
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 # Set include dirs.
 find_package (Qt5Core REQUIRED)
 find_package (Qt5Gui REQUIRED)
 find_package (Qt5Widgets REQUIRED)
+find_package (Eigen3 REQUIRED)
+
 include_directories (${Qt5Core_INCLUDE_DIRS})
 include_directories (${Qt5Gui_INCLUDE_DIRS})
 include_directories (${Qt5Widgets_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 include_directories (${UI_DIR}/${HEADER_DIR}/)
 include_directories (${MODEL_DIR}/${HEADER_DIR}/)
@@ -48,9 +53,10 @@ add_executable (Computer_Vision
 	${UI_DIR}/${HEADER_DIR}/ClickableLabel.h	${UI_DIR}/${CPP_DIR}/ClickableLabel.cpp
 	${UI_DIR}/${HEADER_DIR}/SelectedPixel.h		${UI_DIR}/${CPP_DIR}/SelectedPixel.cpp
 	${UTILS_DIR}/${HEADER_DIR}/CircularList.h
-	./main.cpp)
+	./main.cpp
+	./CMakeLists.txt)
 
-# Use the Widgets module from Qt 5.
+# Qt 5 modules.
 target_link_libraries (Computer_Vision Qt5::Core)
 target_link_libraries (Computer_Vision Qt5::Gui)
 target_link_libraries (Computer_Vision Qt5::Widgets)
