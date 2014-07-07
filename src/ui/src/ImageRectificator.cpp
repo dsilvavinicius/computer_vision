@@ -64,7 +64,7 @@ namespace ui
 
         // TODO: eliminate these magic constants.
         QDir::setCurrent(QCoreApplication::applicationDirPath());
-        const QString& iconFileName = tr("../../images/icon.png");
+        const QString& iconFileName = tr("../../src/images/icon.png");
         inputImageLabel = new ClickableLabel(4, iconFileName);
         inputImageLabel->setBackgroundRole(QPalette::Base);
         inputImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
