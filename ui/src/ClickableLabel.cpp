@@ -25,23 +25,23 @@ namespace ui
     void ClickableLabel::scale(double factor)
     {
         resize(factor * pixmap()->size());
+	}
+
+    void ClickableLabel::clearSelectedPix()
+    {
+		vector<SelectedPixel*> selectedPixels = m_selectedPix->clear();
+		for (SelectedPixel* pixel : selectedPixels) { delete pixel; }
     }
 
-	void ClickableLabel::clearSelectedPix()
-	{
-        vector<SelectedPixel*> selectedPixels = m_selectedPix->clear();
-        for (SelectedPixel* pixel : selectedPixels) { delete pixel; }
-	}
-
-	void ClickableLabel::mousePressEvent(QMouseEvent *event)
-	{
-		if (event->button() == Qt::LeftButton)
-		{
-			SelectedPixel* pixel = new SelectedPixel(event->pos(), m_selectionPixmap, this);
-			SelectedPixel* previous = m_selectedPix->push(pixel);
-			delete previous;
-		}
-	}
+    void ClickableLabel::mousePressEvent(QMouseEvent *event)
+    {
+	    if (event->button() == Qt::LeftButton)
+	    {
+		    SelectedPixel* pixel = new SelectedPixel(event->pos(), m_selectionPixmap, this);
+		    SelectedPixel* previous = m_selectedPix->push(pixel);
+		    delete previous;
+	    }
+    }
 
     void ClickableLabel::resizeEvent(QResizeEvent* event)
     {
