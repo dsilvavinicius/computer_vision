@@ -13,8 +13,9 @@ set (CMAKE_AUTOMOC ON)
 # Necessary flags for C++11 and linking to Qt5.
 SET (CMAKE_CXX_FLAGS "-std=c++11 -fPIC")
 
-set (MODEL_DIR "model")
 set (UI_DIR "ui")
+set (MODEL_DIR "model")
+set (MATH_DIR "math")
 set (UTILS_DIR "utils")
 
 set (HEADER_DIR "header")
@@ -31,20 +32,23 @@ find_package (Eigen3 REQUIRED)
 include_directories (${Qt5Core_INCLUDE_DIRS})
 include_directories (${Qt5Gui_INCLUDE_DIRS})
 include_directories (${Qt5Widgets_INCLUDE_DIRS})
-include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories (${EIGEN3_INCLUDE_DIR})
 
 include_directories (${UI_DIR}/${HEADER_DIR}/)
 include_directories (${MODEL_DIR}/${HEADER_DIR}/)
+include_directories (${MATH_DIR}/${HEADER_DIR}/)
 include_directories (${UTILS_DIR}/${HEADER_DIR}/)
 
 # Creating file groups
 # Specifying sources.
-file (GLOB_RECURSE MODELS ${MODEL_DIR}/*)
 file (GLOB_RECURSE UI ${UI_DIR}/*)
+file (GLOB_RECURSE MODELS ${MODEL_DIR}/*)
+file (GLOB_RECURSE MATH ${MATH_DIR}/*)
 file (GLOB_RECURSE UTILS ${UTILS_DIR}/*)
 # Creating source groups.
-source_group (models FILES ${MODELS})
 source_group (ui FILES ${UI})
+source_group (models FILES ${MODELS})
+source_group (math FILES ${MATH})
 source_group (utils FILES ${UTILS})
 
 # Add the executable
@@ -52,6 +56,10 @@ add_executable (Computer_Vision
 	${UI_DIR}/${HEADER_DIR}/ImageRectificator.h	${UI_DIR}/${CPP_DIR}/ImageRectificator.cpp
 	${UI_DIR}/${HEADER_DIR}/ClickableLabel.h	${UI_DIR}/${CPP_DIR}/ClickableLabel.cpp
 	${UI_DIR}/${HEADER_DIR}/SelectedPixel.h		${UI_DIR}/${CPP_DIR}/SelectedPixel.cpp
+	
+	${MATH_DIR}/${HEADER_DIR}/IPointMapper.h
+	${MATH_DIR}/${HEADER_DIR}/ProjectionRectificator.h	${MATH_DIR}/${CPP_DIR}/ProjectionRectificator.cpp
+	
 	${UTILS_DIR}/${HEADER_DIR}/CircularList.h
 	./main.cpp
 	./CMakeLists.txt)
