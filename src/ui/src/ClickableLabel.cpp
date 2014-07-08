@@ -63,4 +63,10 @@ namespace ui
             pixel->move(newPos);
         }
     }
+    
+    // TODO: Return a proper copy of the list.
+    CircularList<SelectedPixel*>* ClickableLabel::getSelectedPixels()
+	{
+		return m_selectedPix;
+	}
 }

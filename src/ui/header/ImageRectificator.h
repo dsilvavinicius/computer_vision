@@ -56,20 +56,23 @@ namespace ui
         Q_OBJECT
 
     public:
-        ImageRectificator();
+        ImageRectificator(int maxSelectedPixels);
 
     private slots:
-        void open(QLabel* targetLabel);
+        void openProjected();
+		void openWorld();
+		void rectify();
         void zoomIn();
         void zoomOut();
         void normalSize();
         void fitToWindow();
         void about();
-
+		
     private:
         void createActions();
         void createMenus();
         void updateActions();
+		void open(QLabel* targetLabel);
         void scaleImage(double factor);
         void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
@@ -83,6 +86,7 @@ namespace ui
         
         QAction *openProjectedAct;
 		QAction *openWorldAct;
+		QAction *rectifyAct;
         QAction *exitAct;
         QAction *zoomInAct;
         QAction *zoomOutAct;
@@ -94,6 +98,8 @@ namespace ui
         QMenu *fileMenu;
         QMenu *viewMenu;
         QMenu *helpMenu;
+		
+		int m_maxSelectedPixels;
     };
 }
 

@@ -22,10 +22,11 @@ namespace ui
 		ClickableLabel(const int& maxSelectedPix, const QString& pixmapFileName, QWidget* parent = 0);
         ~ClickableLabel();
         void scale(double factor);
+		CircularList<SelectedPixel*>* getSelectedPixels();
 	protected:
 		virtual void mousePressEvent(QMouseEvent *event);
 		virtual void resizeEvent(QResizeEvent * event);
-
+		
 		CircularList<SelectedPixel*>* m_selectedPix;
 		QPixmap* m_selectionPixmap;
 	};

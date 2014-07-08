@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <memory>
 #include <vector>
+#include <type_traits>
 
 using namespace std;
 
@@ -17,6 +18,8 @@ namespace utils
 	{
 	public:
 		CircularList(const int& maxSize);
+		/*CircularList(const CircularList& other);
+		CircularList& operator=(const CircularList& other);*/
 
 		T operator [] (int i);
 
@@ -52,6 +55,36 @@ namespace utils
         m_size = 0;
 		m_pointer = 0;
 	}
+	
+	/*template <typename T>
+	CircularList<T>::CircularList(const CircularList<T>& other)
+	{
+		m_pointer = other.m_pointer;
+		m_size = other.m_size;
+		m_maxSize = other.m_maxSize;
+		m_container = make_shared<vector<T>>(m_maxSize);
+		
+		if (is_pointer<T>::value)
+		{
+			for (int i = 0; i < m_maxSize; ++i)
+			{
+				T element = other.m_container[i];
+				if (element)
+				{
+					m_container[i] = new T(*T);
+				}
+			}
+		}
+		else
+		{
+			
+		}
+	}
+	
+	template <typename T>
+	CircularList& CircularList<T>::operator=(const CircularList<T>& other)
+	{
+	}*/
 
 	template <typename T>
 	T CircularList<T>::operator [] (int i)
@@ -97,7 +130,9 @@ namespace utils
         {
             m_pointer = incrementPointer(-1);
             if (m_size > 0) { --m_size; };
-            return m_container[m_pointer];
+			T poped = m_container[m_pointer];
+			m_container[m_pointer] = nullptr;
+            return poped;
         }
 
 	}

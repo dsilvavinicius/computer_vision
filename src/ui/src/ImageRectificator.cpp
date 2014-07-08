@@ -54,19 +54,23 @@
 
 #include "ImageRectificator.h"
 #include "ClickableLabel.h"
+#include "ProjectionRectificator.h"
+
+using namespace math;
 
 namespace ui
 {
-    ImageRectificator::ImageRectificator()
+    ImageRectificator::ImageRectificator(int maxSelectedPixels)
     {
+		m_maxSelectedPixels = maxSelectedPixels;
+		
         QLabel* projectedImageSubtitle = new QLabel();
         projectedImageSubtitle->setText("Projected image");
 
         // TODO: eliminate these magic constants.
         QDir::setCurrent(QCoreApplication::applicationDirPath());
         const QString& iconFileName = tr("../../src/images/icon.png");
-		int maxSelectedPixels = 4;
-        projectedImageLabel = new ClickableLabel(maxSelectedPixels, iconFileName);
+        projectedImageLabel = new ClickableLabel(m_maxSelectedPixels, iconFileName);
         projectedImageLabel->setBackgroundRole(QPalette::Base);
         projectedImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
         projectedImageLabel->setScaledContents(true);
@@ -79,7 +83,7 @@ namespace ui
 		QLabel* worldImageSubtitle = new QLabel();
         worldImageSubtitle->setText("World image");
 		
-		worldImageLabel = new ClickableLabel(maxSelectedPixels, iconFileName);
+		worldImageLabel = new ClickableLabel(m_maxSelectedPixels, iconFileName);
 		worldImageLabel->setBackgroundRole(QPalette::Base);
         worldImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
         worldImageLabel->setScaledContents(true);
@@ -126,6 +130,10 @@ namespace ui
         resize(res.width(), res.height());
     }
 
+    void ImageRectificator::openProjected() { open(projectedImageLabel); }
+    
+    void ImageRectificator::openWorld() { open(worldImageLabel); }
+    
     void ImageRectificator::open(QLabel* targetLabel)
     {
         QString fileName = QFileDialog::getOpenFileName(this,
@@ -149,6 +157,18 @@ namespace ui
                 targetLabel->adjustSize();
         }
     }
+    
+    void ImageRectificator::rectify()
+	{
+		vector<pair<VectorXd, VectorXd>> correlationPoints = vector<pair<VectorXd, VectorXd>>(m_maxSelectedPixels);
+		for (int i = 0; i < m_maxSelectedPixels; ++i)
+		{
+			projectedImageLabel->getSelectedPixels();
+			worldImageLabel->getSelectedPixels();
+		}
+		
+		//ProjectionRectificator rectificator = ProjectionRectificator();
+	}
 
     void ImageRectificator::zoomIn()
     {
@@ -183,8 +203,10 @@ namespace ui
             tr("<p>The <b>Image Rectificator</b> rectifies an image, eliminating its perspective.<br>"
             "<br><b>Usage</b>:"
             "<ul>"
-            "<li>Open File menu, choose Open to open an image to be rectified.</li>"
-            "<li>Click in 4 points of the image that should form a rectangle in the real world.</li>"
+            "<li>Open File menu, choose Open Projected Image to open the projected image.</li>"
+			"<li>Open File menu, choose Open World Image to open the world image.</li>"
+            "<li>Click in 4 points of the projected image that should form a rectangle in the real world.</li>"
+			"<li>Click in the 4 points of the world image that represent the same rectangle marked in the projected image.</li>"
             "</ul>"
             "</p>"));
     }
@@ -193,12 +215,17 @@ namespace ui
     {
         openProjectedAct = new QAction(tr("&Open Projected Image..."), this);
         openProjectedAct->setShortcut(tr("Ctrl+O"));
-        connect(openProjectedAct, SIGNAL(triggered()), this, SLOT(open(projectedImageLabel)));
+        connect(openProjectedAct, SIGNAL(triggered()), this, SLOT(openProjected()));
 		
 		openWorldAct = new QAction(tr("&Open World Image..."), this);
         openWorldAct->setShortcut(tr("Ctrl+I"));
-        connect(openWorldAct, SIGNAL(triggered()), this, SLOT(open(worldImageLabel)));
+        connect(openWorldAct, SIGNAL(triggered()), this, SLOT(openWorld()));
 
+		rectifyAct = new QAction(tr("&Rectify Projected Image..."), this);
+		rectifyAct->setShortcut(tr("Ctrl+R"));
+		rectifyAct->setEnabled(false);
+		connect(rectifyAct, SIGNAL(triggered()), this, SLOT(openWorld()));
+		
         exitAct = new QAction(tr("E&xit"), this);
         exitAct->setShortcut(tr("Ctrl+Q"));
         connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
