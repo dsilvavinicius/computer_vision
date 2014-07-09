@@ -1,4 +1,5 @@
 #include "SelectedPixel.h"
+#include <iostream>
 
 namespace ui
 {

@@ -165,6 +165,12 @@ namespace ui
         }
     }
     
+    void ImageRectificator::clearSelectedPix()
+	{
+		projectedImageLabel->clearSelectedPix();
+		worldImageLabel->clearSelectedPix();
+	}
+    
     void ImageRectificator::rectify()
 	{	
 		
@@ -197,6 +203,8 @@ namespace ui
 		worldImageLabel->adjustSize();
         rectifiedImageLabel->adjustSize();
         scaleFactor = 1.0;
+		
+		clearSelectedPix();
     }
 
     void ImageRectificator::fitToWindow()
@@ -205,10 +213,13 @@ namespace ui
         projectedScroll->setWidgetResizable(fitToWindow);
 		worldScroll->setWidgetResizable(fitToWindow);
 		rectifiedScroll->setWidgetResizable(fitToWindow);
-        if (!fitToWindow) {
+        
+		if (!fitToWindow) {
             normalSize();
         }
+        
         updateActions();
+		clearSelectedPix();
     }
 
     void ImageRectificator::about()
@@ -268,8 +279,7 @@ namespace ui
         clearSelectedPixAct = new QAction(tr("Clear selected pixels"), this);
         clearSelectedPixAct->setShortcut(tr("Ctrl+P"));
         clearSelectedPixAct->setEnabled(false);
-        connect(clearSelectedPixAct, SIGNAL(triggered()), projectedImageLabel, SLOT(clearSelectedPix()));
-		connect(clearSelectedPixAct, SIGNAL(triggered()), worldImageLabel, SLOT(clearSelectedPix()));
+        connect(clearSelectedPixAct, SIGNAL(triggered()), this, SLOT(clearSelectedPix()));
 
         aboutAct = new QAction(tr("&About"), this);
         connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -332,6 +342,7 @@ namespace ui
 
         zoomInAct->setEnabled(scaleFactor < 3.0);
         zoomOutAct->setEnabled(scaleFactor > 0.333);
+		clearSelectedPix();
     }
 
     void ImageRectificator::adjustScrollBar(QScrollBar *scrollBar, double factor)

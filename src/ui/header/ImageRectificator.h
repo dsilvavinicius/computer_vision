@@ -61,6 +61,7 @@ namespace ui
     private slots:
         void openProjected();
 		void openWorld();
+		void clearSelectedPix();
 		void rectify();
         void zoomIn();
         void zoomOut();
