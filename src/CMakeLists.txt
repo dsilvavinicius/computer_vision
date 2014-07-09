@@ -14,7 +14,7 @@ set (CMAKE_AUTOMOC ON)
 SET (CMAKE_CXX_FLAGS "-std=c++11 -fPIC")
 
 set (UI_DIR "ui")
-set (MODEL_DIR "model")
+set (MODEL_DIR "models")
 set (MATH_DIR "math")
 set (UTILS_DIR "utils")
 
@@ -56,6 +56,8 @@ add_executable (Computer_Vision
 	${UI_DIR}/${HEADER_DIR}/ImageRectificator.h	${UI_DIR}/${CPP_DIR}/ImageRectificator.cpp
 	${UI_DIR}/${HEADER_DIR}/ClickableLabel.h	${UI_DIR}/${CPP_DIR}/ClickableLabel.cpp
 	${UI_DIR}/${HEADER_DIR}/SelectedPixel.h		${UI_DIR}/${CPP_DIR}/SelectedPixel.cpp
+	
+	${MODEL_DIR}/${HEADER_DIR}/RectificationController.h	${MODEL_DIR}/${CPP_DIR}/RectificationController.cpp
 	
 	${MATH_DIR}/${HEADER_DIR}/IPointMapper.h
 	${MATH_DIR}/${HEADER_DIR}/ProjectionRectificator.h	${MATH_DIR}/${CPP_DIR}/ProjectionRectificator.cpp

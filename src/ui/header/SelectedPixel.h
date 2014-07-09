@@ -20,7 +20,6 @@ namespace ui
 		QPoint getPos();
 		QLabel* getLabel();
     protected:
-        //virtual void moveEvent(QMoveEvent* event);
 	private:
 		QLabel* m_label;
 	};

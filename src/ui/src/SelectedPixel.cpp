@@ -15,9 +15,4 @@ namespace ui
 	QPoint SelectedPixel::getPos() { return m_label->pos(); }
 
 	QLabel* SelectedPixel::getLabel() { return m_label; }
-
-	/*void SelectedPixel::moveEvent(QMoveEvent* event)
-	{
-        m_label->move(event->pos());
-	}*/
 }

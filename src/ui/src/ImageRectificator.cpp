@@ -51,12 +51,19 @@
 #include <QDesktopWidget>
 #include <QRect>
 #include <QGridLayout>
+#include <Eigen/Dense>
+#include <iostream>
+#include <cassert>
 
 #include "ImageRectificator.h"
 #include "ClickableLabel.h"
 #include "ProjectionRectificator.h"
+#include "RectificationController.h"
 
+using namespace std;
+using namespace Eigen;
 using namespace math;
+using namespace models;
 
 namespace ui
 {
@@ -159,15 +166,19 @@ namespace ui
     }
     
     void ImageRectificator::rectify()
-	{
-		vector<pair<VectorXd, VectorXd>> correlationPoints = vector<pair<VectorXd, VectorXd>>(m_maxSelectedPixels);
-		for (int i = 0; i < m_maxSelectedPixels; ++i)
+	{	
+		
+		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels ||
+			worldImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
 		{
-			projectedImageLabel->getSelectedPixels();
-			worldImageLabel->getSelectedPixels();
+			QMessageBox::information(this, tr("Image Rectificator"),
+										tr("%1 pixels should be selected before rectification.").arg(m_maxSelectedPixels));
+			return;
 		}
 		
-		//ProjectionRectificator rectificator = ProjectionRectificator();
+		QPixmap rectifiedPixmap = RectificationController::rectify(projectedImageLabel, worldImageLabel);
+		rectifiedImageLabel->setPixmap(rectifiedPixmap);
+		rectifiedImageLabel->adjustSize();
 	}
 
     void ImageRectificator::zoomIn()
@@ -183,6 +194,7 @@ namespace ui
     void ImageRectificator::normalSize()
     {
         projectedImageLabel->adjustSize();
+		worldImageLabel->adjustSize();
         rectifiedImageLabel->adjustSize();
         scaleFactor = 1.0;
     }
@@ -191,6 +203,8 @@ namespace ui
     {
         bool fitToWindow = fitToWindowAct->isChecked();
         projectedScroll->setWidgetResizable(fitToWindow);
+		worldScroll->setWidgetResizable(fitToWindow);
+		rectifiedScroll->setWidgetResizable(fitToWindow);
         if (!fitToWindow) {
             normalSize();
         }
@@ -207,7 +221,8 @@ namespace ui
 			"<li>Open File menu, choose Open World Image to open the world image.</li>"
             "<li>Click in 4 points of the projected image that should form a rectangle in the real world.</li>"
 			"<li>Click in the 4 points of the world image that represent the same rectangle marked in the projected image.</li>"
-            "</ul>"
+            "<li>Open Rectification menu, choose Rectify to transform the projected image.</li>"
+			"</ul>"
             "</p>"));
     }
 
@@ -223,8 +238,7 @@ namespace ui
 
 		rectifyAct = new QAction(tr("&Rectify Projected Image..."), this);
 		rectifyAct->setShortcut(tr("Ctrl+R"));
-		rectifyAct->setEnabled(false);
-		connect(rectifyAct, SIGNAL(triggered()), this, SLOT(openWorld()));
+		connect(rectifyAct, SIGNAL(triggered()), this, SLOT(rectify()));
 		
         exitAct = new QAction(tr("E&xit"), this);
         exitAct->setShortcut(tr("Ctrl+Q"));
@@ -254,8 +268,8 @@ namespace ui
         clearSelectedPixAct = new QAction(tr("Clear selected pixels"), this);
         clearSelectedPixAct->setShortcut(tr("Ctrl+P"));
         clearSelectedPixAct->setEnabled(false);
-        connect(clearSelectedPixAct, SIGNAL(triggered()), projectedImageLabel,
-            SLOT(clearSelectedPix()));
+        connect(clearSelectedPixAct, SIGNAL(triggered()), projectedImageLabel, SLOT(clearSelectedPix()));
+		connect(clearSelectedPixAct, SIGNAL(triggered()), worldImageLabel, SLOT(clearSelectedPix()));
 
         aboutAct = new QAction(tr("&About"), this);
         connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -275,14 +289,17 @@ namespace ui
         viewMenu->addAction(normalSizeAct);
         viewMenu->addSeparator();
         viewMenu->addAction(fitToWindowAct);
-        viewMenu->addSeparator();
-        viewMenu->addAction(clearSelectedPixAct);
 
+		rectificationMenu = new QMenu(tr("&Rectification"), this);
+		rectificationMenu->addAction(clearSelectedPixAct);
+		rectificationMenu->addAction(rectifyAct);
+		
         helpMenu = new QMenu(tr("&Help"), this);
         helpMenu->addAction(aboutAct);
 
         menuBar()->addMenu(fileMenu);
         menuBar()->addMenu(viewMenu);
+		menuBar()->addMenu(rectificationMenu);
         menuBar()->addMenu(helpMenu);
     }
 
@@ -296,12 +313,15 @@ namespace ui
     void ImageRectificator::scaleImage(double factor)
     {
         Q_ASSERT(projectedImageLabel->pixmap());
-
         scaleFactor *= factor;
+		
         projectedImageLabel->scale(factor);
-
         adjustScrollBar(projectedScroll->horizontalScrollBar(), factor);
         adjustScrollBar(projectedScroll->verticalScrollBar(), factor);
+		
+		worldImageLabel->scale(factor);
+        adjustScrollBar(worldScroll->horizontalScrollBar(), factor);
+        adjustScrollBar(worldScroll->verticalScrollBar(), factor);
 
         if (rectifiedImageLabel->pixmap())
         {

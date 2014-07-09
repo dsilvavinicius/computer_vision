@@ -97,6 +97,7 @@ namespace ui
 
         QMenu *fileMenu;
         QMenu *viewMenu;
+		QMenu *rectificationMenu;
         QMenu *helpMenu;
 		
 		int m_maxSelectedPixels;
