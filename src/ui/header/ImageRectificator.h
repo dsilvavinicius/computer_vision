@@ -62,7 +62,8 @@ namespace ui
         void openProjected();
 		void openWorld();
 		void clearSelectedPix();
-		void rectify();
+		void rectifyAll();
+		void rectifyPointOfInterest();
         void zoomIn();
         void zoomOut();
         void normalSize();
@@ -72,6 +73,7 @@ namespace ui
     private:
         void createActions();
         void createMenus();
+		void rectify(bool pointOfInterestOnly);
         void updateActions();
 		void open(QLabel* targetLabel);
         void scaleImage(double factor);
@@ -87,7 +89,8 @@ namespace ui
         
         QAction *openProjectedAct;
 		QAction *openWorldAct;
-		QAction *rectifyAct;
+		QAction *rectifyAllAct;
+		QAction *rectifyPointOfInterestAct;
         QAction *exitAct;
         QAction *zoomInAct;
         QAction *zoomOutAct;

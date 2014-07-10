@@ -9,7 +9,7 @@ namespace models
 {
 	RectificationController::RectificationController() {}
 
-	QPixmap RectificationController::rectify(ClickableLabel* projectedImageLabel, ClickableLabel* worldImageLabel)
+	QPixmap RectificationController::rectify(ClickableLabel* projectedImageLabel, ClickableLabel* worldImageLabel, bool pointOfInterestFlag)
 	{	
 		// First, create pairs of point correlations between projection and world space.
 		CircularList<SelectedPixel*>* selectedPixelsProj = projectedImageLabel->getSelectedPixels();
@@ -17,6 +17,12 @@ namespace models
 		
 		int numSelectedPixels = selectedPixelsProj->size();
 		vector<pair<VectorXd, VectorXd>> correlationPoints(numSelectedPixels);
+		
+		// Point of interest coordinates.
+		int positiveInf = 9999999;
+		int negativeInf = -1;
+		QPoint minPOICoords(positiveInf, positiveInf);
+		QPoint maxPOICoords(negativeInf, negativeInf);
 		
 		for (int i = 0; i < numSelectedPixels; ++i)
 		{
@@ -30,6 +36,24 @@ namespace models
 			
 			pair<VectorXd, VectorXd> correlationPair(projectedPoint, worldPoint);
 			correlationPoints[i] = correlationPair;
+			
+			// Update point of interest coordinates.
+			if (qWorldPoint.x() < minPOICoords.x())
+			{
+				minPOICoords.setX(qWorldPoint.x());
+			}
+			if (qWorldPoint.y() < minPOICoords.y())
+			{
+				minPOICoords.setY(qWorldPoint.y());
+			}
+			if (qWorldPoint.x() > maxPOICoords.x())
+			{
+				maxPOICoords.setX(qWorldPoint.x());
+			}
+			if (qWorldPoint.y() > maxPOICoords.y())
+			{
+				maxPOICoords.setY(qWorldPoint.y());
+			}
 		}
 		
 		// Second, define the projection to world transformation.
@@ -43,6 +67,34 @@ namespace models
 			projToWorld(0, 2), projToWorld(1, 2), projToWorld(2, 2)
 		);
 		
-		return projectedImageLabel->pixmap()->transformed(qProjToWorld, Qt::SmoothTransformation);
+		QPixmap rectifiedPixmap = projectedImageLabel->pixmap()->transformed(qProjToWorld, Qt::SmoothTransformation);
+		
+		if (pointOfInterestFlag)
+		{
+			return selectPointOfInterest(rectifiedPixmap, minPOICoords, maxPOICoords, worldImageLabel->pixmap()->size());
+		}
+		else
+		{
+			return rectifiedPixmap;
+		}
+	}
+	
+	QPixmap RectificationController::selectPointOfInterest(const QPixmap& rectifiedImage, const QPoint& minPOICoords,
+														   const QPoint& maxPOICoords, const QSize& worldImageSize)
+	{
+		QSize rectifiedImageSize = rectifiedImage.size();
+		
+		// Left-upper corner
+		QPoint POIOrigin(
+			((float)minPOICoords.x() / (float)worldImageSize.width()) * rectifiedImageSize.width(),
+			((float)minPOICoords.y() / (float)worldImageSize.height()) * rectifiedImageSize.height()
+		);
+		
+		QSize POISize(
+			((float)(maxPOICoords.x() - minPOICoords.x()) / (float)worldImageSize.width()) * rectifiedImageSize.width(),
+			((float)(maxPOICoords.y() - minPOICoords.y()) / (float)worldImageSize.height()) * rectifiedImageSize.height()
+		);
+		
+		return rectifiedImage.copy(POIOrigin.x(), POIOrigin.y(), POISize.width(), POISize.height());
 	}
 }

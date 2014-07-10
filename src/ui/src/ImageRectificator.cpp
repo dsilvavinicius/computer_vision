@@ -171,9 +171,18 @@ namespace ui
 		worldImageLabel->clearSelectedPix();
 	}
     
-    void ImageRectificator::rectify()
-	{	
-		
+    void ImageRectificator::rectifyAll()
+	{
+		rectify(false);
+	}
+	
+	void ImageRectificator::rectifyPointOfInterest()
+	{
+		rectify(true);
+	}
+    
+    void ImageRectificator::rectify(bool pointOfInterestFlag)
+	{			
 		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels ||
 			worldImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
 		{
@@ -182,7 +191,7 @@ namespace ui
 			return;
 		}
 		
-		QPixmap rectifiedPixmap = RectificationController::rectify(projectedImageLabel, worldImageLabel);
+		QPixmap rectifiedPixmap = RectificationController::rectify(projectedImageLabel, worldImageLabel, pointOfInterestFlag);
 		rectifiedImageLabel->setPixmap(rectifiedPixmap);
 		rectifiedImageLabel->adjustSize();
 	}
@@ -247,9 +256,13 @@ namespace ui
         openWorldAct->setShortcut(tr("Ctrl+I"));
         connect(openWorldAct, SIGNAL(triggered()), this, SLOT(openWorld()));
 
-		rectifyAct = new QAction(tr("&Rectify Projected Image..."), this);
-		rectifyAct->setShortcut(tr("Ctrl+R"));
-		connect(rectifyAct, SIGNAL(triggered()), this, SLOT(rectify()));
+		rectifyPointOfInterestAct = new QAction(tr("&Rectify Projected Image (Point of Interest only)"), this);
+		rectifyPointOfInterestAct->setShortcut(tr("Ctrl+R"));
+		connect(rectifyPointOfInterestAct, SIGNAL(triggered()), this, SLOT(rectifyPointOfInterest()));
+		
+		rectifyAllAct = new QAction(tr("&Rectify Projected Image"), this);
+		rectifyAllAct->setShortcut(tr("Ctrl+T"));
+		connect(rectifyAllAct, SIGNAL(triggered()), this, SLOT(rectifyAll()));
 		
         exitAct = new QAction(tr("E&xit"), this);
         exitAct->setShortcut(tr("Ctrl+Q"));
@@ -302,7 +315,8 @@ namespace ui
 
 		rectificationMenu = new QMenu(tr("&Rectification"), this);
 		rectificationMenu->addAction(clearSelectedPixAct);
-		rectificationMenu->addAction(rectifyAct);
+		rectificationMenu->addAction(rectifyAllAct);
+		rectificationMenu->addAction(rectifyPointOfInterestAct);
 		
         helpMenu = new QMenu(tr("&Help"), this);
         helpMenu->addAction(aboutAct);

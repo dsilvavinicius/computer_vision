@@ -10,9 +10,12 @@ namespace models
 	class RectificationController
 	{
 	public:
-		static QPixmap rectify(ClickableLabel* projectedImageLabel, ClickableLabel* worldImageLabel);
+		static QPixmap rectify(ClickableLabel* projectedImageLabel, ClickableLabel* worldImageLabel, bool pointOfInterestFlag);
 	private:
 		RectificationController();
+		/** Resizes and translate the rectified image to show the point of interest. */
+		static QPixmap selectPointOfInterest(const QPixmap& rectifiedImage, const QPoint& minPOICoords,
+											 const QPoint& maxPOICoords, const QSize& worldImageSize);
 	};
 }
 	
