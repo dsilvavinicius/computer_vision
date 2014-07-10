@@ -9,13 +9,19 @@ namespace models
 {
 	RectificationController::RectificationController() {}
 
-	QPixmap RectificationController::rectify(ClickableLabel* projectedImageLabel, ClickableLabel* worldImageLabel, bool pointOfInterestFlag)
+	QPixmap RectificationController::rectify(ClickableLabel* projectedImageLabel, const QSize& POISize,
+											 bool pointOfInterestFlag)
 	{	
 		// First, create pairs of point correlations between projection and world space.
 		CircularList<SelectedPixel*>* selectedPixelsProj = projectedImageLabel->getSelectedPixels();
-		CircularList<SelectedPixel*>* selectedPixelsWorld = worldImageLabel->getSelectedPixels();
-		
 		int numSelectedPixels = selectedPixelsProj->size();
+		
+		vector<QPoint> selectedPixelsWorld(numSelectedPixels);
+		selectedPixelsWorld[0] = QPoint(0, 0);
+		selectedPixelsWorld[1] = selectedPixelsWorld[0] + QPoint(0, POISize.height());
+		selectedPixelsWorld[2] = selectedPixelsWorld[0] + QPoint(POISize.width(), POISize.height());
+		selectedPixelsWorld[3] = selectedPixelsWorld[0] + QPoint(POISize.width(), 0);
+		
 		vector<pair<VectorXd, VectorXd>> correlationPoints(numSelectedPixels);
 		
 		// Point of interest coordinates.
@@ -27,7 +33,7 @@ namespace models
 		for (int i = 0; i < numSelectedPixels; ++i)
 		{
 			QPoint qProjectedPoint = (*selectedPixelsProj)[i]->getPos();
-			QPoint qWorldPoint = (*selectedPixelsWorld)[i]->getPos();
+			QPoint qWorldPoint = selectedPixelsWorld[i];
 			
 			VectorXd projectedPoint(3);
 			projectedPoint << qProjectedPoint.x(), qProjectedPoint.y(), 1.;
@@ -71,7 +77,7 @@ namespace models
 		
 		if (pointOfInterestFlag)
 		{
-			return selectPointOfInterest(rectifiedPixmap, minPOICoords, maxPOICoords, worldImageLabel->pixmap()->size());
+			return selectPointOfInterest(rectifiedPixmap, minPOICoords, maxPOICoords, POISize);
 		}
 		else
 		{

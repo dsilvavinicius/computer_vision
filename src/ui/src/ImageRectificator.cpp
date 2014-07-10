@@ -86,19 +86,6 @@ namespace ui
         projectedScroll->setBackgroundRole(QPalette::Dark);
         projectedScroll->setAlignment(Qt::AlignCenter);
         projectedScroll->setWidget(projectedImageLabel);
-		
-		QLabel* worldImageSubtitle = new QLabel();
-        worldImageSubtitle->setText("World image");
-		
-		worldImageLabel = new ClickableLabel(m_maxSelectedPixels, iconFileName);
-		worldImageLabel->setBackgroundRole(QPalette::Base);
-        worldImageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-        worldImageLabel->setScaledContents(true);
-		
-		worldScroll = new QScrollArea;
-		worldScroll->setBackgroundRole(QPalette::Dark);
-        worldScroll->setAlignment(Qt::AlignCenter);
-        worldScroll->setWidget(worldImageLabel);
 
         QLabel* rectifiedImageSubtitle = new QLabel();
         rectifiedImageSubtitle->setText("Rectified image");
@@ -117,10 +104,8 @@ namespace ui
 
         imagesLayout->addWidget(projectedImageSubtitle, 0, 0);
         imagesLayout->addWidget(projectedScroll, 1, 0);
-		imagesLayout->addWidget(worldImageSubtitle, 0, 1);
-        imagesLayout->addWidget(worldScroll, 1, 1);
-        imagesLayout->addWidget(rectifiedImageSubtitle, 0, 2);
-        imagesLayout->addWidget(rectifiedScroll, 1, 2);
+        imagesLayout->addWidget(rectifiedImageSubtitle, 2, 0);
+        imagesLayout->addWidget(rectifiedScroll, 3, 0);
 
         QWidget *window = new QWidget();
         window->setLayout(imagesLayout);
@@ -138,8 +123,6 @@ namespace ui
     }
 
     void ImageRectificator::openProjected() { open(projectedImageLabel); }
-    
-    void ImageRectificator::openWorld() { open(worldImageLabel); }
     
     void ImageRectificator::open(QLabel* targetLabel)
     {
@@ -168,30 +151,31 @@ namespace ui
     void ImageRectificator::clearSelectedPix()
 	{
 		projectedImageLabel->clearSelectedPix();
-		worldImageLabel->clearSelectedPix();
 	}
     
     void ImageRectificator::rectifyAll()
 	{
-		rectify(false);
+		rectify(QSizeF(81.9f, 61.3f), 640, false);
 	}
 	
 	void ImageRectificator::rectifyPointOfInterest()
 	{
-		rectify(true);
+		rectify(QSizeF(81.9f, 61.3f), 640, true);
 	}
     
-    void ImageRectificator::rectify(bool pointOfInterestFlag)
+    void ImageRectificator::rectify(const QSizeF& POIRealSize, int desiredWidth, bool pointOfInterestFlag)
 	{			
-		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels ||
-			worldImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
+		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
 		{
 			QMessageBox::information(this, tr("Image Rectificator"),
 										tr("%1 pixels should be selected before rectification.").arg(m_maxSelectedPixels));
 			return;
 		}
 		
-		QPixmap rectifiedPixmap = RectificationController::rectify(projectedImageLabel, worldImageLabel, pointOfInterestFlag);
+		float aspectRatio = POIRealSize.width() / POIRealSize.height();
+		
+		QPixmap rectifiedPixmap = RectificationController::rectify(projectedImageLabel,
+			QSize(desiredWidth, desiredWidth / (float)aspectRatio), pointOfInterestFlag);
 		rectifiedImageLabel->setPixmap(rectifiedPixmap);
 		rectifiedImageLabel->adjustSize();
 	}
@@ -209,7 +193,6 @@ namespace ui
     void ImageRectificator::normalSize()
     {
         projectedImageLabel->adjustSize();
-		worldImageLabel->adjustSize();
         rectifiedImageLabel->adjustSize();
         scaleFactor = 1.0;
 		
@@ -220,7 +203,6 @@ namespace ui
     {
         bool fitToWindow = fitToWindowAct->isChecked();
         projectedScroll->setWidgetResizable(fitToWindow);
-		worldScroll->setWidgetResizable(fitToWindow);
 		rectifiedScroll->setWidgetResizable(fitToWindow);
         
 		if (!fitToWindow) {
@@ -238,9 +220,7 @@ namespace ui
             "<br><b>Usage</b>:"
             "<ul>"
             "<li>Open File menu, choose Open Projected Image to open the projected image.</li>"
-			"<li>Open File menu, choose Open World Image to open the world image.</li>"
             "<li>Click in 4 points of the projected image that should form a rectangle in the real world.</li>"
-			"<li>Click in the 4 points of the world image that represent the same rectangle marked in the projected image.</li>"
             "<li>Open Rectification menu, choose Rectify to transform the projected image.</li>"
 			"</ul>"
             "</p>"));
@@ -251,10 +231,6 @@ namespace ui
         openProjectedAct = new QAction(tr("&Open Projected Image..."), this);
         openProjectedAct->setShortcut(tr("Ctrl+O"));
         connect(openProjectedAct, SIGNAL(triggered()), this, SLOT(openProjected()));
-		
-		openWorldAct = new QAction(tr("&Open World Image..."), this);
-        openWorldAct->setShortcut(tr("Ctrl+I"));
-        connect(openWorldAct, SIGNAL(triggered()), this, SLOT(openWorld()));
 
 		rectifyPointOfInterestAct = new QAction(tr("&Rectify Projected Image (Point of Interest only)"), this);
 		rectifyPointOfInterestAct->setShortcut(tr("Ctrl+R"));
@@ -302,7 +278,6 @@ namespace ui
     {
         fileMenu = new QMenu(tr("&File"), this);
         fileMenu->addAction(openProjectedAct);
-		fileMenu->addAction(openWorldAct);
         fileMenu->addSeparator();
         fileMenu->addAction(exitAct);
 
@@ -342,10 +317,6 @@ namespace ui
         projectedImageLabel->scale(factor);
         adjustScrollBar(projectedScroll->horizontalScrollBar(), factor);
         adjustScrollBar(projectedScroll->verticalScrollBar(), factor);
-		
-		worldImageLabel->scale(factor);
-        adjustScrollBar(worldScroll->horizontalScrollBar(), factor);
-        adjustScrollBar(worldScroll->verticalScrollBar(), factor);
 
         if (rectifiedImageLabel->pixmap())
         {

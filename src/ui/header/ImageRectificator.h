@@ -60,7 +60,6 @@ namespace ui
 
     private slots:
         void openProjected();
-		void openWorld();
 		void clearSelectedPix();
 		void rectifyAll();
 		void rectifyPointOfInterest();
@@ -73,22 +72,19 @@ namespace ui
     private:
         void createActions();
         void createMenus();
-		void rectify(bool pointOfInterestOnly);
+		void rectify(const QSizeF& POIRealSize, int desiredWidth, bool pointOfInterestFlag);
         void updateActions();
 		void open(QLabel* targetLabel);
         void scaleImage(double factor);
         void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
         ClickableLabel *projectedImageLabel;
-		ClickableLabel *worldImageLabel;
         QLabel *rectifiedImageLabel;
         QScrollArea *projectedScroll;
-		QScrollArea *worldScroll;
         QScrollArea *rectifiedScroll;
         double scaleFactor;
         
         QAction *openProjectedAct;
-		QAction *openWorldAct;
 		QAction *rectifyAllAct;
 		QAction *rectifyPointOfInterestAct;
         QAction *exitAct;
