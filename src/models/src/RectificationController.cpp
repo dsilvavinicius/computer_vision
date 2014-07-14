@@ -24,12 +24,6 @@ namespace models
 		
 		vector<pair<VectorXd, VectorXd>> correlationPoints(numSelectedPixels);
 		
-		// Point of interest coordinates.
-		int positiveInf = 9999999;
-		int negativeInf = -1;
-		QPoint minPOICoords(positiveInf, positiveInf);
-		QPoint maxPOICoords(negativeInf, negativeInf);
-		
 		for (int i = 0; i < numSelectedPixels; ++i)
 		{
 			QPoint qProjectedPoint = (*selectedPixelsProj)[i]->getPos();
@@ -42,24 +36,6 @@ namespace models
 			
 			pair<VectorXd, VectorXd> correlationPair(projectedPoint, worldPoint);
 			correlationPoints[i] = correlationPair;
-			
-			// Update point of interest coordinates.
-			if (qWorldPoint.x() < minPOICoords.x())
-			{
-				minPOICoords.setX(qWorldPoint.x());
-			}
-			if (qWorldPoint.y() < minPOICoords.y())
-			{
-				minPOICoords.setY(qWorldPoint.y());
-			}
-			if (qWorldPoint.x() > maxPOICoords.x())
-			{
-				maxPOICoords.setX(qWorldPoint.x());
-			}
-			if (qWorldPoint.y() > maxPOICoords.y())
-			{
-				maxPOICoords.setY(qWorldPoint.y());
-			}
 		}
 		
 		// Second, define the projection to world transformation.
@@ -77,7 +53,7 @@ namespace models
 		
 		if (pointOfInterestFlag)
 		{
-			return selectPointOfInterest(rectifiedPixmap, minPOICoords, maxPOICoords, POISize);
+			return selectPointOfInterest(rectifiedPixmap, qProjToWorld, projectedImageLabel->pixmap()->size(), (*selectedPixelsProj)[0]->getPos(), POISize);
 		}
 		else
 		{
@@ -85,22 +61,12 @@ namespace models
 		}
 	}
 	
-	QPixmap RectificationController::selectPointOfInterest(const QPixmap& rectifiedImage, const QPoint& minPOICoords,
-														   const QPoint& maxPOICoords, const QSize& worldImageSize)
+	QPixmap RectificationController::selectPointOfInterest(const QPixmap& rectifiedImage, const QTransform& rectification, const QSize& originalImageSize,
+														   const QPoint& POIOrigin, const QSize& POISize)
 	{
-		QSize rectifiedImageSize = rectifiedImage.size();
-		
-		// Left-upper corner
-		QPoint POIOrigin(
-			((float)minPOICoords.x() / (float)worldImageSize.width()) * rectifiedImageSize.width(),
-			((float)minPOICoords.y() / (float)worldImageSize.height()) * rectifiedImageSize.height()
-		);
-		
-		QSize POISize(
-			((float)(maxPOICoords.x() - minPOICoords.x()) / (float)worldImageSize.width()) * rectifiedImageSize.width(),
-			((float)(maxPOICoords.y() - minPOICoords.y()) / (float)worldImageSize.height()) * rectifiedImageSize.height()
-		);
-		
-		return rectifiedImage.copy(POIOrigin.x(), POIOrigin.y(), POISize.width(), POISize.height());
+		// Get the true transformation used in Qt, since Qt automaticaly scales the image to bound all transformed pixels.
+		QTransform trueRectification = QPixmap::trueMatrix(rectification, originalImageSize.width(), originalImageSize.height());
+		QPoint rectifiedOrigin = trueRectification.map(POIOrigin);
+		return rectifiedImage.copy(rectifiedOrigin.x(), rectifiedOrigin.y(), POISize.width(), POISize.height());
 	}
 }
