@@ -137,14 +137,9 @@ namespace ui
             }
 
             targetLabel->setPixmap(pixMap);
-            scaleFactor = 1.0;
+			targetLabel->adjustSize();
 
-            fitToWindowAct->setEnabled(true);
             clearSelectedPixAct->setEnabled(true);
-            updateActions();
-
-            if (!fitToWindowAct->isChecked())
-                targetLabel->adjustSize();
         }
     }
     
@@ -180,39 +175,6 @@ namespace ui
 		rectifiedImageLabel->adjustSize();
 	}
 
-    void ImageRectificator::zoomIn()
-    {
-        scaleImage(1.25);
-    }
-
-    void ImageRectificator::zoomOut()
-    {
-        scaleImage(0.8);
-    }
-
-    void ImageRectificator::normalSize()
-    {
-        projectedImageLabel->adjustSize();
-        rectifiedImageLabel->adjustSize();
-        scaleFactor = 1.0;
-		
-		clearSelectedPix();
-    }
-
-    void ImageRectificator::fitToWindow()
-    {
-        bool fitToWindow = fitToWindowAct->isChecked();
-        projectedScroll->setWidgetResizable(fitToWindow);
-		rectifiedScroll->setWidgetResizable(fitToWindow);
-        
-		if (!fitToWindow) {
-            normalSize();
-        }
-        
-        updateActions();
-		clearSelectedPix();
-    }
-
     void ImageRectificator::about()
     {
         QMessageBox::about(this, tr("About Image Viewer"),
@@ -244,27 +206,6 @@ namespace ui
         exitAct->setShortcut(tr("Ctrl+Q"));
         connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-        zoomInAct = new QAction(tr("Zoom &In (25%)"), this);
-        zoomInAct->setShortcut(tr("Ctrl++"));
-        zoomInAct->setEnabled(false);
-        connect(zoomInAct, SIGNAL(triggered()), this, SLOT(zoomIn()));
-
-        zoomOutAct = new QAction(tr("Zoom &Out (25%)"), this);
-        zoomOutAct->setShortcut(tr("Ctrl+-"));
-        zoomOutAct->setEnabled(false);
-        connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(zoomOut()));
-
-        normalSizeAct = new QAction(tr("&Normal Size"), this);
-        normalSizeAct->setShortcut(tr("Ctrl+S"));
-        normalSizeAct->setEnabled(false);
-        connect(normalSizeAct, SIGNAL(triggered()), this, SLOT(normalSize()));
-
-        fitToWindowAct = new QAction(tr("&Fit to Window"), this);
-        fitToWindowAct->setEnabled(false);
-        fitToWindowAct->setCheckable(true);
-        fitToWindowAct->setShortcut(tr("Ctrl+F"));
-        connect(fitToWindowAct, SIGNAL(triggered()), this, SLOT(fitToWindow()));
-
         clearSelectedPixAct = new QAction(tr("Clear selected pixels"), this);
         clearSelectedPixAct->setShortcut(tr("Ctrl+P"));
         clearSelectedPixAct->setEnabled(false);
@@ -281,13 +222,6 @@ namespace ui
         fileMenu->addSeparator();
         fileMenu->addAction(exitAct);
 
-        viewMenu = new QMenu(tr("&View"), this);
-        viewMenu->addAction(zoomInAct);
-        viewMenu->addAction(zoomOutAct);
-        viewMenu->addAction(normalSizeAct);
-        viewMenu->addSeparator();
-        viewMenu->addAction(fitToWindowAct);
-
 		rectificationMenu = new QMenu(tr("&Rectification"), this);
 		rectificationMenu->addAction(clearSelectedPixAct);
 		rectificationMenu->addAction(rectifyAllAct);
@@ -297,37 +231,8 @@ namespace ui
         helpMenu->addAction(aboutAct);
 
         menuBar()->addMenu(fileMenu);
-        menuBar()->addMenu(viewMenu);
 		menuBar()->addMenu(rectificationMenu);
         menuBar()->addMenu(helpMenu);
-    }
-
-    void ImageRectificator::updateActions()
-    {
-        zoomInAct->setEnabled(!fitToWindowAct->isChecked());
-        zoomOutAct->setEnabled(!fitToWindowAct->isChecked());
-        normalSizeAct->setEnabled(!fitToWindowAct->isChecked());
-    }
-
-    void ImageRectificator::scaleImage(double factor)
-    {
-        Q_ASSERT(projectedImageLabel->pixmap());
-        scaleFactor *= factor;
-		
-        projectedImageLabel->scale(factor);
-        adjustScrollBar(projectedScroll->horizontalScrollBar(), factor);
-        adjustScrollBar(projectedScroll->verticalScrollBar(), factor);
-
-        if (rectifiedImageLabel->pixmap())
-        {
-            rectifiedImageLabel->resize(scaleFactor * rectifiedImageLabel->pixmap()->size());
-            adjustScrollBar(rectifiedScroll->horizontalScrollBar(), factor);
-            adjustScrollBar(rectifiedScroll->verticalScrollBar(), factor);
-        }
-
-        zoomInAct->setEnabled(scaleFactor < 3.0);
-        zoomOutAct->setEnabled(scaleFactor > 0.333);
-		clearSelectedPix();
     }
 
     void ImageRectificator::adjustScrollBar(QScrollBar *scrollBar, double factor)

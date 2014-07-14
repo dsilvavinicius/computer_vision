@@ -63,10 +63,6 @@ namespace ui
 		void clearSelectedPix();
 		void rectifyAll();
 		void rectifyPointOfInterest();
-        void zoomIn();
-        void zoomOut();
-        void normalSize();
-        void fitToWindow();
         void about();
 		
     private:
@@ -82,21 +78,15 @@ namespace ui
         QLabel *rectifiedImageLabel;
         QScrollArea *projectedScroll;
         QScrollArea *rectifiedScroll;
-        double scaleFactor;
         
         QAction *openProjectedAct;
 		QAction *rectifyAllAct;
 		QAction *rectifyPointOfInterestAct;
         QAction *exitAct;
-        QAction *zoomInAct;
-        QAction *zoomOutAct;
-        QAction *normalSizeAct;
-        QAction *fitToWindowAct;
         QAction *clearSelectedPixAct;
         QAction *aboutAct;
 
         QMenu *fileMenu;
-        QMenu *viewMenu;
 		QMenu *rectificationMenu;
         QMenu *helpMenu;
 		
