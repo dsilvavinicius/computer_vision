@@ -150,12 +150,14 @@ namespace ui
     
     void ImageRectificator::rectifyAll()
 	{
-		rectify(QSizeF(81.9f, 61.3f), 640, false);
+		rectify(QSizeF(81.9f, 61.3f), 640, false); //brahma
+		//rectify(QSizeF(18.f, 25.5f), 50, false); //book.
 	}
 	
 	void ImageRectificator::rectifyPointOfInterest()
 	{
-		rectify(QSizeF(81.9f, 61.3f), 640, true);
+		rectify(QSizeF(81.9f, 61.3f), 640, true); //brahma
+		//rectify(QSizeF(18.f, 25.5f), 50, true); //book.
 	}
     
     void ImageRectificator::rectify(const QSizeF& POIRealSize, int desiredWidth, bool pointOfInterestFlag)
