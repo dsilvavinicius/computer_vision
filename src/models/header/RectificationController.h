@@ -10,7 +10,16 @@ namespace models
 	class RectificationController
 	{
 	public:
+		//TODO: Change the name of this method to ToSimilarity().
+		/** Rectifies the image in a given ClickableLabel from projection space to similarity space. Uses its selected 
+		 * pixels, which should be an rectangle in the similarity space (point of interest - POI), the desired POI
+		 * size in pixels and a flag that indicates if the final image will show POI only. */
 		static QPixmap rectify(ClickableLabel* projectedImageLabel, const QSize& POISize, bool pointOfInterestFlag);
+		
+		/** Rectifies the image in a given ClickableLabel from projection space to affine space. The label
+		 should have 8 eight points selected, which should form two pairs of lines that should be parallel in
+		 affine space. */
+		static QPixmap toAffine(ClickableLabel* projectedImageLabel);
 	private:
 		RectificationController();
 		/** Resizes and translate the rectified image to show the point of interest.

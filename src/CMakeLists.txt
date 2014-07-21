@@ -59,8 +59,9 @@ add_executable (Computer_Vision
 	
 	${MODEL_DIR}/${HEADER_DIR}/RectificationController.h	${MODEL_DIR}/${CPP_DIR}/RectificationController.cpp
 	
-	${MATH_DIR}/${HEADER_DIR}/IPointMapper.h
+	${MATH_DIR}/${HEADER_DIR}/IPointMapper.h			${MATH_DIR}/${CPP_DIR}/IPointMapper.cpp
 	${MATH_DIR}/${HEADER_DIR}/ProjectionRectificator.h	${MATH_DIR}/${CPP_DIR}/ProjectionRectificator.cpp
+	${MATH_DIR}/${HEADER_DIR}/AffineRectificator.h		${MATH_DIR}/${CPP_DIR}/AffineRectificator.cpp
 	
 	${UTILS_DIR}/${HEADER_DIR}/CircularList.h
 	./main.cpp

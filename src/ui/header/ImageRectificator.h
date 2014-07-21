@@ -63,6 +63,7 @@ namespace ui
 		void clearSelectedPix();
 		void rectifyAll();
 		void rectifyPointOfInterest();
+		void rectifyAffine();
         void about();
 		
     private:
@@ -82,6 +83,7 @@ namespace ui
         QAction *openProjectedAct;
 		QAction *rectifyAllAct;
 		QAction *rectifyPointOfInterestAct;
+		QAction *rectifyAffineAct;
         QAction *exitAct;
         QAction *clearSelectedPixAct;
         QAction *aboutAct;

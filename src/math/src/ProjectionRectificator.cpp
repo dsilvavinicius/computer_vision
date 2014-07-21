@@ -40,13 +40,8 @@ namespace math
 								x[6], x[7], 1.;
 		cout << "Rectification transformation: " << endl << (*m_transformation) << endl << endl;
 		
-		sanityCheck(correlations, 0.01);
+		sanityCheck(correlations, 1.0e-1);
 		
-		return m_transformation;
-	}
-
-	shared_ptr<MatrixXd> ProjectionRectificator::getTransformation()
-	{
 		return m_transformation;
 	}
 	

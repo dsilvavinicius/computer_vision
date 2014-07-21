@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 #include "ProjectionRectificator.h"
+#include "AffineRectificator.h"
 #include "RectificationController.h"
 
 using namespace Eigen;
@@ -68,5 +69,48 @@ namespace models
 		QTransform trueRectification = QPixmap::trueMatrix(rectification, originalImageSize.width(), originalImageSize.height());
 		QPoint rectifiedOrigin = trueRectification.map(POIOrigin);
 		return rectifiedImage.copy(rectifiedOrigin.x(), rectifiedOrigin.y(), POISize.width(), POISize.height());
+	}
+	
+	QPixmap RectificationController::toAffine(ClickableLabel* projectedImageLabel)
+	{
+		CircularList<SelectedPixel*>* points = projectedImageLabel->getSelectedPixels();
+		if (points->size() != 8)
+		{
+			throw logic_error("8 points that define two pairs of parallel lines in affine space should be"
+				"selected in the label"
+			);
+		}
+		
+		vector<pair<VectorXd, VectorXd>> parallelPairs;
+		VectorXd linePair[2];
+			
+		for (int j = 0; j < 2; ++j) // Parallel line pair creation.
+		{
+			VectorXd line;
+			for (int i = 0; i < 2; ++i) // Line creation.
+			{
+				QPoint p0 = (*points)[j*4 + i*2]->getPos();
+				QPoint p1 = (*points)[j*4 + i*2 + 1]->getPos();
+				double m = (double)(p1.y() - p0.y()) / (double)(p1.x() - p0.x()); // Line slope.
+				double b = m * p0.x() + p0.y(); // Line y-intercept.
+				VectorXd line(3);
+				line << m, b, 1.;
+				linePair[i] = line;
+			}
+			parallelPairs.push_back( pair<VectorXd, VectorXd>(linePair[0], linePair[1]) );
+		}
+		
+		AffineRectificator rectificator = AffineRectificator(parallelPairs);
+		MatrixXd projToAffine = *rectificator.getTransformation();
+		
+		// Qt uses the transpose of the usual transformation representation.
+		QTransform qProjToAffine(
+			projToAffine(0, 0), projToAffine(1, 0), projToAffine(2, 0),
+			projToAffine(0, 1), projToAffine(1, 1), projToAffine(2, 1),
+			projToAffine(0, 2), projToAffine(1, 2), projToAffine(2, 2)
+		);
+		
+		return projectedImageLabel->pixmap()->transformed(qProjToAffine, Qt::SmoothTransformation);
+		
 	}
 }
