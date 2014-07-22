@@ -10,18 +10,15 @@ namespace math
 		buildTransformation(parallelPairs);
 	}
 
-	shared_ptr<MatrixXd> AffineRectificator::buildTransformation(vector<pair<VectorXd, VectorXd>> parallelPairs)
+	shared_ptr<MatrixXd> AffineRectificator::buildTransformation
+		(const vector<pair<VectorXd, VectorXd>>& parallelPairs)
 	{
 		// Conversion to Vector3d because of cross products.
-		VectorXd templ0 = parallelPairs[0].first;
-		VectorXd templ1 = parallelPairs[0].second;
-		VectorXd templ2 = parallelPairs[1].first;
-		VectorXd templ3 = parallelPairs[1].second;
-		
-		Vector3d l0(templ0[0], templ0[1], templ0[2]);
-		Vector3d l1(templ1[0], templ1[1], templ1[2]);
-		Vector3d l2(templ2[0], templ2[1], templ2[2]);
-		Vector3d l3(templ3[0], templ3[1], templ3[2]);
+		vector<pair<Vector3d, Vector3d>> parallelPairsVec3 = IPointMapper::toVector3d(parallelPairs);
+		Vector3d l0 = parallelPairsVec3[0].first;
+		Vector3d l1 = parallelPairsVec3[0].second;
+		Vector3d l2 = parallelPairsVec3[1].first;
+		Vector3d l3 = parallelPairsVec3[1].second;
 		
 		Vector3d intersection0 = l0.cross(l1);
 		intersection0 /= intersection0[2];

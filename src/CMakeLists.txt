@@ -24,6 +24,11 @@ set (CPP_DIR "src")
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Set include dirs.
+find_package (OpenGL REQUIRED)
+include_directories (${OpenGL_INCLUDE_DIRS})
+link_directories(${OpenGL_LIBRARY_DIRS})
+add_definitions(${OpenGL_DEFINITIONS})
+
 find_package (Qt5Core REQUIRED)
 find_package (Qt5Gui REQUIRED)
 find_package (Qt5Widgets REQUIRED)
@@ -62,12 +67,15 @@ add_executable (Computer_Vision
 	${MATH_DIR}/${HEADER_DIR}/IPointMapper.h			${MATH_DIR}/${CPP_DIR}/IPointMapper.cpp
 	${MATH_DIR}/${HEADER_DIR}/ProjectionRectificator.h	${MATH_DIR}/${CPP_DIR}/ProjectionRectificator.cpp
 	${MATH_DIR}/${HEADER_DIR}/AffineRectificator.h		${MATH_DIR}/${CPP_DIR}/AffineRectificator.cpp
+	${MATH_DIR}/${HEADER_DIR}/SimilarityFromAffineRectificator.h	${MATH_DIR}/${CPP_DIR}/SimilarityFromAffineRectificator.cpp
 	
 	${UTILS_DIR}/${HEADER_DIR}/CircularList.h
 	./main.cpp
 	./CMakeLists.txt)
 
 # Qt 5 modules.
-target_link_libraries (Computer_Vision Qt5::Core)
-target_link_libraries (Computer_Vision Qt5::Gui)
-target_link_libraries (Computer_Vision Qt5::Widgets)
+target_link_libraries (Computer_Vision
+	Qt5::Core
+	Qt5::Gui
+	Qt5::Widgets
+	${OPENGL_LIBRARIES})

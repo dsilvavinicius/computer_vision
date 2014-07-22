@@ -11,7 +11,7 @@ namespace math
 	{
 	public:
 		AffineRectificator(vector<pair<VectorXd, VectorXd>> parallelLines);
-		shared_ptr<MatrixXd> buildTransformation(vector<pair<VectorXd, VectorXd>> parallelLines);
+		shared_ptr<MatrixXd> buildTransformation(const vector<pair<VectorXd, VectorXd>>& parallelLines);
 	private:
 		void sanityCheck(vector<pair<VectorXd, VectorXd>> parallelLines, Vector3d lineAtInf, double error);
 	};

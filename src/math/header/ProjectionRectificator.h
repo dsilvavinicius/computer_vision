@@ -13,11 +13,11 @@ namespace math
 	class ProjectionRectificator : public IPointMapper
 	{
 	public:
-		ProjectionRectificator(vector<pair<VectorXd, VectorXd>> const correlations);
-		shared_ptr<MatrixXd> buildTransformation(vector<pair<VectorXd, VectorXd>> const correlations);
+		ProjectionRectificator(const vector<pair<VectorXd, VectorXd>>& correlations);
+		shared_ptr<MatrixXd> buildTransformation(const vector<pair<VectorXd, VectorXd>>& correlations);
 	private:
 		/** Checks if the built transformation makes sense. */
-		void sanityCheck(vector<pair<VectorXd, VectorXd>> const correlations, double error);
+		void sanityCheck(const vector<pair<VectorXd, VectorXd>>& correlations, double error);
 	};
 }
 

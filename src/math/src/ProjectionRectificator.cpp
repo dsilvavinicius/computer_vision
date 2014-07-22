@@ -3,12 +3,13 @@
 
 namespace math
 {
-	ProjectionRectificator::ProjectionRectificator(vector<pair<VectorXd, VectorXd>> const correlations)
+	ProjectionRectificator::ProjectionRectificator(const vector<pair<VectorXd, VectorXd>>& correlations)
 	{
 		buildTransformation(correlations);
 	}
 
-	shared_ptr<MatrixXd> ProjectionRectificator::buildTransformation(vector<pair<VectorXd, VectorXd>> const correlations)
+	shared_ptr<MatrixXd> ProjectionRectificator::buildTransformation
+		(const vector<pair<VectorXd, VectorXd>>& correlations)
 	{
 		MatrixXd A(8, 8);
 		VectorXd b(8);
@@ -45,7 +46,7 @@ namespace math
 		return m_transformation;
 	}
 	
-	void ProjectionRectificator::sanityCheck(vector<pair<VectorXd, VectorXd>> correlations, double error)
+	void ProjectionRectificator::sanityCheck(const vector<pair<VectorXd, VectorXd>> &correlations, double error)
 	{
 		cout << endl << endl << "STARTING TRANSFORMATION SANITY CHECK" << endl << endl;
 		for (int i = 0; i < correlations.size(); ++i)
