@@ -1,8 +1,10 @@
+#include <iostream>
 #include <Eigen/Dense>
 #include "ProjectionRectificator.h"
 #include "AffineRectificator.h"
 #include "RectificationController.h"
 
+using namespace std;
 using namespace Eigen;
 using namespace math;
 
@@ -89,12 +91,19 @@ namespace models
 			VectorXd line;
 			for (int i = 0; i < 2; ++i) // Line creation.
 			{
-				QPoint p0 = (*points)[j*4 + i*2]->getPos();
-				QPoint p1 = (*points)[j*4 + i*2 + 1]->getPos();
-				double m = (double)(p1.y() - p0.y()) / (double)(p1.x() - p0.x()); // Line slope.
-				double b = m * p0.x() + p0.y(); // Line y-intercept.
-				VectorXd line(3);
-				line << m, b, 1.;
+				QPoint qP0 = (*points)[j*4 + i*2]->getPos();
+				QPoint qP1 = (*points)[j*4 + i*2 + 1]->getPos();
+				Vector3d p0(3);
+				p0 << qP0.x(), qP0.y(), 1.;
+				Vector3d p1(3);
+				p1 << qP1.x(), qP1.y(), 1.;
+				Vector3d line = p0.cross(p1);
+				line /= line[2];
+				
+				cout << "Image size: " << endl << projectedImageLabel->size().width() << endl
+				<< projectedImageLabel->size().height() << endl << "P0: " << endl << p0 << endl
+				<< "P1: " << endl << p1 << endl << "Line: " << endl << line << endl << endl;
+				
 				linePair[i] = line;
 			}
 			parallelPairs.push_back( pair<VectorXd, VectorXd>(linePair[0], linePair[1]) );

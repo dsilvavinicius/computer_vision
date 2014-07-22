@@ -31,6 +31,9 @@ namespace math
 		Vector3d lineAtInf = intersection0.cross(intersection1);
 		lineAtInf /= lineAtInf[2];
 		
+		cout << "Intersection0: " << endl << intersection0 << endl << "Intersection1: " << endl << intersection1 << endl
+		<< "LineAtInf: " << lineAtInf << endl << endl; 
+		
 		m_transformation = make_shared<MatrixXd>(3, 3);
 		(*m_transformation) <<
 			1.f			, 0.f			, 0.f,
@@ -44,7 +47,7 @@ namespace math
 		return m_transformation;
 	}
 	
-	void AffineRectificator::sanityCheck(vector<pair<VectorXd, VectorXd>> parallelLines, Vector3d tempLineAtInf,
+	void AffineRectificator::sanityCheck(vector<pair<VectorXd, VectorXd>> parallelLines, Vector3d lineAtInf,
 										 double error)
 	{
 		cout << endl << endl << "STARTING TRANSFORMATION SANITY CHECK" << endl << endl;
@@ -63,7 +66,7 @@ namespace math
 			
 			stringstream ss;
 			ss << "Line " << endl << l0 << endl << "Mapped to " << endl << transformedL0 << endl <<
-			"Should be parallel to " << endl << l1 << endl << "Mapped to " << transformedL1 << endl <<
+			"Should be parallel to " << endl << l1 << endl << "Mapped to " << endl << transformedL1 << endl <<
 			transformedL0 << endl << "Dot = " << dot << endl << endl;
 			
 			cout << ss.str();
@@ -74,14 +77,18 @@ namespace math
 			}
 		}
 		
-		//VectorXd lineAtInf(3);
-		//lineAtInf << tempLineAtInf[0], tempLineAtInf[1], tempLineAtInf[2];
-		Vector3d affineInf(3);
-		affineInf << 0., 0., 1.f;
-		if (!affineInf.isApprox((*m_transformation) * tempLineAtInf), 1.0e-1)
+		/*Vector3d affineLineAtInf(3);
+		affineLineAtInf << 0., 0., 1.f;
+		Vector3d transformedLineAtinf = (*m_transformation) * lineAtInf;
+		transformedLineAtinf /= transformedLineAtinf[2];
+		
+		if (!affineLineAtInf.isApprox(transformedLineAtinf), 1.)
 		{
-			throw logic_error("Infinity line not mapped correctly.");
-		}
+			stringstream ss;
+			ss << "Line at infinity " << endl << lineAtInf << endl << "was not mapped correctly to " << endl
+			<< affineLineAtInf << endl << endl;
+			throw logic_error(ss.str());
+		}*/
 		
 		cout << "ENDING TRANSFORMATION SANITY CHECK" << endl << endl;
 	}
