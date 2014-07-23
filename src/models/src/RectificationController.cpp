@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include "ProjectionRectificator.h"
 #include "AffineRectificator.h"
+#include "SimilarityFromAffineRectificator.h"
 #include "RectificationController.h"
 
 using namespace std;
@@ -83,7 +84,51 @@ namespace models
 			);
 		}
 		
-		vector<pair<VectorXd, VectorXd>> parallelPairs;
+		vector<pair<VectorXd, VectorXd>> parallelPairs = pointsToLinesPairs(projectedImageLabel);
+		
+		AffineRectificator rectificator = AffineRectificator(parallelPairs);
+		MatrixXd projToAffine = *rectificator.getTransformation();
+		
+		// Qt uses the transpose of the usual transformation representation.
+		QTransform qProjToAffine(
+			projToAffine(0, 0), projToAffine(1, 0), projToAffine(2, 0),
+			projToAffine(0, 1), projToAffine(1, 1), projToAffine(2, 1),
+			projToAffine(0, 2), projToAffine(1, 2), projToAffine(2, 2)
+		);
+		
+		return projectedImageLabel->pixmap()->transformed(qProjToAffine, Qt::SmoothTransformation);
+	}
+	
+	QPixmap RectificationController::ToSimilarityFromAffine(ClickableLabel* affineImageLabel)
+	{
+		CircularList<SelectedPixel*>* points = affineImageLabel->getSelectedPixels();
+		if (points->size() != 8)
+		{
+			throw logic_error("8 points that define two pairs of orthogonal lines in similarity space should be"
+				"selected in the label"
+			);
+		}
+		
+		vector<pair<VectorXd, VectorXd>> orthoPairs = pointsToLinesPairs(affineImageLabel);
+		
+		SimilarityFromAffineRectificator rectificator = SimilarityFromAffineRectificator(orthoPairs);
+		MatrixXd AffineToSimilarity = *rectificator.getTransformation();
+		
+		// Qt uses the transpose of the usual transformation representation.
+		QTransform qAffineToSimilarity(
+			AffineToSimilarity(0, 0), AffineToSimilarity(1, 0), AffineToSimilarity(2, 0),
+			AffineToSimilarity(0, 1), AffineToSimilarity(1, 1), AffineToSimilarity(2, 1),
+			AffineToSimilarity(0, 2), AffineToSimilarity(1, 2), AffineToSimilarity(2, 2)
+		);
+		
+		return affineImageLabel->pixmap()->transformed(qAffineToSimilarity, Qt::SmoothTransformation);
+	}
+	
+	vector<pair<VectorXd, VectorXd>> RectificationController::pointsToLinesPairs(ClickableLabel* label)
+	{
+		CircularList<SelectedPixel*>* points = label->getSelectedPixels();
+		
+		vector<pair<VectorXd, VectorXd>> linePairs;
 		VectorXd linePair[2];
 			
 		for (int j = 0; j < 2; ++j) // Parallel line pair creation.
@@ -100,26 +145,15 @@ namespace models
 				Vector3d line = p0.cross(p1);
 				line /= line[2];
 				
-				cout << "Image size: " << endl << projectedImageLabel->size().width() << endl
-				<< projectedImageLabel->size().height() << endl << "P0: " << endl << p0 << endl
-				<< "P1: " << endl << p1 << endl << "Line: " << endl << line << endl << endl;
+				cout << "Image size: " << endl << label->size().width() << endl
+				<< label->size().height() << endl << endl << "P0: " << endl << p0 << endl << endl
+				<< "P1: " << endl << p1 << endl << endl << "Line: " << endl << line << endl << endl;
 				
 				linePair[i] = line;
 			}
-			parallelPairs.push_back( pair<VectorXd, VectorXd>(linePair[0], linePair[1]) );
+			linePairs.push_back( pair<VectorXd, VectorXd>(linePair[0], linePair[1]) );
 		}
 		
-		AffineRectificator rectificator = AffineRectificator(parallelPairs);
-		MatrixXd projToAffine = *rectificator.getTransformation();
-		
-		// Qt uses the transpose of the usual transformation representation.
-		QTransform qProjToAffine(
-			projToAffine(0, 0), projToAffine(1, 0), projToAffine(2, 0),
-			projToAffine(0, 1), projToAffine(1, 1), projToAffine(2, 1),
-			projToAffine(0, 2), projToAffine(1, 2), projToAffine(2, 2)
-		);
-		
-		return projectedImageLabel->pixmap()->transformed(qProjToAffine, Qt::SmoothTransformation);
-		
+		return linePairs;
 	}
 }

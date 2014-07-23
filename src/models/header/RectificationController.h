@@ -17,11 +17,15 @@ namespace models
 		static QPixmap rectify(ClickableLabel* projectedImageLabel, const QSize& POISize, bool pointOfInterestFlag);
 		
 		/** Rectifies the image in a given ClickableLabel from projection space to affine space. The label
-		 should have 8 eight points selected, which should form two pairs of lines that should be parallel in
-		 affine space. */
+		 should have 8 eight points selected, which should form two pairs of parallel lines in affine space. */
 		static QPixmap toAffine(ClickableLabel* projectedImageLabel);
+		
+		/** Rectifies the image in a given ClickableLabel from affine space to similarity space. The label
+		 should have 8 eight points selected, which should form two pairs orthogonal lines in similarity space. */
+		static QPixmap ToSimilarityFromAffine(ClickableLabel* affineImageLabel);
 	private:
 		RectificationController();
+		
 		/** Resizes and translate the rectified image to show the point of interest.
 		 * @param rectifiedImage is the rectified image, already resized to contain all transformed points.
 		 * @param rectification is the rectification transformation passed to Qt.
@@ -31,6 +35,11 @@ namespace models
 		 */
 		static QPixmap selectPointOfInterest(const QPixmap& rectifiedImage, const QTransform& rectification, const QSize& originalImageSize,
 											 const QPoint& POIOrigin, const QSize& POISize);
+		
+		/** Given a ClickableLabel with selected points {p_0, p_1, ... p_2k}, creates a vector l with k lines, such that
+		 * l_i passes through p_2i and p_(2i + 1). Then, creates a vector of line pairs lp, such that
+		 * lp_j = { l_2j, l_(2j + 1) }. */
+		static vector<pair<VectorXd, VectorXd>> pointsToLinesPairs(ClickableLabel* label);
 	};
 }
 	

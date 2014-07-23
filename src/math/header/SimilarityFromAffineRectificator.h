@@ -6,12 +6,12 @@
 namespace math
 {
 	/** Rectifies an image in affine space to similarity space. */
-	class SimilarityFromAffineRectificator : IPointMapper
+	class SimilarityFromAffineRectificator : public IPointMapper
 	{
 	public:
-		SimilarityFromAffineRectificator(vector<pair<VectorXd, VectorXd>> orthoLines);
-		shared_ptr<MatrixXd> buildTransformation(vector<pair<VectorXd, VectorXd>> orthoLines);
-		void sanityCheck(vector<pair<VectorXd, VectorXd>> orthoLines, double error);
+		SimilarityFromAffineRectificator(const vector<pair<VectorXd, VectorXd>>& orthoLines);
+		shared_ptr<MatrixXd> buildTransformation(const vector<pair<VectorXd, VectorXd>>& orthoLines);
+		void sanityCheck(const vector<pair<VectorXd, VectorXd>>& orthoLines, double error);
 	};
 }
 

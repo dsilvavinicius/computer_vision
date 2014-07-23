@@ -177,7 +177,7 @@ namespace ui
 		rectifiedImageLabel->adjustSize();
 	}
 	
-	void ImageRectificator::rectifyAffine()
+	void ImageRectificator::rectifyToAffine()
 	{
 		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
 		{
@@ -187,7 +187,20 @@ namespace ui
 		}
 		
 		QPixmap rectifiedPixmap = RectificationController::toAffine(projectedImageLabel);
-		cout << "Final image size: " << rectifiedPixmap.size().width() << ", " << rectifiedPixmap.size().width() << endl;
+		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
+		rectifiedImageLabel->adjustSize();
+	}
+	
+	void ImageRectificator::rectifyFromAffine()
+	{
+		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
+		{
+			QMessageBox::information(this, tr("Image Rectificator"),
+										tr("%1 pixels should be selected before rectification.").arg(m_maxSelectedPixels));
+			return;
+		}
+		
+		QPixmap rectifiedPixmap = RectificationController::ToSimilarityFromAffine(projectedImageLabel);
 		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
 		rectifiedImageLabel->adjustSize();
 	}
@@ -219,9 +232,13 @@ namespace ui
 		rectifyAllAct->setShortcut(tr("Ctrl+T"));
 		connect(rectifyAllAct, SIGNAL(triggered()), this, SLOT(rectifyAll()));
 		
-		rectifyAffineAct = new QAction(tr("&Rectify Projected Image to Affine"), this);
-		rectifyAffineAct->setShortcut(tr("Ctrl+A"));
-		connect(rectifyAffineAct, SIGNAL(triggered()), this, SLOT(rectifyAffine()));
+		rectifyToAffineAct = new QAction(tr("&Rectify Projected Image to Affine"), this);
+		rectifyToAffineAct->setShortcut(tr("Ctrl+A"));
+		connect(rectifyToAffineAct, SIGNAL(triggered()), this, SLOT(rectifyToAffine()));
+		
+		rectifyFromAffineAct = new QAction(tr("&Rectify Affine Image"), this);
+		rectifyFromAffineAct->setShortcut(tr("Ctrl+F"));
+		connect(rectifyFromAffineAct, SIGNAL(triggered()), this, SLOT(rectifyFromAffine()));
 		
         exitAct = new QAction(tr("E&xit"), this);
         exitAct->setShortcut(tr("Ctrl+Q"));
@@ -247,7 +264,8 @@ namespace ui
 		rectificationMenu->addAction(clearSelectedPixAct);
 		rectificationMenu->addAction(rectifyAllAct);
 		rectificationMenu->addAction(rectifyPointOfInterestAct);
-		rectificationMenu->addAction(rectifyAffineAct);
+		rectificationMenu->addAction(rectifyToAffineAct);
+		rectificationMenu->addAction(rectifyFromAffineAct);
 		
         helpMenu = new QMenu(tr("&Help"), this);
         helpMenu->addAction(aboutAct);

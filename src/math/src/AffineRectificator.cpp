@@ -53,10 +53,12 @@ namespace math
 			VectorXd l0 = parallelLines[i].first;
 			VectorXd l1 = parallelLines[i].second;
 			
-			VectorXd transformedL0 = (*m_transformation) * l0;
+			MatrixXd inverseTransposed = (*m_transformation).inverse().transpose();
+			
+			VectorXd transformedL0 = inverseTransposed * l0;
 			transformedL0 /= transformedL0[2];
 			
-			VectorXd transformedL1 = (*m_transformation) * l1;
+			VectorXd transformedL1 = inverseTransposed * l1;
 			transformedL1 /= transformedL1[2];
 			
 			double dot = transformedL0.dot(transformedL1) / (transformedL0.norm() * transformedL1.norm());
