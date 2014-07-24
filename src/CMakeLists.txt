@@ -68,6 +68,7 @@ add_executable (Computer_Vision
 	${MATH_DIR}/${HEADER_DIR}/AssistedSimilarityFromProjRectificator.h	${MATH_DIR}/${CPP_DIR}/AssistedSimilarityFromProjRectificator.cpp
 	${MATH_DIR}/${HEADER_DIR}/AffineFromProjRectificator.h				${MATH_DIR}/${CPP_DIR}/AffineFromProjRectificator.cpp
 	${MATH_DIR}/${HEADER_DIR}/SimilarityFromAffineRectificator.h		${MATH_DIR}/${CPP_DIR}/SimilarityFromAffineRectificator.cpp
+	${MATH_DIR}/${HEADER_DIR}/SimilarityFromProjRectificator.h			${MATH_DIR}/${CPP_DIR}/SimilarityFromProjRectificator.cpp
 	
 	${UTILS_DIR}/${HEADER_DIR}/CircularList.h
 	./main.cpp

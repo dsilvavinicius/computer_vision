@@ -3,6 +3,7 @@
 #include "AssistedSimilarityFromProjRectificator.h"
 #include "AffineFromProjRectificator.h"
 #include "SimilarityFromAffineRectificator.h"
+#include "SimilarityFromProjRectificator.h"
 #include "RectificationController.h"
 
 using namespace std;
@@ -105,13 +106,13 @@ namespace models
 		if (points->size() != 8)
 		{
 			throw logic_error("8 points that define two pairs of orthogonal lines in similarity space should be"
-				"selected in the label"
+				"selected in the label."
 			);
 		}
 		
 		vector<pair<VectorXd, VectorXd>> orthoPairs = pointsToLinesPairs(affineImageLabel);
 		
-		SimilarityFromAffineRectificator rectificator = SimilarityFromAffineRectificator(orthoPairs);
+		SimilarityFromAffineRectificator rectificator(orthoPairs);
 		MatrixXd AffineToSimilarity = *rectificator.getTransformation();
 		
 		// Qt uses the transpose of the usual transformation representation.
@@ -124,6 +125,31 @@ namespace models
 		return affineImageLabel->pixmap()->transformed(qAffineToSimilarity, Qt::SmoothTransformation);
 	}
 	
+	QPixmap RectificationController::toSimilarityFromProjection(ClickableLabel* projectionImageLabel)
+	{
+		CircularList<SelectedPixel*>* points = projectionImageLabel->getSelectedPixels();
+		if (points->size() != 20)
+		{
+			throw logic_error("20 points that define five pairs of orthogonal lines in similarity space should be"
+				"selected in the label."
+			);
+		}
+		
+		vector<pair<VectorXd, VectorXd>> orthoPairs = pointsToLinesPairs(projectionImageLabel);
+		SimilarityFromProjRectificator rectificator = SimilarityFromProjRectificator(orthoPairs);
+		
+		MatrixXd projToSimilarity = *rectificator.getTransformation();
+		
+		// Qt uses the transpose of the usual transformation representation.
+		QTransform qProjToSimilarity(
+			projToSimilarity(0, 0), projToSimilarity(1, 0), projToSimilarity(2, 0),
+			projToSimilarity(0, 1), projToSimilarity(1, 1), projToSimilarity(2, 1),
+			projToSimilarity(0, 2), projToSimilarity(1, 2), projToSimilarity(2, 2)
+		);
+		
+		return projectionImageLabel->pixmap()->transformed(qProjToSimilarity, Qt::SmoothTransformation);
+	}
+	
 	vector<pair<VectorXd, VectorXd>> RectificationController::pointsToLinesPairs(ClickableLabel* label)
 	{
 		CircularList<SelectedPixel*>* points = label->getSelectedPixels();
@@ -131,7 +157,7 @@ namespace models
 		vector<pair<VectorXd, VectorXd>> linePairs;
 		VectorXd linePair[2];
 			
-		for (int j = 0; j < 2; ++j) // Parallel line pair creation.
+		for (int j = 0; j < points->size() * 0.25f; ++j) // Parallel line pair creation.
 		{
 			VectorXd line;
 			for (int i = 0; i < 2; ++i) // Line creation.

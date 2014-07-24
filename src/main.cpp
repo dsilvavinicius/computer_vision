@@ -46,7 +46,7 @@ using namespace ui;
  int main(int argc, char *argv[])
  {
      QApplication app(argc, argv);
-     ImageRectificator imageRectificator(8);
+     ImageRectificator imageRectificator(20);
      imageRectificator.show();
      
      return app.exec();

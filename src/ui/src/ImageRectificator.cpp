@@ -140,6 +140,7 @@ namespace ui
 			targetLabel->adjustSize();
 
             clearSelectedPixAct->setEnabled(true);
+			clearSelectedPix();
         }
     }
     
@@ -162,7 +163,7 @@ namespace ui
     
     void ImageRectificator::rectify(const QSizeF& POIRealSize, int desiredWidth, bool pointOfInterestFlag)
 	{			
-		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
+		if (projectedImageLabel->getSelectedPixels()->size() < 4)
 		{
 			QMessageBox::information(this, tr("Image Rectificator"),
 										tr("%1 pixels should be selected before rectification.").arg(m_maxSelectedPixels));
@@ -179,7 +180,7 @@ namespace ui
 	
 	void ImageRectificator::rectifyToAffine()
 	{
-		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
+		if (projectedImageLabel->getSelectedPixels()->size() < 8)
 		{
 			QMessageBox::information(this, tr("Image Rectificator"),
 										tr("%1 pixels should be selected before rectification.").arg(m_maxSelectedPixels));
@@ -193,7 +194,7 @@ namespace ui
 	
 	void ImageRectificator::rectifyFromAffine()
 	{
-		if (projectedImageLabel->getSelectedPixels()->size() < m_maxSelectedPixels)
+		if (projectedImageLabel->getSelectedPixels()->size() < 8)
 		{
 			QMessageBox::information(this, tr("Image Rectificator"),
 										tr("%1 pixels should be selected before rectification.").arg(m_maxSelectedPixels));
@@ -201,6 +202,20 @@ namespace ui
 		}
 		
 		QPixmap rectifiedPixmap = RectificationController::toSimilarityFromAffine(projectedImageLabel);
+		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
+		rectifiedImageLabel->adjustSize();
+	}
+	
+	void ImageRectificator::rectifyFromProjToSim()
+	{
+		if (projectedImageLabel->getSelectedPixels()->size() < 20)
+		{
+			QMessageBox::information(this, tr("Image Rectificator"),
+										tr("%1 pixels should be selected before rectification.").arg(m_maxSelectedPixels));
+			return;
+		}
+		
+		QPixmap rectifiedPixmap = RectificationController::toSimilarityFromProjection(projectedImageLabel);
 		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
 		rectifiedImageLabel->adjustSize();
 	}
@@ -240,6 +255,10 @@ namespace ui
 		rectifyFromAffineAct->setShortcut(tr("Ctrl+F"));
 		connect(rectifyFromAffineAct, SIGNAL(triggered()), this, SLOT(rectifyFromAffine()));
 		
+		rectifyFromProjToSimAct = new QAction(tr("&Rectify to Similarity (orthogonal lines)"), this);
+		rectifyFromProjToSimAct->setShortcut(tr("Ctrl+S"));
+		connect(rectifyFromProjToSimAct, SIGNAL(triggered()), this, SLOT(rectifyFromProjToSim()));
+		
         exitAct = new QAction(tr("E&xit"), this);
         exitAct->setShortcut(tr("Ctrl+Q"));
         connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
@@ -266,6 +285,7 @@ namespace ui
 		rectificationMenu->addAction(rectifyPointOfInterestAct);
 		rectificationMenu->addAction(rectifyToAffineAct);
 		rectificationMenu->addAction(rectifyFromAffineAct);
+		rectificationMenu->addAction(rectifyFromProjToSimAct);
 		
         helpMenu = new QMenu(tr("&Help"), this);
         helpMenu->addAction(aboutAct);

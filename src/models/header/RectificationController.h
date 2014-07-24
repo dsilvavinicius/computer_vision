@@ -16,12 +16,16 @@ namespace models
 		static QPixmap assistedFromProjectionToSimilarity(ClickableLabel* projectedImageLabel, const QSize& POISize, bool pointOfInterestFlag);
 		
 		/** Rectifies the image in a given ClickableLabel from projection space to affine space. The label
-		 should have 8 eight points selected, which should form two pairs of parallel lines in affine space. */
+		 should have 8 points selected, which should form two pairs of parallel lines in affine space. */
 		static QPixmap toAffineFromProjection(ClickableLabel* projectedImageLabel);
 		
 		/** Rectifies the image in a given ClickableLabel from affine space to similarity space. The label
-		 should have 8 eight points selected, which should form two pairs orthogonal lines in similarity space. */
+		 should have 8 points selected, which should form two pairs of orthogonal lines in similarity space. */
 		static QPixmap toSimilarityFromAffine(ClickableLabel* affineImageLabel);
+		
+		/** Rectifies the image in a given ClickableLabel from projection space to similarity space. The label
+		 should have 20 points selected, which should form five pairs of orthogonal lines in similarity space. */
+		static QPixmap toSimilarityFromProjection(ClickableLabel* projectionImageLabel);
 	private:
 		RectificationController();
 		

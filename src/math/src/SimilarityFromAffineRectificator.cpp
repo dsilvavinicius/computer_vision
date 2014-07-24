@@ -26,12 +26,11 @@ namespace math
 		VectorXd b(2);
 		b << -l0[1] * l1[1], -l2[1] * l3[1];
 		
-		cout << "Linear system A matrix: " << endl << A << endl << endl;
-		
-		MatrixXd V = JacobiSVD<MatrixXd>(A, ComputeThinV).matrixV();
-		cout << "SVD V matrix " << endl << V << endl;
+		cout << "Linear system A matrix: " << endl << A << endl << endl << "b vector: " << b << endl << endl;
 		
 		VectorXd x = A.colPivHouseholderQr().solve(b);
+		cout << "Linear system x vector: " << endl << x << endl << endl;
+		
 		MatrixXd KKt(2, 2);
 		KKt <<
 			x[0], x[1],
