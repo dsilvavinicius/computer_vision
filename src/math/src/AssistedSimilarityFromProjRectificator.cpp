@@ -1,14 +1,14 @@
 #include <iostream>
-#include "math/header/ProjectionRectificator.h"
+#include "math/header/AssistedSimilarityFromProjRectificator.h"
 
 namespace math
 {
-	ProjectionRectificator::ProjectionRectificator(const vector<pair<VectorXd, VectorXd>>& correlations)
+	AssistedSimilarityFromProjRectificator::AssistedSimilarityFromProjRectificator(const vector<pair<VectorXd, VectorXd>>& correlations)
 	{
 		buildTransformation(correlations);
 	}
 
-	shared_ptr<MatrixXd> ProjectionRectificator::buildTransformation
+	shared_ptr<MatrixXd> AssistedSimilarityFromProjRectificator::buildTransformation
 		(const vector<pair<VectorXd, VectorXd>>& correlations)
 	{
 		MatrixXd A(8, 8);
@@ -46,7 +46,7 @@ namespace math
 		return m_transformation;
 	}
 	
-	void ProjectionRectificator::sanityCheck(const vector<pair<VectorXd, VectorXd>> &correlations, double error)
+	void AssistedSimilarityFromProjRectificator::sanityCheck(const vector<pair<VectorXd, VectorXd>> &correlations, double error)
 	{
 		cout << endl << endl << "STARTING TRANSFORMATION SANITY CHECK" << endl << endl;
 		for (int i = 0; i < correlations.size(); ++i)

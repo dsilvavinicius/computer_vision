@@ -1,16 +1,16 @@
-#include "AffineRectificator.h"
+#include "AffineFromProjRectificator.h"
 #include <iostream>
 
 using namespace std;
 
 namespace math
 {
-	AffineRectificator::AffineRectificator(vector<pair<VectorXd, VectorXd>> parallelPairs)
+	AffineFromProjRectificator::AffineFromProjRectificator(vector<pair<VectorXd, VectorXd>> parallelPairs)
 	{
 		buildTransformation(parallelPairs);
 	}
 
-	shared_ptr<MatrixXd> AffineRectificator::buildTransformation
+	shared_ptr<MatrixXd> AffineFromProjRectificator::buildTransformation
 		(const vector<pair<VectorXd, VectorXd>>& parallelPairs)
 	{
 		// Conversion to Vector3d because of cross products.
@@ -44,7 +44,7 @@ namespace math
 		return m_transformation;
 	}
 	
-	void AffineRectificator::sanityCheck(vector<pair<VectorXd, VectorXd>> parallelLines, Vector3d lineAtInf,
+	void AffineFromProjRectificator::sanityCheck(vector<pair<VectorXd, VectorXd>> parallelLines, Vector3d lineAtInf,
 										 double error)
 	{
 		cout << endl << endl << "STARTING TRANSFORMATION SANITY CHECK" << endl << endl;

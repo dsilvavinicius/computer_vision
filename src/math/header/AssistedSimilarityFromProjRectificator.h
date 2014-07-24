@@ -10,10 +10,10 @@ namespace math
 {
 	// TODO: Change the name of this class to SimilarityRectificator, since it is leading image from projection
 	// space to similarity space.
-	class ProjectionRectificator : public IPointMapper
+	class AssistedSimilarityFromProjRectificator : public IPointMapper
 	{
 	public:
-		ProjectionRectificator(const vector<pair<VectorXd, VectorXd>>& correlations);
+		AssistedSimilarityFromProjRectificator(const vector<pair<VectorXd, VectorXd>>& correlations);
 		shared_ptr<MatrixXd> buildTransformation(const vector<pair<VectorXd, VectorXd>>& correlations);
 	private:
 		/** Checks if the built transformation makes sense. */

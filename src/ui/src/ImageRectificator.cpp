@@ -57,7 +57,7 @@
 
 #include "ImageRectificator.h"
 #include "ClickableLabel.h"
-#include "ProjectionRectificator.h"
+#include "AssistedSimilarityFromProjRectificator.h"
 #include "RectificationController.h"
 
 using namespace std;
@@ -171,7 +171,7 @@ namespace ui
 		
 		float aspectRatio = POIRealSize.width() / POIRealSize.height();
 		
-		QPixmap rectifiedPixmap = RectificationController::rectify(projectedImageLabel,
+		QPixmap rectifiedPixmap = RectificationController::assistedFromProjectionToSimilarity(projectedImageLabel,
 			QSize(desiredWidth, desiredWidth / (float)aspectRatio), pointOfInterestFlag);
 		rectifiedImageLabel->setPixmap(rectifiedPixmap);
 		rectifiedImageLabel->adjustSize();
@@ -186,7 +186,7 @@ namespace ui
 			return;
 		}
 		
-		QPixmap rectifiedPixmap = RectificationController::toAffine(projectedImageLabel);
+		QPixmap rectifiedPixmap = RectificationController::toAffineFromProjection(projectedImageLabel);
 		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
 		rectifiedImageLabel->adjustSize();
 	}
@@ -200,7 +200,7 @@ namespace ui
 			return;
 		}
 		
-		QPixmap rectifiedPixmap = RectificationController::ToSimilarityFromAffine(projectedImageLabel);
+		QPixmap rectifiedPixmap = RectificationController::toSimilarityFromAffine(projectedImageLabel);
 		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
 		rectifiedImageLabel->adjustSize();
 	}

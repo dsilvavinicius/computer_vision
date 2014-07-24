@@ -1,7 +1,7 @@
 #include <iostream>
 #include <Eigen/Dense>
-#include "ProjectionRectificator.h"
-#include "AffineRectificator.h"
+#include "AssistedSimilarityFromProjRectificator.h"
+#include "AffineFromProjRectificator.h"
 #include "SimilarityFromAffineRectificator.h"
 #include "RectificationController.h"
 
@@ -13,7 +13,7 @@ namespace models
 {
 	RectificationController::RectificationController() {}
 
-	QPixmap RectificationController::rectify(ClickableLabel* projectedImageLabel, const QSize& POISize,
+	QPixmap RectificationController::assistedFromProjectionToSimilarity(ClickableLabel* projectedImageLabel, const QSize& POISize,
 											 bool pointOfInterestFlag)
 	{	
 		// First, create pairs of point correlations between projection and world space.
@@ -43,7 +43,7 @@ namespace models
 		}
 		
 		// Second, define the projection to world transformation.
-		ProjectionRectificator rectificator = ProjectionRectificator(correlationPoints);
+		AssistedSimilarityFromProjRectificator rectificator(correlationPoints);
 		MatrixXd projToWorld = *rectificator.getTransformation();
 		
 		// Qt uses the transpose of the usual transformation representation.
@@ -74,7 +74,7 @@ namespace models
 		return rectifiedImage.copy(rectifiedOrigin.x(), rectifiedOrigin.y(), POISize.width(), POISize.height());
 	}
 	
-	QPixmap RectificationController::toAffine(ClickableLabel* projectedImageLabel)
+	QPixmap RectificationController::toAffineFromProjection(ClickableLabel* projectedImageLabel)
 	{
 		CircularList<SelectedPixel*>* points = projectedImageLabel->getSelectedPixels();
 		if (points->size() != 8)
@@ -86,7 +86,7 @@ namespace models
 		
 		vector<pair<VectorXd, VectorXd>> parallelPairs = pointsToLinesPairs(projectedImageLabel);
 		
-		AffineRectificator rectificator = AffineRectificator(parallelPairs);
+		AffineFromProjRectificator rectificator(parallelPairs);
 		MatrixXd projToAffine = *rectificator.getTransformation();
 		
 		// Qt uses the transpose of the usual transformation representation.
@@ -99,7 +99,7 @@ namespace models
 		return projectedImageLabel->pixmap()->transformed(qProjToAffine, Qt::SmoothTransformation);
 	}
 	
-	QPixmap RectificationController::ToSimilarityFromAffine(ClickableLabel* affineImageLabel)
+	QPixmap RectificationController::toSimilarityFromAffine(ClickableLabel* affineImageLabel)
 	{
 		CircularList<SelectedPixel*>* points = affineImageLabel->getSelectedPixels();
 		if (points->size() != 8)

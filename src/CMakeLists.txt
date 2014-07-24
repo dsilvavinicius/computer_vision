@@ -64,10 +64,10 @@ add_executable (Computer_Vision
 	
 	${MODEL_DIR}/${HEADER_DIR}/RectificationController.h	${MODEL_DIR}/${CPP_DIR}/RectificationController.cpp
 	
-	${MATH_DIR}/${HEADER_DIR}/IPointMapper.h			${MATH_DIR}/${CPP_DIR}/IPointMapper.cpp
-	${MATH_DIR}/${HEADER_DIR}/ProjectionRectificator.h	${MATH_DIR}/${CPP_DIR}/ProjectionRectificator.cpp
-	${MATH_DIR}/${HEADER_DIR}/AffineRectificator.h		${MATH_DIR}/${CPP_DIR}/AffineRectificator.cpp
-	${MATH_DIR}/${HEADER_DIR}/SimilarityFromAffineRectificator.h	${MATH_DIR}/${CPP_DIR}/SimilarityFromAffineRectificator.cpp
+	${MATH_DIR}/${HEADER_DIR}/IPointMapper.h							${MATH_DIR}/${CPP_DIR}/IPointMapper.cpp
+	${MATH_DIR}/${HEADER_DIR}/AssistedSimilarityFromProjRectificator.h	${MATH_DIR}/${CPP_DIR}/AssistedSimilarityFromProjRectificator.cpp
+	${MATH_DIR}/${HEADER_DIR}/AffineFromProjRectificator.h				${MATH_DIR}/${CPP_DIR}/AffineFromProjRectificator.cpp
+	${MATH_DIR}/${HEADER_DIR}/SimilarityFromAffineRectificator.h		${MATH_DIR}/${CPP_DIR}/SimilarityFromAffineRectificator.cpp
 	
 	${UTILS_DIR}/${HEADER_DIR}/CircularList.h
 	./main.cpp

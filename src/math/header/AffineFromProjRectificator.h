@@ -7,10 +7,10 @@ namespace math
 {
 	/** Builds the affine rectification transformation, given two pairs of lines in projection space that
 	 * should be parallel in affine space. */
-	class AffineRectificator : public IPointMapper
+	class AffineFromProjRectificator : public IPointMapper
 	{
 	public:
-		AffineRectificator(vector<pair<VectorXd, VectorXd>> parallelLines);
+		AffineFromProjRectificator(vector<pair<VectorXd, VectorXd>> parallelLines);
 		shared_ptr<MatrixXd> buildTransformation(const vector<pair<VectorXd, VectorXd>>& parallelLines);
 	private:
 		void sanityCheck(vector<pair<VectorXd, VectorXd>> parallelLines, Vector3d lineAtInf, double error);
