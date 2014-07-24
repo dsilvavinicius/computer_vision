@@ -50,7 +50,7 @@ namespace math
 		m_transformation = make_shared<MatrixXd>(affineTransf.inverse());
 		cout << "Rectification transformation: " << endl << (*m_transformation) << endl << endl;
 		
-		sanityCheck(orthoLines, 1.0e-1);
+		sanityCheck(orthoLines, 2.0e-1);
 		
 		return m_transformation;
 	}
@@ -58,7 +58,7 @@ namespace math
 	void SimilarityFromAffineRectificator::sanityCheck(const vector<pair<VectorXd, VectorXd>>& orthoLines, double error)
 	{
 		cout << endl << endl << "STARTING TRANSFORMATION SANITY CHECK" << endl << endl;
-		/*for (pair<VectorXd, VectorXd> orthoLine : orthoLines)
+		for (pair<VectorXd, VectorXd> orthoLine : orthoLines)
 		{
 			MatrixXd inverseTransposed = m_transformation->inverse().transpose();
 			
@@ -70,7 +70,12 @@ namespace math
 			VectorXd transformedL1 = inverseTransposed * l1;
 			transformedL1 /= transformedL1[2];
 			
-			double dot = transformedL0.dot(transformedL1) / (transformedL0.norm() * transformedL1.norm());
+			VectorXd l0Vector(2);
+			l0Vector << transformedL0[0], transformedL0[1];
+			VectorXd l1Vector(2);
+			l1Vector << transformedL1[0], transformedL1[1];
+			
+			double dot = l0Vector.dot(l1Vector) / (l0Vector.norm() * l1Vector.norm());
 			
 			stringstream ss;
 			ss << "Line " << endl << l0 << endl << "Mapped to " << endl << transformedL0 << endl <<
@@ -82,7 +87,7 @@ namespace math
 			{
 				throw logic_error(ss.str());
 			}
-		}*/
+		}
 		cout << "ENDING TRANSFORMATION SANITY CHECK" << endl << endl;
 	}
 }

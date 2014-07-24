@@ -76,18 +76,23 @@ namespace math
 			}
 		}
 		
-		/*Vector3d affineLineAtInf(3);
+		MatrixXd inverseTransposed = m_transformation->inverse().transpose();
+		Vector3d affineLineAtInf(3);
 		affineLineAtInf << 0., 0., 1.f;
-		Vector3d transformedLineAtinf = (*m_transformation) * lineAtInf;
+		
+		Vector3d transformedLineAtinf = inverseTransposed * lineAtInf;
 		transformedLineAtinf /= transformedLineAtinf[2];
 		
-		if (!affineLineAtInf.isApprox(transformedLineAtinf), 1.)
+		if (abs(affineLineAtInf[0] - transformedLineAtinf[0]) > error ||
+			abs(affineLineAtInf[1] - transformedLineAtinf[1]) > error ||
+			abs(affineLineAtInf[2] - transformedLineAtinf[2]) > error
+		)
 		{
 			stringstream ss;
 			ss << "Line at infinity " << endl << lineAtInf << endl << "was not mapped correctly to " << endl
 			<< affineLineAtInf << endl << endl;
 			throw logic_error(ss.str());
-		}*/
+		}
 		
 		cout << "ENDING TRANSFORMATION SANITY CHECK" << endl << endl;
 	}
