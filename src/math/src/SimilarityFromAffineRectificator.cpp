@@ -18,17 +18,20 @@ namespace math
 		Vector3d l2 = orthoLines[1].first;
 		Vector3d l3 = orthoLines[1].second;
 		
-		MatrixXd A(2, 3);
+		MatrixXd A(2, 2);
 		A <<
-			l0[0] * l1[0], l0[0] * l1[1] + l0[1] * l1[0], l0[1] * l1[1],
-			l2[0] * l3[0], l2[0] * l3[1] + l2[1] * l3[0], l2[1] * l3[1];
-			
+			l0[0] * l1[0], l0[0] * l1[1] + 	l0[1] * l1[0],
+			l2[0] * l3[0], l2[0] * l3[1] + l2[1] * l3[0];
+		
+		VectorXd b(2);
+		b << -l0[1] * l1[1], -l2[1] * l3[1];
+		
 		cout << "Linear system A matrix: " << endl << A << endl << endl;
 		
 		MatrixXd V = JacobiSVD<MatrixXd>(A, ComputeThinV).matrixV();
 		cout << "SVD V matrix " << endl << V << endl;
 		
-		VectorXd x = V.col(1);
+		VectorXd x = A.colPivHouseholderQr().solve(b);
 		MatrixXd KKt(2, 2);
 		KKt <<
 			x[0], x[1],
