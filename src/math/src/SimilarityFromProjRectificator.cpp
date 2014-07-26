@@ -55,7 +55,7 @@ namespace math
 		m_transformation = make_shared<MatrixXd>(H.inverse());
 		cout << "Rectification transformation: " << endl << (*m_transformation) << endl << endl;
 		
-		sanityCheck(orthoLines, 3.0e-1);
+		//sanityCheck(orthoLines, 3.0e-1);
 		
 		return m_transformation;
 	}

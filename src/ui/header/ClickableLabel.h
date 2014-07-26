@@ -29,6 +29,7 @@ namespace ui
 		
 		CircularList<SelectedPixel*>* m_selectedPix;
 		QPixmap* m_selectionPixmap;
+		//CircularList<pair<QPoint, QPoint>>* m_selectedLines;
 	};
 }
 

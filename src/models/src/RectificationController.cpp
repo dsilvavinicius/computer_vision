@@ -1,5 +1,6 @@
 #include <iostream>
 #include <Eigen/Dense>
+#include <cmath>
 #include "AssistedSimilarityFromProjRectificator.h"
 #include "AffineFromProjRectificator.h"
 #include "SimilarityFromAffineRectificator.h"
