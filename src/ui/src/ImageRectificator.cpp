@@ -188,7 +188,7 @@ namespace ui
 		}
 		
 		QPixmap rectifiedPixmap = RectificationController::toAffineFromProjection(projectedImageLabel);
-		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
+		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaledToWidth(640));
 		rectifiedImageLabel->adjustSize();
 	}
 	
@@ -202,7 +202,7 @@ namespace ui
 		}
 		
 		QPixmap rectifiedPixmap = RectificationController::toSimilarityFromAffine(projectedImageLabel);
-		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
+		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaledToWidth(640));
 		rectifiedImageLabel->adjustSize();
 	}
 	
@@ -216,7 +216,7 @@ namespace ui
 		}
 		
 		QPixmap rectifiedPixmap = RectificationController::toSimilarityFromProjection(projectedImageLabel);
-		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaled(640, 480));
+		rectifiedImageLabel->setPixmap(rectifiedPixmap.scaledToWidth(640));
 		rectifiedImageLabel->adjustSize();
 	}
 
