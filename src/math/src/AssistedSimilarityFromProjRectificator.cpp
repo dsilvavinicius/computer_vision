@@ -41,7 +41,7 @@ namespace math
 								x[6], x[7], 1.;
 		cout << "Rectification transformation: " << endl << (*m_transformation) << endl << endl;
 		
-		sanityCheck(correlations, 1.0e-1);
+		//sanityCheck(correlations, 1.0e-1);
 		
 		return m_transformation;
 	}
