@@ -3,7 +3,7 @@
 # Path: ./
 ##############################
 
-cmake_minimum_required (VERSION 2.8.12.2)
+cmake_minimum_required (VERSION 2.8.11.2)
 project (Computer_Vision)
 
 # Find includes in corresponding build directories

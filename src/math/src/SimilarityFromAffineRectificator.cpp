@@ -49,7 +49,7 @@ namespace math
 		m_transformation = make_shared<MatrixXd>(affineTransf.inverse());
 		cout << "Rectification transformation: " << endl << (*m_transformation) << endl << endl;
 		
-		sanityCheck(orthoLines, 2.0e-1);
+		//sanityCheck(orthoLines, 2.0e-1);
 		
 		return m_transformation;
 	}

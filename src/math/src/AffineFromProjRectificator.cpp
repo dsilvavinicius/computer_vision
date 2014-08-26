@@ -39,7 +39,7 @@ namespace math
 		
 		cout << "Built transformation: " << endl << (*m_transformation) << endl << endl;
 			
-		sanityCheck(parallelPairs, lineAtInf, 1.0e-1);	
+		//sanityCheck(parallelPairs, lineAtInf, 1.0e-1);	
 		
 		return m_transformation;
 	}
