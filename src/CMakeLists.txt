@@ -60,6 +60,8 @@ include_directories (${Qt5Core_INCLUDE_DIRS}
 	${HEADER_DIR}/${UTILS_DIR}/
 )
 
+find_package (OpenCV REQUIRED)
+
 create_source_groups (UI_DIR MODEL_DIR MATH_DIR UTILS_DIR)
 
 add_library(Computer_Vision_Lib
@@ -77,6 +79,7 @@ add_library(Computer_Vision_Lib
 	
 	${HEADER_DIR}/${UTILS_DIR}/CircularList.h
 )
+target_link_libraries (Computer_Vision_Lib ${OpenCV_LIBS})
 
 add_subdirectory(test/)
 
