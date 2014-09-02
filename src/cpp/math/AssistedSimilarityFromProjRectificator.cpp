@@ -1,5 +1,5 @@
 #include <iostream>
-#include "math/header/AssistedSimilarityFromProjRectificator.h"
+#include "AssistedSimilarityFromProjRectificator.h"
 
 namespace math
 {
