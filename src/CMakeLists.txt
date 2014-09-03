@@ -70,6 +70,7 @@ add_library(Computer_Vision_Lib
 	${HEADER_DIR}/${UI_DIR}/SelectedPixel.h		${CPP_DIR}/${UI_DIR}/SelectedPixel.cpp
 	
 	${HEADER_DIR}/${MODEL_DIR}/RectificationController.h	${CPP_DIR}/${MODEL_DIR}/RectificationController.cpp
+	${HEADER_DIR}/${MODEL_DIR}/PanoramaController.h			${CPP_DIR}/${MODEL_DIR}/PanoramaController.cpp
 	
 	${HEADER_DIR}/${MATH_DIR}/IPointMapper.h							${CPP_DIR}/${MATH_DIR}/IPointMapper.cpp
 	${HEADER_DIR}/${MATH_DIR}/AssistedSimilarityFromProjRectificator.h	${CPP_DIR}/${MATH_DIR}/AssistedSimilarityFromProjRectificator.cpp
@@ -79,19 +80,19 @@ add_library(Computer_Vision_Lib
 	
 	${HEADER_DIR}/${UTILS_DIR}/CircularList.h
 )
-target_link_libraries (Computer_Vision_Lib ${OpenCV_LIBS})
-
+target_link_libraries (Computer_Vision_Lib
+	Qt5::Core
+	Qt5::Gui
+	Qt5::Widgets
+	${OpenCV_LIBS}
+	${OPENGL_LIBRARIES}
+)
 add_subdirectory(test/)
 
 # Add the executable
 add_executable (Computer_Vision	
 	./main.cpp
 )
-
-# Qt 5 modules.
 target_link_libraries (Computer_Vision
 	Computer_Vision_Lib
-	Qt5::Core
-	Qt5::Gui
-	Qt5::Widgets
-	${OPENGL_LIBRARIES})
+)

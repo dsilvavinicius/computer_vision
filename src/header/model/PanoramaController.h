@@ -2,8 +2,10 @@
 
 #include <QPixmap>
 #include <vector>
+#include <opencv2/core/core.hpp>
 
 using namespace std;
+using namespace cv;
 
 namespace model
 {
@@ -16,12 +18,14 @@ namespace model
 		 * @param orderIndices are the indices of the images in images. The order of the elements in orderIndices indicates the order in which
 		 * the map will be done.
 		 */
-		static QPixmap computePanorama(QPixmap* centerImg, vector< QPixmap* >& images, vector< int >& orderIndices);
+		static QPixmap computePanorama(QPixmap& centerImg, vector< QPixmap& >& images, vector< int >& orderIndices);
 		
 		/** Maps currentImg to the panorama space, also putting the first in the later. */
-		static void map(QPixmap* panorama, QPixmap* centerImg, QPixmap* currentImg);
+		static void map(QPixmap& panorama, QPixmap& currentImg);
 	private:
 		PanoramaController();
+		static cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true );
+		static cv::Mat QPixmapToCvMat( const QPixmap &inPixmap, bool inCloneImageData = true );
 	};
 }
 
