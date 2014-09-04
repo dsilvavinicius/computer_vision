@@ -3,9 +3,14 @@
 #include <QPixmap>
 #include <vector>
 #include <opencv2/core/core.hpp>
+#include "Dlt.h"
+
+namespace cv {
+struct DMatch;}
 
 using namespace std;
 using namespace cv;
+using namespace math;
 
 namespace model
 {
@@ -19,6 +24,9 @@ namespace model
 		 * the map will be done.
 		 */
 		static QPixmap computePanorama(QPixmap& centerImg, vector< QPixmap& >& images, vector< int >& orderIndices);
+		
+		/** Computes the correspondences of img0 and img1. */
+		static vector< Correspondence > match(QPixmap& img0, QPixmap& img1);
 		
 		/** Maps currentImg to the panorama space, also putting the first in the later. */
 		static void map(QPixmap& panorama, QPixmap& currentImg);

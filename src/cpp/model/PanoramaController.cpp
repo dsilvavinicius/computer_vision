@@ -8,6 +8,7 @@
 
 using namespace cv;
 using namespace std;
+using namespace math;
 
 namespace model
 {
@@ -66,51 +67,57 @@ namespace model
    {
       return QImageToCvMat( inPixmap.toImage(), inCloneImageData );
    }
-	
-	void PanoramaController::map( QPixmap& qtPanorama, QPixmap& qtCurrentImg )
+
+	vector< Correspondence > PanoramaController::match(QPixmap& qtImg0, QPixmap& qtImg1)
 	{
-		if( !qtPanorama || !qtCurrentImg )
+		if( !qtImg0 || !qtImg1 )
 		{
 			throw logic_error("Cannot map from or to a null image.");
 		}
-		QSize imgSize = qtPanorama.size();
+		QSize imgSize = qtImg0.size();
 		
-		Mat panoramaImg = QPixmapToCvMat( qtPanorama );
-		Mat currentImg = QPixmapToCvMat( qtCurrentImg );
+		Mat img0 = QPixmapToCvMat( qtImg0 );
+		Mat img1 = QPixmapToCvMat( qtImg1 );
 		
-		CV_Assert(!panoramaImg.empty() && !currentImg.empty());
+		CV_Assert(!img0.empty() && !img1.empty());
 		
 		ORB detector;
-		vector< KeyPoint > panoramaKeyPoints, currentKeyPoints;
-		detector.detect( panoramaImg, panoramaKeyPoints );
-		detector.detect( currentImg, currentKeyPoints );
-
-		//
-		/*Mat imgPanoramaPoints; Mat imgCurrentPoints;
-		drawKeypoints( panoramaImg, panoramaKeyPoints, imgPanoramaPoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-		drawKeypoints( currentImg, currentKeyPoints, imgCurrentPoints, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-
-		//-- Show detected (drawn) keypoints
-		imshow("Keypoints 1", imgPanoramaPoints );
-		imshow("Keypoints 2", imgCurrentPoints );
-
-		waitKey(0);*/
-		//
+		vector< KeyPoint > img0KeyPoints, img1KeyPoints;
+		detector.detect( img0, img0KeyPoints );
+		detector.detect( img1, img1KeyPoints );
 		
 		OrbDescriptorExtractor extractor;
-		Mat panoramaDescriptors, currentDescriptors;
-		extractor.compute( panoramaImg, panoramaKeyPoints, panoramaDescriptors );
-		extractor.compute( currentImg, currentKeyPoints, currentDescriptors );
+		Mat img0Descriptors, img1Descriptors;
+		extractor.compute( img0, img0KeyPoints, img0Descriptors );
+		extractor.compute( img1, img1KeyPoints, img1Descriptors );
 
 		BFMatcher matcher( NORM_HAMMING );
 		std::vector< DMatch > matches;
-		matcher.match( panoramaDescriptors, currentDescriptors, matches );
+		matcher.match( img0Descriptors, img1Descriptors, matches );
 		
 		// drawing the results
 		namedWindow( "matches", 1 );
 		Mat imgMatches;
-		drawMatches( panoramaImg, panoramaKeyPoints, currentImg, currentKeyPoints, matches, imgMatches );
+		drawMatches( img0, img0KeyPoints, img1, img1KeyPoints, matches, imgMatches );
 		imshow( "matches", imgMatches );
 		waitKey( 0 );
+		
+		vector< Correspondence > correspondences;
+		for( vector< DMatch >::iterator iter = matches.begin(); iter != matches.end(); ++iter )
+		{
+			Point2f cvP0 = img0KeyPoints[iter->queryIdx].pt;
+			Point2f cvP1 = img1KeyPoints[iter->trainIdx].pt;
+			VectorXd p0(3); p0[0] = cvP0.x; p0[1] = cvP0.y; p0[2] = 1;
+			VectorXd p1(3); p1[0] = cvP1.x; p1[1] = cvP1.y; p1[2] = 1;
+			
+			correspondences.push_back( Correspondence( p0, p1 ) );
+		}
+		
+		return correspondences;
+	}
+   
+	void PanoramaController::map( QPixmap& qtPanorama, QPixmap& qtCurrentImg )
+	{
+		match(qtPanorama, qtCurrentImg);
 	}
 }
