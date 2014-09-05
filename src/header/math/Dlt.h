@@ -1,6 +1,7 @@
 #ifndef DLT_H
 #define DLT_H
 
+#include <memory>
 #include <utility>
 #include <Eigen/Dense>
 
@@ -18,10 +19,28 @@ namespace math
 	class Dlt
 	{
 	public:
-		/** Computes the results of the generated system. */
-		static VectorXd compute( vector< Correspondence > correlations );
+		/** Inits this Dlt, given the sample of correspondences. */
+		Dlt( vector< Correspondence > sample );
+		
+		/** Computes the results of the generated linear system the system is normalized before computing results and
+		 * denormalized afterwards. */
+		MatrixXd solve();
+		
+		/** Scores the solution of this instance with its probability of issuing outliers in a given set of correspondences. */
+		double scoreSolution( vector< Correspondence > allCorrespondences );
 	private:
-		Dlt();
+		/** Normalizes the points in the sets S0 and S1 which are the sets being corresponded, resulting in one normalization
+		 * matrix for each set. The normalization puts the centroid of the point set at origin and scales the space as the
+		 * mean distance from origin is sqrt(2). */
+		void normalize();
+		
+		/** Denormalizes homography H that maps points from first set S0 to second set S1. */
+		void denormalize();
+		
+		shared_ptr< MatrixXd > m_S0Normalizer;
+		shared_ptr< MatrixXd > m_S1Normalizer;
+		shared_ptr< MatrixXd > m_resultH;
+		shared_ptr< vector< Correspondence > > m_sample;
 	};
 }
 

@@ -23,7 +23,7 @@ namespace model
 			Q_ASSERT(!centerImg.isNull() && !currentImg.isNull());
 			
 			vector< Correspondence > correspondences = PanoramaController::match(centerImg, currentImg);
-			Ransac< Correspondence > ransac( correspondences, Dlt::compute , 4, 0.5 );
+			Ransac< Correspondence > ransac( correspondences, 4, 1. );
 			ransac.compute();
 		}
 	}
