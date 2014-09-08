@@ -1,9 +1,27 @@
 #include "Dlt.h"
+#include <iostream>
+
+using namespace std;
 
 namespace math
 {
+	ostream& operator<<( ostream& out, const Correspondence& correspondence )
+	{
+		out << "Correspondence: " << endl << correspondence.first << endl << ", " << endl << correspondence.second << endl;
+		return out;
+	}
+	
+	ostream& operator<<( ostream& out, const vector< Correspondence >& correspondences )
+	{
+		for( Correspondence correspondence : correspondences )
+		{
+			out << correspondence << endl;
+		}
+		return out;
+	}
+	
 	Dlt::Dlt( vector< Correspondence > sample ) :
-		m_sample( make_shared< vector< Correspondence > >(sample) )
+		m_sample( make_shared< vector< Correspondence > >( sample ) )
 	{}
 	
 	MatrixXd Dlt::solve()
@@ -14,7 +32,9 @@ namespace math
 		}
 		else
 		{
-			normalize();
+			cout << "Correspondences before normalization: " << endl << *m_sample << endl;
+			//normalize();
+			//cout << "Correspondences after normalization: " << endl << *m_sample << endl;
 			
 			MatrixXd A( 8, 9 );
 			for( int i = 0; i < m_sample->size(); ++i)
@@ -23,11 +43,16 @@ namespace math
 				VectorXd v0 = (*m_sample)[i].first;
 				VectorXd v1 = (*m_sample)[i].second;
 				
-				block 	<< 0. , 0. , 0. , -v1[2] * v0[0] , -v1[2] * v0[1] , -v1[2] * v0[2] , v1[1] * v0[0] , v1[1] * v0[1] , v1[1] * v0[2],
-						v1[2] * v0[0] , v1[2] * v0[1] , v1[2] * v0[2] , 0. , 0. , 0. , -v1[0] * v0[0] , -v1[0] * v0[1] , -v1[0] * v0[2];
+				block 	<< 0.			, 0. 			, 0. 			, -v1[2] * v0[0] , -v1[2] * v0[1] 	, -v1[2] * v0[2] , v1[1] * v0[0]  , v1[1] * v0[1]  , v1[1] * v0[2],
+						v1[2] * v0[0]	, v1[2] * v0[1] , v1[2] * v0[2] , 0. 			 , 0. 				, 0.			 , -v1[0] * v0[0] , -v1[0] * v0[1] , -v1[0] * v0[2];
 			}
 			
+			cout << "Linear System matrix: " << endl << A << endl;
+			
 			JacobiSVD<MatrixXd> svd(A, ComputeThinV);
+			
+			cout << "SVD V matrix: " << endl << svd.matrixV() << endl;
+			
 			VectorXd hCol = svd.matrixV().col(7);
 			
 			m_resultH = make_shared< MatrixXd >(3, 3);
@@ -35,7 +60,13 @@ namespace math
 							hCol[3], hCol[4], hCol[5],
 							hCol[6], hCol[7], hCol[8];
 			
-			denormalize();
+			cout << "H before denormalization: " << endl << *m_resultH << endl;
+			
+			//denormalize();
+			
+			cout << "H after denormalization: " << endl << *m_resultH << endl;
+			
+			return *m_resultH;
 		}
 	}
 	
@@ -78,7 +109,7 @@ namespace math
 	
 	void Dlt::normalize()
 	{
-		VectorXd vectorSum0(2); vectorSum0[0] = 0; vectorSum0[1] = 0;
+		VectorXd vectorSum0(3); vectorSum0[0] = 0; vectorSum0[1] = 0; vectorSum0[2] = 1;
 		VectorXd vectorSum1 = vectorSum0;
 		double sqrDistanceSum0 = 0;
 		double sqrDistanceSum1 = 0;
@@ -110,8 +141,8 @@ namespace math
 		
 		for( int i = 0; i < m_sample->size(); ++i )
 		{
-			(*m_sample)[i].first = (*m_sample)[i].first * (*m_S0Normalizer);
-			(*m_sample)[i].second = (*m_sample)[i].second * (*m_S1Normalizer);
+			(*m_sample)[i].first = (*m_S0Normalizer) * (*m_sample)[i].first;
+			(*m_sample)[i].second = (*m_S1Normalizer) * (*m_sample)[i].second;
 		}
 	}
 		
