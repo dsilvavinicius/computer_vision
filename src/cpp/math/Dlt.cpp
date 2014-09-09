@@ -32,9 +32,9 @@ namespace math
 		}
 		else
 		{
-			cout << "Correspondences before normalization: " << endl << *m_sample << endl << endl;
+			//cout << "Correspondences before normalization: " << endl << *m_sample << endl << endl;
 			normalize();
-			cout << "Correspondences after normalization: " << endl << *m_sample << endl;
+			//cout << "Correspondences after normalization: " << endl << *m_sample << endl;
 			
 			MatrixXd A( 8, 9 );
 			for( int i = 0; i < m_sample->size(); ++i)
@@ -60,9 +60,9 @@ namespace math
 							hCol[3], hCol[4], hCol[5],
 							hCol[6], hCol[7], hCol[8];
 			
-			cout << "H before denormalization: " << endl << *m_resultH << endl;
+			//cout << "H before denormalization: " << endl << *m_resultH << endl;
 			denormalize();
-			cout << "H after denormalization: " << endl << *m_resultH << endl;
+			//cout << "H after denormalization: " << endl << *m_resultH << endl;
 			
 			return *m_resultH;
 		}
@@ -109,8 +109,6 @@ namespace math
 	{
 		VectorXd vectorSum0(3); vectorSum0[0] = 0; vectorSum0[1] = 0; vectorSum0[2] = 1;
 		VectorXd vectorSum1 = vectorSum0;
-		double distanceSum0 = 0;
-		double distanceSum1 = 0;
 		
 		for( Correspondence correspondence : *m_sample )
 		{
@@ -119,23 +117,32 @@ namespace math
 			
 			vectorSum0 += p0;
 			vectorSum1 += p1;
+		}		
+		
+		VectorXd centroid0 = vectorSum0 / m_sample->size();
+		VectorXd centroid1 = vectorSum1 / m_sample->size();
+		
+		double distanceSum0 = 0;
+		double distanceSum1 = 0;
+		for( Correspondence correspondence : *m_sample )
+		{
+			VectorXd p0 = correspondence.first - centroid0;
+			VectorXd p1 = correspondence.second - centroid1;
 			distanceSum0 += p0.norm();
 			distanceSum1 += p1.norm();
 		}
 		
-		VectorXd centroid0 = vectorSum0 / m_sample->size();
-		VectorXd centroid1 = vectorSum1 / m_sample->size();
 		double scale0 = 1.414213562 / ( distanceSum0 / m_sample->size() );
 		double scale1 = 1.414213562 / ( distanceSum1 / m_sample->size() );
 		
 		m_S0Normalizer = make_shared< MatrixXd >(3, 3);
-		(*m_S0Normalizer) << scale0	, 0.	, -centroid0[0] * scale0,
-							 0.		, scale0, -centroid0[1] * scale0,
+		(*m_S0Normalizer) << scale0	, 0.	, -centroid0[0],
+							 0.		, scale0, -centroid0[1],
 							 0.		, 0.	, 1;
 							 
 		m_S1Normalizer = make_shared< MatrixXd >(3, 3);
-		(*m_S1Normalizer) << scale1	, 0.	, -centroid1[0] * scale1,
-							 0.		, scale1, -centroid1[1] * scale1,
+		(*m_S1Normalizer) << scale1	, 0.	, -centroid1[0],
+							 0.		, scale1, -centroid1[1],
 							 0.		, 0.	, 1;
 		
 		cout << "S0 normalizer: " << endl << *m_S0Normalizer << endl << endl

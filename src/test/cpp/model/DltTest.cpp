@@ -18,7 +18,7 @@ namespace math
 		{
 			// The transformation is a rotation around z axis, a translation and an anisotropic scale.
 			MatrixXd H(3, 3);
-			double rotationAngle = 3.14159265;
+			double rotationAngle = 3.14159265 * 0.25; // 45 degrees.
 			double scaleX = 2;
 			double scaleY = 3;
 			double translationX = 5;
