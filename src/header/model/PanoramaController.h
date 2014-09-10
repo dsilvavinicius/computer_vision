@@ -25,15 +25,23 @@ namespace model
 		 */
 		static QPixmap computePanorama(QPixmap& centerImg, vector< QPixmap& >& images, vector< int >& orderIndices);
 		
-		/** Computes the correspondences of img0 and img1. */
-		static vector< Correspondence > match(QPixmap& img0, QPixmap& img1);
+		/** Computes the correspondences of img0 and img1.
+		 * @param outBetterMatches is an optional vector that will output the best computed matches. The vector returned by
+		 * the methods has all computed matches (even outliers).
+		 * @returns all computed matches (even outliers). */
+		static vector< Correspondence > match(QPixmap& img0, QPixmap& img1,
+											  vector< Correspondence >* outBetterMatches = nullptr);
 		
 		/** Maps currentImg to the panorama space, also putting the first in the later. */
 		static void map(QPixmap& panorama, QPixmap& currentImg);
+		
+		/** Converts a QImage to OpenCV Mat. */
+		static cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true );
+		
+		/** Converts a QPixmap to OpenCV Mat. */
+		static cv::Mat QPixmapToCvMat( const QPixmap &inPixmap, bool inCloneImageData = true );
 	private:
 		PanoramaController();
-		static cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true );
-		static cv::Mat QPixmapToCvMat( const QPixmap &inPixmap, bool inCloneImageData = true );
 	};
 }
 

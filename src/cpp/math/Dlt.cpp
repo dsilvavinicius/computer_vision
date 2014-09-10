@@ -75,34 +75,41 @@ namespace math
 		vector< double > distances;
 		for( Correspondence correspondence : correspondences )
 		{
-			double distance = ( correspondence.first * (*m_resultH) - correspondence.second ).squaredNorm();
+			VectorXd transformed = ( *m_resultH ) * correspondence.first;
+			transformed = transformed / transformed[ 2 ];
+			double distance = ( transformed - correspondence.second ).norm();
 			distances.push_back( distance );
 			distanceSum += distance;
 		}
+		int numPoints = distances.size();
 		
-		double meanDistance = distanceSum / correspondences.size();
+		double meanDistance = distanceSum / numPoints;
 		double sumSquaredDiff = 0;
 		for( double dist : distances)
 		{
 			double squaredDiff = pow(dist - meanDistance, 2);
 			sumSquaredDiff += squaredDiff;
 		}
-		double variance = sumSquaredDiff / distances.size();
+		
+		double variance = sumSquaredDiff / numPoints;
 		
 		// Second, calculates the distance threshold to consider transformed points as inliers.
-		double sqrThreshold = 3.84 * variance;
+		double threshold = sqrt( 5.99 * variance );
 		
 		// Third, returns the percentage of outliers in the correspondence set.
 		int nOutliers = 0;
 		for( double distance : distances )
 		{
-			if( distance > sqrThreshold )
+			if( distance > threshold )
 			{
 				++nOutliers;
 			}
 		}
 		
-		return nOutliers / distances.size();
+		cout << "Homography: " << endl << *m_resultH << endl << endl
+			 << "Outliers: " << nOutliers << " of " << numPoints << endl << endl;
+		
+		return nOutliers / numPoints;
 	}
 	
 	void Dlt::normalize()

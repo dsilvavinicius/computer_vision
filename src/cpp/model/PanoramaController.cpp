@@ -68,7 +68,8 @@ namespace model
       return QImageToCvMat( inPixmap.toImage(), inCloneImageData );
    }
 
-	vector< Correspondence > PanoramaController::match(QPixmap& qtImg0, QPixmap& qtImg1)
+	vector< Correspondence > PanoramaController::match(QPixmap& qtImg0, QPixmap& qtImg1,
+													   vector< Correspondence >* outBetterMatches)
 	{
 		if( !qtImg0 || !qtImg1 )
 		{
@@ -95,10 +96,48 @@ namespace model
 		std::vector< DMatch > matches;
 		matcher.match( img0Descriptors, img1Descriptors, matches );
 		
-		// drawing the results
+		vector< DMatch > matchesToRender;
+		if( outBetterMatches != nullptr )
+		{
+			double max_dist = 0; double min_dist = 100;
+			
+			//-- Quick calculation of max and min distances between keypoints
+			for( int i = 0; i < img0Descriptors.rows; i++ )
+			{ 
+				double dist = matches[i].distance;
+				if( dist < min_dist ) min_dist = dist;
+				if( dist > max_dist ) max_dist = dist;
+			}
+
+			//-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist,
+			//-- or a small arbitary value ( 0.02 ) in the event that min_dist is very
+			//-- small)
+			//-- PS.- radiusMatch can also be used here.
+			for( int i = 0; i < img0Descriptors.rows; i++ )
+			{
+				if( matches[i].distance <= max(2 * min_dist, 0.02) )
+				{
+					DMatch match = matches[i];
+					matchesToRender.push_back( match );
+					
+					Point2f cvP0 = img0KeyPoints[match.queryIdx].pt;
+					Point2f cvP1 = img1KeyPoints[match.trainIdx].pt;
+					VectorXd p0(3); p0[0] = cvP0.x; p0[1] = cvP0.y; p0[2] = 1;
+					VectorXd p1(3); p1[0] = cvP1.x; p1[1] = cvP1.y; p1[2] = 1;
+			
+					outBetterMatches->push_back( Correspondence( p0, p1 ) );
+				}
+			}
+		}
+		else
+		{
+			matchesToRender = matches;
+		}
+		
+		// Drawing the results
 		namedWindow( "matches", 1 );
 		Mat imgMatches;
-		drawMatches( img0, img0KeyPoints, img1, img1KeyPoints, matches, imgMatches );
+		drawMatches( img0, img0KeyPoints, img1, img1KeyPoints, matchesToRender, imgMatches );
 		imshow( "matches", imgMatches );
 		waitKey( 0 );
 		
