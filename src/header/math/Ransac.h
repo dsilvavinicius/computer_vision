@@ -99,9 +99,12 @@ namespace math
 	template< typename T>
 	MatrixXd Ransac< T >::compute()
 	{
-		MatrixXd bestSol;
+		vector< Correspondence > inliers;
 		for( int iter = 0; iter < m_nIter; ++iter ) 
 		{
+			cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
+				 << "Current iter: " << iter << endl << endl;
+			
 			vector< T > sample;
 			
 			for( int i = 0; i < m_nElementsPerSample; ++i )
@@ -113,28 +116,30 @@ namespace math
 			MatrixXd systemSol = dlt.solve();
 			
 			//
-			for( T correspondence : sample )
+			/*for( T correspondence : sample )
 			{
 				VectorXd transformed = systemSol * correspondence.first;
 				transformed = transformed / transformed[ 2 ];
 				
 				cout << "Sample: (" << endl << correspondence.first << endl << "," << endl << correspondence.second << endl
 					 << ")" << endl << "transformed: " << transformed << endl << endl;
-			}
+			}*/
 			//
 			
-			double newEpsilon = dlt.scoreSolution( m_set );
+			inliers.clear();
+			double newEpsilon = dlt.scoreSolution( m_set, inliers );
+			cout << "Iter score: " << newEpsilon << endl << endl;
 			
 			if( newEpsilon < m_epsilon )
 			{
-				// Round epsilon to 2 decimal places.
 				m_epsilon = newEpsilon;
 				m_nIter = getIterNumber( m_nElementsPerSample, m_epsilon );
-				bestSol = systemSol;
 			}
 		}
 		
-		return bestSol;
+		Dlt inliersDlt( inliers );
+		
+		return inliersDlt.solve();
 	}
 	
 	template< typename T>

@@ -28,8 +28,10 @@ namespace math
 		 * denormalized afterwards. */
 		MatrixXd solve();
 		
-		/** Scores the solution of this instance with its probability of issuing outliers in a given set of correspondences. */
-		double scoreSolution( vector< Correspondence > allCorrespondences );
+		/** Scores the solution of this DLT instance with its probability of issuing outliers in a given set of
+		 * correspondences.
+		 * @param outInliers is an output vector with all correspondences that are inliers. */
+		double scoreSolution( vector< Correspondence > allCorrespondences, vector< Correspondence >& outInliers );
 	private:
 		/** Normalizes the points in the sets S0 and S1 which are the sets being corresponded, resulting in one normalization
 		 * matrix for each set. The normalization puts the centroid of the point set at origin and scales the space as the

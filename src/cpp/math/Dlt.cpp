@@ -36,8 +36,9 @@ namespace math
 			normalize();
 			//cout << "Correspondences after normalization: " << endl << *m_sample << endl;
 			
-			MatrixXd A( 8, 9 );
-			for( int i = 0; i < m_sample->size(); ++i)
+			int sampleSize = m_sample->size();
+			MatrixXd A( 2 * sampleSize, 9 );
+			for( int i = 0; i < sampleSize; ++i)
 			{
 				Block< MatrixXd > block = A.block(i * 2, 0, 2, 9);
 				VectorXd v0 = (*m_sample)[i].first;
@@ -47,11 +48,11 @@ namespace math
 						v1[2] * v0[0]	, v1[2] * v0[1] , v1[2] * v0[2] , 0. 			 , 0. 				, 0.			 , -v1[0] * v0[0] , -v1[0] * v0[1] , -v1[0] * v0[2];
 			}
 			
-			cout << "Linear System matrix: " << endl << A << endl << endl;
+			//cout << "Linear System matrix: " << endl << A << endl << endl;
 			
 			JacobiSVD<MatrixXd> svd(A, ComputeThinV);
 			
-			cout << "SVD V matrix: " << endl << svd.matrixV() << endl << endl;
+			//cout << "SVD V matrix: " << endl << svd.matrixV() << endl << endl;
 			
 			VectorXd hCol = svd.matrixV().col(7);
 			
@@ -68,7 +69,7 @@ namespace math
 		}
 	}
 	
-	double Dlt::scoreSolution( vector< Correspondence > correspondences )
+	double Dlt::scoreSolution( vector< Correspondence > correspondences, vector< Correspondence >& outInliers)
 	{
 		// First, calculates the distance variance.
 		double distanceSum = 0.;
@@ -77,7 +78,14 @@ namespace math
 		{
 			VectorXd transformed = ( *m_resultH ) * correspondence.first;
 			transformed = transformed / transformed[ 2 ];
-			double distance = ( transformed - correspondence.second ).norm();
+			
+			VectorXd original = ( *m_resultH ).inverse() * correspondence.second;
+			original = original / original[ 2 ];
+			
+			VectorXd diffTransformed = transformed - correspondence.second;
+			VectorXd diffOriginal = original - correspondence.first;
+			
+			double distance = diffTransformed.norm() + diffOriginal.norm();
 			distances.push_back( distance );
 			distanceSum += distance;
 		}
@@ -97,19 +105,23 @@ namespace math
 		double threshold = sqrt( 5.99 * variance );
 		
 		// Third, returns the percentage of outliers in the correspondence set.
-		int nOutliers = 0;
-		for( double distance : distances )
+		int nInliers = 0;
+		for( int i = 0; i < distances.size(); ++i)
 		{
-			if( distance > threshold )
+			double distance = distances[ i ]; 
+			cout << "Variance: " << variance << endl << "threshold: " << threshold << endl
+				 << "distance: " << distance << endl << endl;
+			if( distance <= threshold )
 			{
-				++nOutliers;
+				outInliers.push_back( correspondences[ i ] );
+				++nInliers;
 			}
 		}
 		
 		cout << "Homography: " << endl << *m_resultH << endl << endl
-			 << "Outliers: " << nOutliers << " of " << numPoints << endl << endl;
+			 << "Inliers: " << nInliers << " of " << numPoints << endl << endl;
 		
-		return nOutliers / numPoints;
+		return 1 - ((double) nInliers /  numPoints);
 	}
 	
 	void Dlt::normalize()
@@ -123,18 +135,27 @@ namespace math
 			VectorXd p1 = correspondence.second;
 			
 			vectorSum0 += p0;
+			//vectorSum0 = vectorSum0 / vectorSum0[ 2 ];
 			vectorSum1 += p1;
+			//vectorSum1 = vectorSum1 / vectorSum1[ 2 ];
 		}		
 		
 		VectorXd centroid0 = vectorSum0 / m_sample->size();
+		//centroid0 = centroid0 / centroid0[ 2 ];
+		
 		VectorXd centroid1 = vectorSum1 / m_sample->size();
+		//centroid1 = centroid1 / centroid1[ 2 ];
 		
 		double distanceSum0 = 0;
 		double distanceSum1 = 0;
 		for( Correspondence correspondence : *m_sample )
 		{
 			VectorXd p0 = correspondence.first - centroid0;
+			//p0 = p0 / p0[ 2 ];
+			
 			VectorXd p1 = correspondence.second - centroid1;
+			//p1 = p1 / p1[ 2 ];
+			
 			distanceSum0 += p0.norm();
 			distanceSum1 += p1.norm();
 		}
@@ -152,13 +173,18 @@ namespace math
 							 0.		, scale1, -centroid1[1],
 							 0.		, 0.	, 1;
 		
-		cout << "S0 normalizer: " << endl << *m_S0Normalizer << endl << endl
-			 << "S1 normalizer: " << endl << *m_S1Normalizer << endl << endl;
+		//cout << "S0 normalizer: " << endl << *m_S0Normalizer << endl << endl
+		//	 << "S1 normalizer: " << endl << *m_S1Normalizer << endl << endl;
 		
 		for( int i = 0; i < m_sample->size(); ++i )
 		{
-			(*m_sample)[i].first = (*m_S0Normalizer) * (*m_sample)[i].first;
-			(*m_sample)[i].second = (*m_S1Normalizer) * (*m_sample)[i].second;
+			VectorXd p0 = (*m_S0Normalizer) * (*m_sample)[i].first;
+			p0 = p0 / p0[ 2 ];
+			(*m_sample)[i].first = p0;
+			
+			VectorXd p1 = (*m_S1Normalizer) * (*m_sample)[i].second;
+			p1 = p1 / p1[ 2 ];
+			(*m_sample)[i].second = p1;
 		}
 	}
 		
