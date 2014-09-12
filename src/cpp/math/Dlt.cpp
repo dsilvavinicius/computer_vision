@@ -69,10 +69,9 @@ namespace math
 		}
 	}
 	
-	double Dlt::scoreSolution( vector< Correspondence > correspondences, vector< Correspondence >& outInliers)
+	int Dlt::scoreSolution( vector< Correspondence > correspondences)
 	{
 		// First, calculates the distance variance.
-		double distanceSum = 0.;
 		vector< double > distances;
 		for( Correspondence correspondence : correspondences )
 		{
@@ -86,42 +85,30 @@ namespace math
 			VectorXd diffOriginal = original - correspondence.first;
 			
 			double distance = diffTransformed.norm() + diffOriginal.norm();
+			
 			distances.push_back( distance );
-			distanceSum += distance;
 		}
 		int numPoints = distances.size();
 		
-		double meanDistance = distanceSum / numPoints;
-		double sumSquaredDiff = 0;
-		for( double dist : distances)
-		{
-			double squaredDiff = pow(dist - meanDistance, 2);
-			sumSquaredDiff += squaredDiff;
-		}
-		
-		double variance = sumSquaredDiff / numPoints;
-		
-		// Second, calculates the distance threshold to consider transformed points as inliers.
-		double threshold = sqrt( 5.99 * variance );
+		double threshold = 2.;
 		
 		// Third, returns the percentage of outliers in the correspondence set.
-		int nInliers = 0;
+		int inliers = 0;
 		for( int i = 0; i < distances.size(); ++i)
 		{
 			double distance = distances[ i ]; 
-			cout << "Variance: " << variance << endl << "threshold: " << threshold << endl
-				 << "distance: " << distance << endl << endl;
+			//cout << "Variance: " << variance << endl << "threshold: " << threshold << endl
+			//	 << "distance: " << distance << endl << endl;
 			if( distance <= threshold )
 			{
-				outInliers.push_back( correspondences[ i ] );
-				++nInliers;
+				++inliers;
 			}
 		}
 		
-		cout << "Homography: " << endl << *m_resultH << endl << endl
-			 << "Inliers: " << nInliers << " of " << numPoints << endl << endl;
+		//cout << "Homography: " << endl << *m_resultH << endl << endl
+		//	 << "Inliers: " << inliers << " of " << numPoints << endl << endl;
 		
-		return 1 - ((double) nInliers /  numPoints);
+		return inliers;
 	}
 	
 	void Dlt::normalize()

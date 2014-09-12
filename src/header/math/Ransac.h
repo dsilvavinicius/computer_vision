@@ -35,7 +35,7 @@ namespace math
 		 * @param nElementsPerSample is the number of elements in a sample. The sample defines the linear system.
 		 * @param epsilon is the initial probability of outliers in samples.
 		 */
-		Ransac( vector< T > set, int nElementsPerSample, double epsilon = 0.5 );
+		Ransac( vector< T > set, int nElementsPerSample, double epsilon );
 		
 		/** Computes the result of the linear system.
 		 * @param evaluator evaluates the vector of samples and returns the system solution.
@@ -48,14 +48,14 @@ namespace math
 		
 		/** Table for some precomputed values of number of iterations for Ransac. The key is a pair with first member being
 		 * the number of elements in the sample and the second member being the percentage of outliers in the set. */
-		static RansacIterTable m_iterTable;
+		//static RansacIterTable m_iterTable;
 		
 	private:
 		/** Calculates the iteration table key, given the number of elements in sample and probability of having outliers. */
 		//static float calcIterTableKey( int numElements, float outlierProb );
 		
 		/** Gets the number of iteration, give the number of elements in sample and the probability of having outliers. */
-		static int getIterNumber( int numElements, float outlierProb );
+		static double getIterNumber( int numElements, float outlierProb );
 		
 		/** The samples. */
 		vector< T > m_set;
@@ -67,11 +67,11 @@ namespace math
 		int m_nElementsPerSample;
 		
 		/** Estimated number of iterations to guarantee a sample without outliers. */
-		int m_nIter;
+		double m_nIter;
 	};
 	
-	template< typename T>
-	RansacIterTable Ransac< T >::m_iterTable = Ransac< T >::genIterTable();
+	//template< typename T>
+	//RansacIterTable Ransac< T >::m_iterTable = Ransac< T >::genIterTable();
 	
 	/*template< typename T>
 	float Ransac< T >::calcIterTableKey( int numElements, float outlierProb )
@@ -80,17 +80,21 @@ namespace math
 	}*/
 	
 	template< typename T >
-	int Ransac< T >::getIterNumber( int numElements, float outlierProb )
+	double Ransac< T >::getIterNumber( int numElements, float outlierProb )
 	{
-		return Ransac< T >::m_iterTable[ numElements ].lower_bound( outlierProb )->second;
+		//return Ransac< T >::m_iterTable[ numElements ].lower_bound( outlierProb )->second;
+		double result = log( 1. - 0.99 ) / log( 1. - pow( 1. - outlierProb, 4. ) );
+		//cout << "Iter number calculation: " << result << endl << "Epsilon: " << outlierProb << endl << endl;
+		return result;
 	}
 	
 	template< typename T>
 	Ransac< T >::Ransac( vector< T > set, int nElementsPerSample, double epsilon ) :
 		m_set( set ),
-		m_nElementsPerSample( nElementsPerSample )
+		m_nElementsPerSample( nElementsPerSample ),
+		m_epsilon( epsilon )
 	{
-		m_epsilon = epsilon > 0.5 ? 0.5 : epsilon;
+		//m_epsilon = epsilon > 0.5 ? 0.5 : epsilon;
 		
 		m_nIter = getIterNumber( m_nElementsPerSample, m_epsilon );
 		srand( time( NULL ) );
@@ -99,11 +103,12 @@ namespace math
 	template< typename T>
 	MatrixXd Ransac< T >::compute()
 	{
-		vector< Correspondence > inliers;
-		for( int iter = 0; iter < m_nIter; ++iter ) 
+		MatrixXd bestSol;
+		int maxInliers = 0;
+		for( double iter = 0; iter < m_nIter; ++iter ) 
 		{
-			cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
-				 << "Current iter: " << iter << endl << endl;
+			//cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
+			//	 << "Current iter: " << iter << endl << endl;
 			
 			vector< T > sample;
 			
@@ -112,34 +117,27 @@ namespace math
 				sample.push_back( m_set[ rand() % m_set.size() ] );
 			}
 			
-			Dlt dlt(sample);
+			Dlt dlt( sample );
 			MatrixXd systemSol = dlt.solve();
 			
-			//
-			/*for( T correspondence : sample )
-			{
-				VectorXd transformed = systemSol * correspondence.first;
-				transformed = transformed / transformed[ 2 ];
-				
-				cout << "Sample: (" << endl << correspondence.first << endl << "," << endl << correspondence.second << endl
-					 << ")" << endl << "transformed: " << transformed << endl << endl;
-			}*/
-			//
+			int currInliers = dlt.scoreSolution( m_set );
+			double newEpsilon = 1 - ((double) currInliers /  m_set.size() );
+			//cout << "Iter score: " << newEpsilon << endl << endl;
 			
-			inliers.clear();
-			double newEpsilon = dlt.scoreSolution( m_set, inliers );
-			cout << "Iter score: " << newEpsilon << endl << endl;
-			
-			if( newEpsilon < m_epsilon )
+			if( newEpsilon < m_epsilon ) // With interation calculation goes to infinity.
 			{
 				m_epsilon = newEpsilon;
 				m_nIter = getIterNumber( m_nElementsPerSample, m_epsilon );
+			
+				if( currInliers > maxInliers )
+				{
+					maxInliers = currInliers;
+					bestSol = systemSol;
+				}
 			}
 		}
 		
-		Dlt inliersDlt( inliers );
-		
-		return inliersDlt.solve();
+		return bestSol;
 	}
 	
 	template< typename T>
