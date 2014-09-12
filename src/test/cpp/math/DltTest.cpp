@@ -14,7 +14,7 @@ namespace math
 		
 		/** Tests Dlt by creating a transform H and correlating generated points with transformed points. Test pass if the Dlt
 		 * solution is the inverse of H. */
-		TEST_F( DltTest, SimpleTransform )
+		TEST_F( DltTest, DISABLED_SimpleTransform )
 		{
 			// The transformation is a rotation around z axis, a translation and an anisotropic scale.
 			MatrixXd H(3, 3);
@@ -62,7 +62,7 @@ namespace math
 			ASSERT_TRUE( ( p3i1 ).isApprox( transfP3 ) );
 		}
 		
-		TEST_F( DltTest, RealExample )
+		TEST_F( DltTest, DISABLED_RealExample )
 		{
 			VectorXd p0i0(3); p0i0[0] = 139.346; p0i0[1] = 77.1379; p0i0[2] = 1;
 			VectorXd p0i1(3); p0i1[0] = 262.767; p0i1[1] = 161.243; p0i1[2] = 1;

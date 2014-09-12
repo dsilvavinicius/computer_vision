@@ -43,9 +43,6 @@ namespace math
 		 */
 		MatrixXd compute();
 		
-		/** Generates iteration table. */
-		static RansacIterTable genIterTable();
-		
 		/** Table for some precomputed values of number of iterations for Ransac. The key is a pair with first member being
 		 * the number of elements in the sample and the second member being the percentage of outliers in the set. */
 		//static RansacIterTable m_iterTable;
@@ -104,7 +101,6 @@ namespace math
 	MatrixXd Ransac< T >::compute()
 	{
 		MatrixXd bestSol;
-		int maxInliers = 0;
 		for( double iter = 0; iter < m_nIter; ++iter ) 
 		{
 			//cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
@@ -126,86 +122,18 @@ namespace math
 			
 			if( newEpsilon < m_epsilon ) // With interation calculation goes to infinity.
 			{
+				cout << "Better result. Inliers: " << currInliers << " of " << m_set.size() << ", Prev epsilon: "
+					 << m_epsilon << ", new Epsilon: " << newEpsilon << ", Prev iter: " << m_nIter;
+				
 				m_epsilon = newEpsilon;
 				m_nIter = getIterNumber( m_nElementsPerSample, m_epsilon );
-			
-				if( currInliers > maxInliers )
-				{
-					maxInliers = currInliers;
-					bestSol = systemSol;
-				}
+				
+				cout << ", New Iter: " << m_nIter << ", Current Iter: " << iter << endl << endl;
+				bestSol = systemSol;
 			}
 		}
 		
 		return bestSol;
-	}
-	
-	template< typename T>
-	RansacIterTable Ransac< T >::genIterTable()
-	{
-		PerSampleIterTable iterTable3;
-		iterTable3[ 0.05f ] = 3;
-		iterTable3[ 0.10f ] = 4;
-		iterTable3[ 0.20f ] = 7;
-		iterTable3[ 0.25f ] = 9;
-		iterTable3[ 0.30f ] = 11;
-		iterTable3[ 0.40f ] = 19;
-		iterTable3[ 0.50f ] = 50;
-		
-		PerSampleIterTable iterTable4;
-		iterTable4[ 0.05f ] = 3;
-		iterTable4[ 0.10f ] = 5;
-		iterTable4[ 0.20f ] = 9;
-		iterTable4[ 0.25f ] = 13;
-		iterTable4[ 0.30f ] = 17;
-		iterTable4[ 0.40f ] = 34;
-		iterTable4[ 0.50f ] = 72;
-		
-		PerSampleIterTable iterTable5;
-		iterTable5[ 0.05f ] = 4;
-		iterTable5[ 0.10f ] = 6;
-		iterTable5[ 0.20f ] = 12;
-		iterTable5[ 0.25f ] = 17;
-		iterTable5[ 0.30f ] = 26;
-		iterTable5[ 0.40f ] = 57;
-		iterTable5[ 0.50f ] = 146;
-		
-		PerSampleIterTable iterTable6;
-		iterTable6[ 0.05f ] = 4;
-		iterTable6[ 0.10f ] = 7;
-		iterTable6[ 0.20f ] = 16;
-		iterTable6[ 0.25f ] = 24;
-		iterTable6[ 0.30f ] = 37;
-		iterTable6[ 0.40f ] = 97;
-		iterTable6[ 0.50f ] = 293;
-		
-		PerSampleIterTable iterTable7;
-		iterTable7[ 0.05f ] = 4;
-		iterTable7[ 0.10f ] = 8;
-		iterTable7[ 0.20f ] = 20;
-		iterTable7[ 0.25f ] = 33;
-		iterTable7[ 0.30f ] = 54;
-		iterTable7[ 0.40f ] = 163;
-		iterTable7[ 0.50f ] = 588;
-		
-		PerSampleIterTable iterTable8;
-		iterTable8[ 0.05f ] = 5;
-		iterTable8[ 0.10f ] = 9;
-		iterTable8[ 0.20f ] = 26;
-		iterTable8[ 0.25f ] = 44;
-		iterTable8[ 0.30f ] = 78;
-		iterTable8[ 0.40f ] = 272;
-		iterTable8[ 0.50f ] = 1177;
-		
-		RansacIterTable table;
-		table[ 3 ] = iterTable3;
-		table[ 4 ] = iterTable4;
-		table[ 5 ] = iterTable5;
-		table[ 6 ] = iterTable6;
-		table[ 7 ] = iterTable7;
-		table[ 8 ] = iterTable8;
-		
-		return table;
 	}
 }
 

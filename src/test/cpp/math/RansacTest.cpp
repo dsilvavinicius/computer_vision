@@ -28,13 +28,13 @@ namespace math
 		TEST_F(RansacTest, Test)
 		{
 			QApplication app(g_argc, g_argv);
-			QPixmap centerImg("../../../src/images/panorama/panorama1.JPG");
-			QPixmap currentImg("../../../src/images/panorama/panorama2.JPG");
+			QPixmap centerImg("../../../src/images/panorama_yosemite/yosemite1.jpg");
+			QPixmap currentImg("../../../src/images/panorama_yosemite/yosemite2.jpg");
 			Q_ASSERT(!centerImg.isNull() && !currentImg.isNull());
 			
 			vector< Correspondence > bestCorrespondences;
 			vector< Correspondence > correspondences = PanoramaController::match(currentImg, centerImg, &bestCorrespondences);
-			Ransac< Correspondence > ransac( bestCorrespondences, 4, 0.99 );
+			Ransac< Correspondence > ransac( correspondences, 4, 0.99 );
 			MatrixXd H = ransac.compute();
 			
 			for( Correspondence correspondence : bestCorrespondences )
@@ -105,7 +105,7 @@ namespace math
 			waitKey();
 			
 			Mat panorama;
-			addWeighted( centerTransformed, 1., currentTransformed, 1., 0.0, panorama);
+			addWeighted( centerTransformed, 0.5, currentTransformed, 0.5, 0.0, panorama);
 			imshow( "Panorama", panorama );
 			waitKey();
 		}

@@ -90,7 +90,7 @@ namespace math
 		}
 		int numPoints = distances.size();
 		
-		double threshold = 2.;
+		double threshold = 3.;
 		
 		// Third, returns the percentage of outliers in the correspondence set.
 		int inliers = 0;
@@ -113,7 +113,7 @@ namespace math
 	
 	void Dlt::normalize()
 	{
-		VectorXd vectorSum0(3); vectorSum0[0] = 0; vectorSum0[1] = 0; vectorSum0[2] = 1;
+		VectorXd vectorSum0(2); vectorSum0[0] = 0; vectorSum0[1] = 0;
 		VectorXd vectorSum1 = vectorSum0;
 		
 		for( Correspondence correspondence : *m_sample )
@@ -121,27 +121,24 @@ namespace math
 			VectorXd p0 = correspondence.first;
 			VectorXd p1 = correspondence.second;
 			
-			vectorSum0 += p0;
-			//vectorSum0 = vectorSum0 / vectorSum0[ 2 ];
-			vectorSum1 += p1;
-			//vectorSum1 = vectorSum1 / vectorSum1[ 2 ];
+			vectorSum0[ 0 ] += p0[ 0 ]; vectorSum0[ 1 ] += p0[ 1 ];
+			vectorSum1[ 0 ] += p1[ 0 ]; vectorSum1[ 1 ] += p1[ 1 ];
 		}		
 		
 		VectorXd centroid0 = vectorSum0 / m_sample->size();
-		//centroid0 = centroid0 / centroid0[ 2 ];
-		
 		VectorXd centroid1 = vectorSum1 / m_sample->size();
-		//centroid1 = centroid1 / centroid1[ 2 ];
 		
 		double distanceSum0 = 0;
 		double distanceSum1 = 0;
 		for( Correspondence correspondence : *m_sample )
 		{
-			VectorXd p0 = correspondence.first - centroid0;
-			//p0 = p0 / p0[ 2 ];
+			VectorXd p0( 2 );
+			p0[ 0 ] = correspondence.first[ 0 ] - centroid0[ 0 ];
+			p0[ 1 ] = correspondence.first[ 1 ] - centroid0[ 1 ];
 			
-			VectorXd p1 = correspondence.second - centroid1;
-			//p1 = p1 / p1[ 2 ];
+			VectorXd p1( 2 );
+			p1[ 0 ] = correspondence.second[ 0 ] - centroid1[ 0 ];
+			p1[ 1 ] = correspondence.second[ 1 ] - centroid1[ 1 ];
 			
 			distanceSum0 += p0.norm();
 			distanceSum1 += p1.norm();
@@ -151,13 +148,13 @@ namespace math
 		double scale1 = 1.414213562 / ( distanceSum1 / m_sample->size() );
 		
 		m_S0Normalizer = make_shared< MatrixXd >(3, 3);
-		(*m_S0Normalizer) << scale0	, 0.	, -centroid0[0],
-							 0.		, scale0, -centroid0[1],
+		(*m_S0Normalizer) << scale0	, 0.	, -centroid0[ 0 ],
+							 0.		, scale0, -centroid0[ 1 ],
 							 0.		, 0.	, 1;
 							 
 		m_S1Normalizer = make_shared< MatrixXd >(3, 3);
-		(*m_S1Normalizer) << scale1	, 0.	, -centroid1[0],
-							 0.		, scale1, -centroid1[1],
+		(*m_S1Normalizer) << scale1	, 0.	, -centroid1[ 0 ],
+							 0.		, scale1, -centroid1[ 1 ],
 							 0.		, 0.	, 1;
 		
 		//cout << "S0 normalizer: " << endl << *m_S0Normalizer << endl << endl
@@ -165,13 +162,13 @@ namespace math
 		
 		for( int i = 0; i < m_sample->size(); ++i )
 		{
-			VectorXd p0 = (*m_S0Normalizer) * (*m_sample)[i].first;
+			VectorXd p0 = (*m_S0Normalizer) * (*m_sample)[ i ].first;
 			p0 = p0 / p0[ 2 ];
-			(*m_sample)[i].first = p0;
+			(*m_sample)[ i ].first = p0;
 			
-			VectorXd p1 = (*m_S1Normalizer) * (*m_sample)[i].second;
+			VectorXd p1 = (*m_S1Normalizer) * (*m_sample)[ i ].second;
 			p1 = p1 / p1[ 2 ];
-			(*m_sample)[i].second = p1;
+			(*m_sample)[ i ].second = p1;
 		}
 	}
 		
