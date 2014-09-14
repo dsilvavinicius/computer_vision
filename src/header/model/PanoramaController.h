@@ -23,17 +23,23 @@ namespace model
 		 * @param orderIndices are the indices of the images in images. The order of the elements in orderIndices indicates the order in which
 		 * the map will be done.
 		 */
-		static QPixmap computePanorama(QPixmap& centerImg, vector< QPixmap& >& images, vector< int >& orderIndices);
+		static QPixmap computePanorama( QPixmap& centerImg, vector< QPixmap& >& images, vector< int >& orderIndices );
 		
 		/** Computes the correspondences of img0 and img1.
 		 * @param outBetterMatches is an optional vector that will output the best computed matches. The vector returned by
 		 * the methods has all computed matches (even outliers).
 		 * @returns all computed matches (even outliers). */
-		static vector< Correspondence > match(QPixmap& img0, QPixmap& img1,
-											  vector< Correspondence >* outBetterMatches = nullptr);
+		static vector< Correspondence > match( Mat& img0, Mat& img1, vector< Correspondence >* outBetterMatches = nullptr );
 		
-		/** Maps currentImg to the panorama space, also putting the first in the later. */
-		static void map(QPixmap& panorama, QPixmap& currentImg);
+		/** Transforms the image bounding box, returning the minimum transformed coordinates, maximum transformed coordinates
+		 * and the transformed image final size. */
+		static void transformBoundingBox( Mat& transform, Mat& image, Point2d& out_transfMinCoords,
+										  Point2d& out_transfMaxCoords, Size& out_finalSize );
+		
+		/** Maps currentImg to the panorama space in two steps. First maps it to lastImg space, for which the homography to
+		 * panorama space is previously know. Then uses this already-known panoramaHomography to do the final map to
+		 * panorama space. */
+		static void map( Mat& lastImg, Mat& currentImg, Mat& in_out_panorama, Mat& in_out_panoramaHomography );
 		
 		/** Converts a QImage to OpenCV Mat. */
 		static cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true );

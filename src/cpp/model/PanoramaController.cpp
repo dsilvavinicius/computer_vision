@@ -1,10 +1,13 @@
 #include "PanoramaController.h"
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <QRgb>
 #include <QDebug>
+
+#include "Ransac.h"
 
 using namespace cv;
 using namespace std;
@@ -15,7 +18,6 @@ namespace model
 	QPixmap PanoramaController::computePanorama( QPixmap& centerImg, vector< QPixmap& >& images,
 												vector< int >& orderIndices )
 	{
-		
 	}
 
 	// If inImage exists for the lifetime of the resulting cv::Mat, pass false to inCloneImageData to share inImage's
@@ -68,18 +70,8 @@ namespace model
       return QImageToCvMat( inPixmap.toImage(), inCloneImageData );
    }
 
-	vector< Correspondence > PanoramaController::match(QPixmap& qtImg0, QPixmap& qtImg1,
-													   vector< Correspondence >* outBetterMatches)
+	vector< Correspondence > PanoramaController::match( Mat& img0, Mat& img1, vector< Correspondence >* outBetterMatches )
 	{
-		if( !qtImg0 || !qtImg1 )
-		{
-			throw logic_error("Cannot map from or to a null image.");
-		}
-		QSize imgSize = qtImg0.size();
-		
-		Mat img0 = QPixmapToCvMat( qtImg0 );
-		Mat img1 = QPixmapToCvMat( qtImg1 );
-		
 		CV_Assert(!img0.empty() && !img1.empty());
 		
 		ORB detector;
@@ -154,9 +146,110 @@ namespace model
 		
 		return correspondences;
 	}
-   
-	void PanoramaController::map( QPixmap& qtPanorama, QPixmap& qtCurrentImg )
+	
+	void PanoramaController::transformBoundingBox( Mat& transform, Mat& image, Point2d& transfMinCoords,
+												   Point2d& transfMaxCoords, Size& finalSize )
 	{
-		match(qtPanorama, qtCurrentImg);
+		// Computing offset to avoid cropping in the transformed image.
+		vector< Point2d > origPoints;
+		origPoints.push_back( Point2d( 0., 0. ) );
+		origPoints.push_back( Point2d( image.size[ 0 ] - 1, 0. ) );
+		origPoints.push_back( Point2d( image.size[ 0 ] - 1, image.size[ 1 ] - 1 ) );
+		origPoints.push_back( Point2d( 0., image.size[ 1 ] - 1 ) );
+		
+		cout << "CurrentImg box: " << endl;
+		for( Point2d point : origPoints ) { cout << point << endl; }
+		cout << endl;
+		
+		vector< Point2d > transformedPoints;
+		perspectiveTransform(origPoints, transformedPoints, transform);
+		
+		transfMinCoords.x = 9999; transfMinCoords.y = 9999;
+		transfMaxCoords.x = -1; transfMaxCoords.y = -1;
+		
+		for( int i = 0; i < transformedPoints.size(); ++i )
+		{
+			Point2d original = origPoints[ i ];
+			Point2d transformed = transformedPoints[ i ];
+			cout << "Original pt " << original << " Transformed pt " << transformed << endl; 
+			
+			transfMinCoords.x = min( transfMinCoords.x, transformed.x );
+			transfMinCoords.y = min( transfMinCoords.y, transformed.y );
+			
+			transfMaxCoords.x = max( transfMaxCoords.x, transformed.x );
+			transfMaxCoords.y = max( transfMaxCoords.y, transformed.y );
+		}
+		Point2d translation( abs( transfMinCoords.x ), abs( transfMinCoords.y ) );
+		transfMinCoords.x = min( transfMinCoords.x, 0. );
+		transfMinCoords.y = min( transfMinCoords.y, 0. );
+		
+		finalSize.width = transfMaxCoords.x - transfMinCoords.x + translation.x;
+		finalSize.height = transfMaxCoords.y - transfMinCoords.y + translation.y;
+		
+		cout << "Input size [" << image.size[ 0 ] << ", " << image.size[ 1 ] << "], Max coords: " << transfMaxCoords
+				<< ", Min coords: " << transfMinCoords << endl << " Final size [" << finalSize.width << ", "
+				<< finalSize.height << "]" << endl << endl;
+	}
+	
+	void PanoramaController::map( Mat& lastImg, Mat& currentImg, Mat& panorama, Mat& panoramaHomography )
+	{
+		vector< Correspondence > bestCorrespondences;
+		vector< Correspondence > correspondences = PanoramaController::match(currentImg, lastImg, &bestCorrespondences);
+		Ransac< Correspondence > ransac( correspondences, 4, 0.99 );
+		MatrixXd H = ransac.compute();
+		
+		Mat cvH;
+		cvH.create( 3, 3, CV_64FC1 );
+		cvH.at< double >( 0, 0 ) = H( 0, 0 ); cvH.at< double >( 0, 1 ) = H( 0, 1 ); cvH.at< double >( 0, 2 ) = H( 0, 2 );
+		cvH.at< double >( 1, 0 ) = H( 1, 0 ); cvH.at< double >( 1, 1 ) = H( 1, 1 ); cvH.at< double >( 1, 2 ) = H( 1, 2 );
+		cvH.at< double >( 2, 0 ) = H( 2, 0 ); cvH.at< double >( 2, 1 ) = H( 2, 1 ); cvH.at< double >( 2, 2 ) = H( 2, 2 );
+		
+		cout << "Ransac Homography: " << endl << cvH << endl << endl; 
+		
+		Point2d minCoords;
+		Point2d maxCoords;
+		Size finalSize;
+		
+		PanoramaController::transformBoundingBox(cvH, currentImg, minCoords, maxCoords, finalSize);
+		
+		Mat translation;
+		translation.create( 3, 3, CV_64FC1 );
+		translation.at< double >( 0, 0 ) = 1.; translation.at< double >( 0, 1 ) = 0.; translation.at< double >( 0, 2 ) = -minCoords.x;
+		translation.at< double >( 1, 0 ) = 0.; translation.at< double >( 1, 1 ) = 1.; translation.at< double >( 1, 2 ) = -minCoords.y;
+		translation.at< double >( 2, 0 ) = 0.; translation.at< double >( 2, 1 ) = 0.; translation.at< double >( 2, 2 ) = 1.;
+
+		cout << "Translation: " << endl << translation << endl << endl; 
+		
+		cvH = translation * cvH;
+		
+		Mat currentToLast;
+		warpPerspective( currentImg, currentToLast, cvH, finalSize );
+		
+		imshow( "Current", currentImg );
+		imshow( "Last", lastImg );
+		imshow( "Current to Last", currentToLast );
+		waitKey();
+		
+		cout << "Before compositing panorama and current homographies" << endl << endl; 
+		panoramaHomography = panoramaHomography * cvH;
+		
+		cout << "Before transformBoundingBox" << endl << endl; 
+		PanoramaController::transformBoundingBox(panoramaHomography, currentImg, minCoords, maxCoords, finalSize);
+		
+		Mat currentToPanorama;
+		cout << "Before currentToPanorama" << endl << endl; 
+		warpPerspective( currentImg, currentToPanorama, panoramaHomography, finalSize );
+		Mat panoramaTransformed;
+		cout << "Before panoramaTransformed" << endl << endl;
+		warpPerspective( panorama, panoramaTransformed, translation, finalSize );
+		
+		imshow( "Current to Panorama", currentToPanorama);
+		imshow( "Panorama Transformed", panoramaTransformed );
+		waitKey();
+		
+		cout << "Before addWeighted" << endl << endl;
+		addWeighted( panoramaTransformed, 0.5, currentToPanorama, 0.5, 0.0, panorama);
+		imshow( "Final Panorama", panorama );
+		waitKey();
 	}
 }
