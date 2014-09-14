@@ -101,7 +101,7 @@ namespace math
 	MatrixXd Ransac< T >::compute()
 	{
 		MatrixXd bestSol;
-		for( double iter = 0; iter < m_nIter; ++iter ) 
+		for( double iter = 0; iter < m_nIter && iter < 20000.; ++iter ) 
 		{
 			//cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
 			//	 << "Current iter: " << iter << endl << endl;

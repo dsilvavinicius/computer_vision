@@ -15,9 +15,57 @@ using namespace math;
 
 namespace model
 {
-	QPixmap PanoramaController::computePanorama( QPixmap& centerImg, vector< QPixmap& >& images,
-												vector< int >& orderIndices )
+	Mat PanoramaController::computePanorama( vector< Mat >& images )
 	{
+		int centerIdx = images.size() / 2;
+		cout << "Center photo " << centerIdx << endl << endl;
+		Mat currentImg = images[ centerIdx ];
+		Mat lastImg = currentImg;
+		Mat panoramaImg = currentImg;
+		Mat panoramaHomography = Mat::eye( 3, 3, CV_64F ); // Identity, at first.
+		Mat additionalTranslation = Mat::eye( 3, 3, CV_64F );
+		
+		for( int i = centerIdx + 1; i < images.size(); ++i )
+		{
+			cout << "Adding photo " << i << endl << endl;
+			double panoramaAlpha = ( i != centerIdx + 1 ) ? 1.f : 0.5f;
+			double currentAlpha = 0.5f;
+			
+			currentImg = images[ i ];
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true,
+									 panoramaAlpha, currentAlpha );
+			lastImg = currentImg;
+		}
+		
+		Mat translationFromRight = additionalTranslation;
+		
+		Point2d minCoords;
+		Point2d maxCoords;
+		Size finalSize;
+		Mat tmpImg = images[ centerIdx ];
+		PanoramaController::transformBoundingBox( translationFromRight, tmpImg, minCoords, maxCoords, finalSize );
+		warpPerspective( tmpImg, lastImg, translationFromRight, finalSize );
+		imshow( "Center translated because of right images stitching.", lastImg );
+		waitKey();
+		destroyAllWindows();
+
+		panoramaHomography = Mat::eye( 3, 3, CV_64F );;
+		for( int i = centerIdx - 1; i > -1; --i )
+		{
+			cout << "Adding photo " << i << endl << endl;
+			double panoramaAlpha = ( i != centerIdx - 1 ) ? 1.f : 0.5f;
+			double currentAlpha = 0.5f;
+			
+			tmpImg = images[ i ];
+			PanoramaController::transformBoundingBox( translationFromRight, tmpImg, minCoords, maxCoords, finalSize );
+			warpPerspective( tmpImg, currentImg, translationFromRight, finalSize );
+			
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false,
+									 panoramaAlpha, currentAlpha );
+			lastImg = currentImg;
+		}
+		
+		return panoramaImg;
 	}
 
 	// If inImage exists for the lifetime of the resulting cv::Mat, pass false to inCloneImageData to share inImage's
@@ -70,7 +118,7 @@ namespace model
       return QImageToCvMat( inPixmap.toImage(), inCloneImageData );
    }
 
-	vector< Correspondence > PanoramaController::match( Mat& img0, Mat& img1, vector< Correspondence >* outBetterMatches )
+	vector< Correspondence > PanoramaController::match( const Mat& img0, const Mat& img1, vector< Correspondence >* outBetterMatches )
 	{
 		CV_Assert(!img0.empty() && !img1.empty());
 		
@@ -107,7 +155,7 @@ namespace model
 			//-- PS.- radiusMatch can also be used here.
 			for( int i = 0; i < img0Descriptors.rows; i++ )
 			{
-				if( matches[i].distance <= max(2 * min_dist, 0.02) )
+				if( matches[i].distance <= 50/*max(2 * min_dist, 0.02)*/ )
 				{
 					DMatch match = matches[i];
 					matchesToRender.push_back( match );
@@ -132,6 +180,7 @@ namespace model
 		drawMatches( img0, img0KeyPoints, img1, img1KeyPoints, matchesToRender, imgMatches );
 		imshow( "matches", imgMatches );
 		waitKey( 0 );
+		destroyAllWindows();
 		
 		vector< Correspondence > correspondences;
 		for( vector< DMatch >::iterator iter = matches.begin(); iter != matches.end(); ++iter )
@@ -147,7 +196,7 @@ namespace model
 		return correspondences;
 	}
 	
-	void PanoramaController::transformBoundingBox( Mat& transform, Mat& image, Point2d& transfMinCoords,
+	void PanoramaController::transformBoundingBox( const Mat& transform, const Mat& image, Point2d& transfMinCoords,
 												   Point2d& transfMaxCoords, Size& finalSize )
 	{
 		// Computing offset to avoid cropping in the transformed image.
@@ -191,11 +240,13 @@ namespace model
 				<< finalSize.height << "]" << endl << endl;
 	}
 	
-	void PanoramaController::map( Mat& lastImg, Mat& currentImg, Mat& panorama, Mat& panoramaHomography )
+	void PanoramaController::map( const Mat& lastImg, const Mat& currentImg, Mat& panorama, Mat& panoramaHomography,
+								  Mat& additionalTranslation, const bool& isClockWise, const double& panoramaAlpha,
+								  const double& currentAlpha )
 	{
 		vector< Correspondence > bestCorrespondences;
 		vector< Correspondence > correspondences = PanoramaController::match(currentImg, lastImg, &bestCorrespondences);
-		Ransac< Correspondence > ransac( correspondences, 4, 0.99 );
+		Ransac< Correspondence > ransac( bestCorrespondences, 4, 0.99 );
 		MatrixXd H = ransac.compute();
 		
 		Mat cvH;
@@ -219,7 +270,7 @@ namespace model
 		translation.at< double >( 2, 0 ) = 0.; translation.at< double >( 2, 1 ) = 0.; translation.at< double >( 2, 2 ) = 1.;
 
 		cout << "Translation: " << endl << translation << endl << endl; 
-		
+		additionalTranslation = translation * additionalTranslation;
 		cvH = translation * cvH;
 		
 		Mat currentToLast;
@@ -229,27 +280,30 @@ namespace model
 		imshow( "Last", lastImg );
 		imshow( "Current to Last", currentToLast );
 		waitKey();
-		
-		cout << "Before compositing panorama and current homographies" << endl << endl; 
+		 
 		panoramaHomography = panoramaHomography * cvH;
 		
-		cout << "Before transformBoundingBox" << endl << endl; 
-		PanoramaController::transformBoundingBox(panoramaHomography, currentImg, minCoords, maxCoords, finalSize);
+		if( isClockWise )
+		{
+			PanoramaController::transformBoundingBox(panoramaHomography, currentImg, minCoords, maxCoords, finalSize);
+		}
+		else
+		{
+			PanoramaController::transformBoundingBox(translation, panorama, minCoords, maxCoords, finalSize);
+		}
 		
 		Mat currentToPanorama;
-		cout << "Before currentToPanorama" << endl << endl; 
 		warpPerspective( currentImg, currentToPanorama, panoramaHomography, finalSize );
 		Mat panoramaTransformed;
-		cout << "Before panoramaTransformed" << endl << endl;
 		warpPerspective( panorama, panoramaTransformed, translation, finalSize );
 		
 		imshow( "Current to Panorama", currentToPanorama);
 		imshow( "Panorama Transformed", panoramaTransformed );
 		waitKey();
 		
-		cout << "Before addWeighted" << endl << endl;
-		addWeighted( panoramaTransformed, 0.5, currentToPanorama, 0.5, 0.0, panorama);
+		addWeighted( panoramaTransformed, panoramaAlpha, currentToPanorama, currentAlpha, 0.0, panorama);
 		imshow( "Final Panorama", panorama );
 		waitKey();
+		destroyAllWindows();
 	}
 }

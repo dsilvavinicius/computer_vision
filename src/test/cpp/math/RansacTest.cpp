@@ -3,10 +3,7 @@
 #include "Dlt.h"
 
 #include <gtest/gtest.h>
-#include <QApplication>
-#include <qgraphicsitem.h>
 #include <highgui.h>
-#include <opencv2/imgproc/imgproc.hpp>
 
 using namespace math;
 
@@ -26,14 +23,16 @@ namespace math
 			void SetUp() {}
 		};
 		
-		TEST_F(RansacTest, Test)
+		TEST_F(RansacTest, DISABLED_Test)
 		{
-			Mat panoramaImg = imread("../../../src/images/panorama_yosemite/yosemite1.jpg");
-			Mat lastImg = imread("../../../src/images/panorama_yosemite/yosemite1.jpg");
-			Mat currentImg = imread("../../../src/images/panorama_yosemite/yosemite2.jpg");
+			Mat panoramaImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
+			Mat lastImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
+			Mat currentImg = imread( "../../../src/images/panorama_yosemite/yosemite2.jpg" );
 			
 			Mat panoramaHomography = Mat::eye( 3, 3, CV_64F ); // Identity, at first.
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography);
+			Mat additionalTranslation = Mat::eye( 3, 3, CV_64F );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true, 0.5,
+									 0.5);
 		}
 	}
 }

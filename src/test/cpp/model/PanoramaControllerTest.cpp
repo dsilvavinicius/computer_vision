@@ -1,8 +1,7 @@
 #include "PanoramaController.h"
 
 #include <gtest/gtest.h>
-#include <QString>
-#include <QApplication>
+#include <highgui.h>
 
 extern "C" int g_argc;
 extern "C" char** g_argv;
@@ -19,13 +18,15 @@ namespace model
 
 		TEST_F(PanoramaControllerTest, map)
 		{
-			/*QApplication app(g_argc, g_argv);
+			vector< Mat > images;
+			for( int i = 1; i < 5; ++i )
+			{
+				stringstream fileName;
+				fileName << "../../../src/images/panorama_yosemite/yosemite" << i << ".jpg";
+				images.push_back( imread( fileName.str() ) );
+			}
 			
-			QPixmap centerImg("../../../src/images/panorama/panorama1.JPG");
-			QPixmap currentImg("../../../src/images/panorama/panorama2.JPG");
-			Q_ASSERT(!centerImg.isNull() && !currentImg.isNull());
-			
-			PanoramaController::map(centerImg, currentImg);*/
+			PanoramaController::computePanorama( images );
 		}
 	}
 }
