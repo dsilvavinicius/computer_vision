@@ -90,7 +90,7 @@ namespace math
 		}
 		int numPoints = distances.size();
 		
-		double threshold = 3.;
+		double threshold = 2.;
 		
 		// Third, returns the percentage of outliers in the correspondence set.
 		int inliers = 0;

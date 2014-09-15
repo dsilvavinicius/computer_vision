@@ -17,6 +17,31 @@ namespace model
 {
 	Mat PanoramaController::computePanorama( vector< Mat >& images )
 	{
+		Mat currentImg = images[ 0 ];
+		cout << "Starting from photo 0" << endl << endl;
+		Mat lastImg = currentImg;
+		Mat panoramaImg = currentImg;
+		Mat panoramaHomography = Mat::eye( 3, 3, CV_64F ); // Identity, at first.
+		Mat additionalTranslation = Mat::eye( 3, 3, CV_64F );
+		
+		for( int i = 1; i < images.size(); ++i )
+		{
+			cout << "Adding photo " << i << endl << endl;
+			double panoramaAlpha = ( i != 1 ) ? 1.f : 0.5f;
+			double currentAlpha = 0.5f;
+			
+			currentImg = images[ i ];
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true,
+									 panoramaAlpha, currentAlpha );
+			lastImg = currentImg;
+		}
+		
+		return panoramaImg;
+	}
+	
+	// WARNING: The counter clockwise part of this algorithm is not working properly.
+	Mat PanoramaController::computePanoramaFromCenter( vector< Mat >& images )
+	{
 		int centerIdx = images.size() / 2;
 		cout << "Center photo " << centerIdx << endl << endl;
 		Mat currentImg = images[ centerIdx ];
@@ -37,28 +62,17 @@ namespace model
 			lastImg = currentImg;
 		}
 		
-		Mat translationFromRight = additionalTranslation;
-		
-		Point2d minCoords;
-		Point2d maxCoords;
-		Size finalSize;
-		Mat tmpImg = images[ centerIdx ];
-		PanoramaController::transformBoundingBox( translationFromRight, tmpImg, minCoords, maxCoords, finalSize );
-		warpPerspective( tmpImg, lastImg, translationFromRight, finalSize );
-		imshow( "Center translated because of right images stitching.", lastImg );
-		waitKey();
-		destroyAllWindows();
+		Mat translationFromRight = additionalTranslation.clone();
 
-		panoramaHomography = Mat::eye( 3, 3, CV_64F );;
+		panoramaHomography = translationFromRight.clone();
+		lastImg = images[ centerIdx ];
 		for( int i = centerIdx - 1; i > -1; --i )
 		{
 			cout << "Adding photo " << i << endl << endl;
 			double panoramaAlpha = ( i != centerIdx - 1 ) ? 1.f : 0.5f;
 			double currentAlpha = 0.5f;
 			
-			tmpImg = images[ i ];
-			PanoramaController::transformBoundingBox( translationFromRight, tmpImg, minCoords, maxCoords, finalSize );
-			warpPerspective( tmpImg, currentImg, translationFromRight, finalSize );
+			currentImg = images[ i ];
 			
 			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false,
 									 panoramaAlpha, currentAlpha );
@@ -175,12 +189,12 @@ namespace model
 		}
 		
 		// Drawing the results
-		namedWindow( "matches", 1 );
+		/*namedWindow( "matches", 1 );
 		Mat imgMatches;
 		drawMatches( img0, img0KeyPoints, img1, img1KeyPoints, matchesToRender, imgMatches );
 		imshow( "matches", imgMatches );
 		waitKey( 0 );
-		destroyAllWindows();
+		destroyAllWindows();*/
 		
 		vector< Correspondence > correspondences;
 		for( vector< DMatch >::iterator iter = matches.begin(); iter != matches.end(); ++iter )
@@ -271,15 +285,16 @@ namespace model
 
 		cout << "Translation: " << endl << translation << endl << endl; 
 		additionalTranslation = translation * additionalTranslation;
+		cout << "AdditionalTranslation: " << endl << additionalTranslation << endl << endl;
 		cvH = translation * cvH;
 		
-		Mat currentToLast;
+		/*Mat currentToLast;
 		warpPerspective( currentImg, currentToLast, cvH, finalSize );
 		
 		imshow( "Current", currentImg );
 		imshow( "Last", lastImg );
 		imshow( "Current to Last", currentToLast );
-		waitKey();
+		waitKey();*/
 		 
 		panoramaHomography = panoramaHomography * cvH;
 		
@@ -297,13 +312,16 @@ namespace model
 		Mat panoramaTransformed;
 		warpPerspective( panorama, panoramaTransformed, translation, finalSize );
 		
-		imshow( "Current to Panorama", currentToPanorama);
+		//Rect roi( Point( minCoords.x, minCoords.y ), Size( maxCoords.x - minCoords.x, maxCoords.y - minCoords.y ) );
+		//currentToPanorama.copyTo( panoramaTransformed( roi ) );
+		
+		/*imshow( "Current to Panorama", currentToPanorama);
 		imshow( "Panorama Transformed", panoramaTransformed );
-		waitKey();
+		waitKey();*/
 		
 		addWeighted( panoramaTransformed, panoramaAlpha, currentToPanorama, currentAlpha, 0.0, panorama);
-		imshow( "Final Panorama", panorama );
+		/*imshow( "Final Panorama", panorama );
 		waitKey();
-		destroyAllWindows();
+		destroyAllWindows();*/
 	}
 }

@@ -23,7 +23,7 @@ namespace math
 			void SetUp() {}
 		};
 		
-		TEST_F(RansacTest, DISABLED_Test)
+		TEST_F(RansacTest, DISABLED_CounterClockWise)
 		{
 			Mat panoramaImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
 			Mat lastImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
@@ -33,6 +33,26 @@ namespace math
 			Mat additionalTranslation = Mat::eye( 3, 3, CV_64F );
 			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true, 0.5,
 									 0.5);
+			lastImg = currentImg;
+			currentImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true, 1.,
+									 0.5 );
+		}
+		
+		TEST_F(RansacTest, DISABLED_ClockWise)
+		{
+			Mat panoramaImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
+			Mat lastImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
+			Mat currentImg = imread( "../../../src/images/panorama_yosemite/yosemite2.jpg" );
+			
+			Mat panoramaHomography = Mat::eye( 3, 3, CV_64F ); // Identity, at first.
+			Mat additionalTranslation = Mat::eye( 3, 3, CV_64F );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false, 0.5,
+									 0.5);
+			lastImg = currentImg;
+			currentImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false, 1.,
+									 0.5 );
 		}
 	}
 }

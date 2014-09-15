@@ -20,6 +20,10 @@ namespace model
 		/** Computes a panorama from given images. The image vector is assumed to be rotation-wise ordered. */
 		static Mat computePanorama( vector< Mat >& images );
 		
+		/** Computes a panorama from given images, using the center image as reference. The image vector is assumed to be
+		 * rotation-wise ordered. */
+		static Mat computePanoramaFromCenter( vector< Mat >& images );
+		
 		/** Computes the correspondences of img0 and img1.
 		 * @param outBetterMatches is an optional vector that will output the best computed matches. The vector returned by
 		 * the methods has all computed matches (even outliers).
