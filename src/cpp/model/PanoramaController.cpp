@@ -62,9 +62,9 @@ namespace model
 			lastImg = currentImg;
 		}
 		
-		Mat translationFromRight = additionalTranslation.clone();
+		Mat translationFromClockWise = additionalTranslation.clone();
 
-		panoramaHomography = translationFromRight.clone();
+		panoramaHomography = translationFromClockWise.clone();
 		lastImg = images[ centerIdx ];
 		for( int i = centerIdx - 1; i > -1; --i )
 		{
@@ -216,9 +216,9 @@ namespace model
 		// Computing offset to avoid cropping in the transformed image.
 		vector< Point2d > origPoints;
 		origPoints.push_back( Point2d( 0., 0. ) );
-		origPoints.push_back( Point2d( image.size[ 0 ] - 1, 0. ) );
-		origPoints.push_back( Point2d( image.size[ 0 ] - 1, image.size[ 1 ] - 1 ) );
-		origPoints.push_back( Point2d( 0., image.size[ 1 ] - 1 ) );
+		origPoints.push_back( Point2d( image.size().width - 1, 0. ) );
+		origPoints.push_back( Point2d( image.size().width - 1, image.size().height - 1 ) );
+		origPoints.push_back( Point2d( 0., image.size().width - 1 ) );
 		
 		cout << "CurrentImg box: " << endl;
 		for( Point2d point : origPoints ) { cout << point << endl; }
@@ -234,7 +234,6 @@ namespace model
 		{
 			Point2d original = origPoints[ i ];
 			Point2d transformed = transformedPoints[ i ];
-			cout << "Original pt " << original << " Transformed pt " << transformed << endl; 
 			
 			transfMinCoords.x = min( transfMinCoords.x, transformed.x );
 			transfMinCoords.y = min( transfMinCoords.y, transformed.y );
@@ -242,16 +241,12 @@ namespace model
 			transfMaxCoords.x = max( transfMaxCoords.x, transformed.x );
 			transfMaxCoords.y = max( transfMaxCoords.y, transformed.y );
 		}
-		Point2d translation( abs( transfMinCoords.x ), abs( transfMinCoords.y ) );
-		transfMinCoords.x = min( transfMinCoords.x, 0. );
-		transfMinCoords.y = min( transfMinCoords.y, 0. );
 		
-		finalSize.width = transfMaxCoords.x - transfMinCoords.x + translation.x;
-		finalSize.height = transfMaxCoords.y - transfMinCoords.y + translation.y;
+		finalSize.width = transfMaxCoords.x;
+		finalSize.height = transfMaxCoords.y;
 		
-		cout << "Input size [" << image.size[ 0 ] << ", " << image.size[ 1 ] << "], Max coords: " << transfMaxCoords
-				<< ", Min coords: " << transfMinCoords << endl << " Final size [" << finalSize.width << ", "
-				<< finalSize.height << "]" << endl << endl;
+		//cout << "Input size " << image.size() << ", Max coords: " << transfMaxCoords
+		//		<< ", Min coords: " << transfMinCoords << endl << " Final size " << finalSize << endl << endl;
 	}
 	
 	void PanoramaController::map( const Mat& lastImg, const Mat& currentImg, Mat& panorama, Mat& panoramaHomography,
@@ -271,57 +266,62 @@ namespace model
 		
 		cout << "Ransac Homography: " << endl << cvH << endl << endl; 
 		
-		Point2d minCoords;
-		Point2d maxCoords;
-		Size finalSize;
-		
-		PanoramaController::transformBoundingBox(cvH, currentImg, minCoords, maxCoords, finalSize);
-		
-		Mat translation;
-		translation.create( 3, 3, CV_64FC1 );
-		translation.at< double >( 0, 0 ) = 1.; translation.at< double >( 0, 1 ) = 0.; translation.at< double >( 0, 2 ) = -minCoords.x;
-		translation.at< double >( 1, 0 ) = 0.; translation.at< double >( 1, 1 ) = 1.; translation.at< double >( 1, 2 ) = -minCoords.y;
-		translation.at< double >( 2, 0 ) = 0.; translation.at< double >( 2, 1 ) = 0.; translation.at< double >( 2, 2 ) = 1.;
-
-		cout << "Translation: " << endl << translation << endl << endl; 
-		additionalTranslation = translation * additionalTranslation;
-		cout << "AdditionalTranslation: " << endl << additionalTranslation << endl << endl;
-		cvH = translation * cvH;
-		
-		/*Mat currentToLast;
-		warpPerspective( currentImg, currentToLast, cvH, finalSize );
-		
-		imshow( "Current", currentImg );
-		imshow( "Last", lastImg );
-		imshow( "Current to Last", currentToLast );
-		waitKey();*/
-		 
 		panoramaHomography = panoramaHomography * cvH;
 		
-		if( isClockWise )
-		{
-			PanoramaController::transformBoundingBox(panoramaHomography, currentImg, minCoords, maxCoords, finalSize);
-		}
-		else
-		{
-			PanoramaController::transformBoundingBox(translation, panorama, minCoords, maxCoords, finalSize);
-		}
+		Size currentTransformedSize;
+		Point2d currentToPanoramaROIOrigin;
+		Point2d currentToPanoramaROIMaxCoords;
+		PanoramaController::transformBoundingBox(panoramaHomography, currentImg, currentToPanoramaROIOrigin,
+												 currentToPanoramaROIMaxCoords, currentTransformedSize);
+		
+		// Taking into account the translation to avoid cropping pixels transformed to negative positions.
+		Mat translation;
+		translation.create( 3, 3, CV_64FC1 );
+		translation.at< double >( 0, 0 ) = 1.; translation.at< double >( 0, 1 ) = 0.; translation.at< double >( 0, 2 ) = -min( currentToPanoramaROIOrigin.x, 0. );
+		translation.at< double >( 1, 0 ) = 0.; translation.at< double >( 1, 1 ) = 1.; translation.at< double >( 1, 2 ) = -min( currentToPanoramaROIOrigin.y, 0. );
+		translation.at< double >( 2, 0 ) = 0.; translation.at< double >( 2, 1 ) = 0.; translation.at< double >( 2, 2 ) = 1.;
+		
+		panoramaHomography = translation * panoramaHomography;
+		additionalTranslation = translation * additionalTranslation;
+		
+		PanoramaController::transformBoundingBox(panoramaHomography, currentImg, currentToPanoramaROIOrigin,
+												 currentToPanoramaROIMaxCoords, currentTransformedSize);
+		
+		Size panoramaTranslatedSize;
+		Point2d panoramaTranslatedROIOrigin;
+		Point2d panoramaTranslatedROIMaxCoords;
+		PanoramaController::transformBoundingBox(translation, panorama, panoramaTranslatedROIOrigin,
+												 panoramaTranslatedROIMaxCoords, panoramaTranslatedSize);
+		
+		Size finalSize = isClockWise ? currentTransformedSize : panoramaTranslatedSize;
+		
+		Size currentToPanoramaROISize( min( currentToPanoramaROIMaxCoords.x - currentToPanoramaROIOrigin.x,
+											finalSize.width - currentToPanoramaROIOrigin.x ),
+									   min( currentToPanoramaROIMaxCoords.y - currentToPanoramaROIOrigin.y, 
+											finalSize.height - currentToPanoramaROIOrigin.y ) );
+		
+		cout << "Current to panorama size: " << currentTransformedSize << endl << endl
+			 << "Panorama size: " << panoramaTranslatedSize << endl << endl
+			 << "Final size:" << finalSize << endl << endl;
 		
 		Mat currentToPanorama;
 		warpPerspective( currentImg, currentToPanorama, panoramaHomography, finalSize );
+		
 		Mat panoramaTransformed;
 		warpPerspective( panorama, panoramaTransformed, translation, finalSize );
 		
-		//Rect roi( Point( minCoords.x, minCoords.y ), Size( maxCoords.x - minCoords.x, maxCoords.y - minCoords.y ) );
-		//currentToPanorama.copyTo( panoramaTransformed( roi ) );
+		Rect roiPanorama( currentToPanoramaROIOrigin, currentToPanoramaROISize );
 		
-		/*imshow( "Current to Panorama", currentToPanorama);
+		cout  << "Current to Panorama ROI: " << roiPanorama << endl << endl
+			 << "Current to panorama size: " << currentToPanorama.size() << endl << endl
+			 << "Panorama size: " << panoramaTransformed.size() << endl << endl;
+			 
+		currentToPanorama( roiPanorama ).copyTo( panoramaTransformed( roiPanorama ) );
+		
+		imshow( "Current to panorama", currentToPanorama );
 		imshow( "Panorama Transformed", panoramaTransformed );
-		waitKey();*/
-		
-		addWeighted( panoramaTransformed, panoramaAlpha, currentToPanorama, currentAlpha, 0.0, panorama);
-		/*imshow( "Final Panorama", panorama );
 		waitKey();
-		destroyAllWindows();*/
+		
+		panorama = panoramaTransformed;
 	}
 }
