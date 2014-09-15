@@ -39,7 +39,6 @@ namespace model
 		return panoramaImg;
 	}
 	
-	// WARNING: The counter clockwise part of this algorithm is not working properly.
 	Mat PanoramaController::computePanoramaFromCenter( vector< Mat >& images )
 	{
 		int centerIdx = images.size() / 2;
@@ -244,9 +243,6 @@ namespace model
 		
 		finalSize.width = transfMaxCoords.x;
 		finalSize.height = transfMaxCoords.y;
-		
-		//cout << "Input size " << image.size() << ", Max coords: " << transfMaxCoords
-		//		<< ", Min coords: " << transfMinCoords << endl << " Final size " << finalSize << endl << endl;
 	}
 	
 	void PanoramaController::map( const Mat& lastImg, const Mat& currentImg, Mat& panorama, Mat& panoramaHomography,
@@ -315,8 +311,12 @@ namespace model
 		cout  << "Current to Panorama ROI: " << roiPanorama << endl << endl
 			 << "Current to panorama size: " << currentToPanorama.size() << endl << endl
 			 << "Panorama size: " << panoramaTransformed.size() << endl << endl;
-			 
-		currentToPanorama( roiPanorama ).copyTo( panoramaTransformed( roiPanorama ) );
+		
+		Mat mask;
+		inRange( currentToPanorama( roiPanorama ), cv::Scalar(0., 0., 0.), cv::Scalar(0., 0., 0.), mask );
+		bitwise_not( mask, mask );
+		
+		currentToPanorama( roiPanorama ).copyTo( panoramaTransformed( roiPanorama ), mask );
 		
 		imshow( "Current to panorama", currentToPanorama );
 		imshow( "Panorama Transformed", panoramaTransformed );
