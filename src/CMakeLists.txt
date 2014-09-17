@@ -71,6 +71,7 @@ add_library(Computer_Vision_Lib
 	
 	${HEADER_DIR}/${MODEL_DIR}/RectificationController.h	${CPP_DIR}/${MODEL_DIR}/RectificationController.cpp
 	${HEADER_DIR}/${MODEL_DIR}/PanoramaController.h			${CPP_DIR}/${MODEL_DIR}/PanoramaController.cpp
+	${HEADER_DIR}/${MODEL_DIR}/ReconstructionController.h	${CPP_DIR}/${MODEL_DIR}/ReconstructionController.cpp
 	
 	${HEADER_DIR}/${MATH_DIR}/IPointMapper.h							${CPP_DIR}/${MATH_DIR}/IPointMapper.cpp
 	${HEADER_DIR}/${MATH_DIR}/AssistedSimilarityFromProjRectificator.h	${CPP_DIR}/${MATH_DIR}/AssistedSimilarityFromProjRectificator.cpp
@@ -79,6 +80,8 @@ add_library(Computer_Vision_Lib
 	${HEADER_DIR}/${MATH_DIR}/SimilarityFromProjRectificator.h			${CPP_DIR}/${MATH_DIR}/SimilarityFromProjRectificator.cpp
 	${HEADER_DIR}/${MATH_DIR}/Ransac.h
 	${HEADER_DIR}/${MATH_DIR}/Dlt.h										${CPP_DIR}/${MATH_DIR}/Dlt.cpp
+	${HEADER_DIR}/${MATH_DIR}/DltBase.h									${CPP_DIR}/${MATH_DIR}/DltBase.cpp
+	${HEADER_DIR}/${MATH_DIR}/Correspondence.h							${CPP_DIR}/${MATH_DIR}/Correspondence.cpp
 	
 	${HEADER_DIR}/${UTILS_DIR}/CircularList.h
 )
