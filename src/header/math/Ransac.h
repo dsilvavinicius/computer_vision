@@ -11,7 +11,7 @@
 #include <functional>
 #include <Eigen/Dense>
 
-#include "Dlt.h"
+#include "PanoramaDlt.h"
 
 using namespace std;
 using namespace Eigen;

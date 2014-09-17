@@ -241,7 +241,7 @@ namespace model
 	{
 		vector< Correspondence > bestCorrespondences;
 		vector< Correspondence > correspondences = PanoramaController::match(currentImg, lastImg, &bestCorrespondences);
-		Ransac< Correspondence, Dlt > ransac( bestCorrespondences, 4, 0.99 );
+		Ransac< Correspondence, PanoramaDlt > ransac( bestCorrespondences, 4, 0.99 );
 		MatrixXd H = ransac.compute();
 		
 		Mat cvH;

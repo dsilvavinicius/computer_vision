@@ -12,10 +12,10 @@ using namespace Eigen;
 namespace math
 {
 	/** Implements the Direct Linear Transformation to solve the image panorama problem. */
-	class Dlt : public DltBase
+	class PanoramaDlt : public DltBase
 	{
 	public:
-		Dlt( vector< Correspondence > sample );
+		PanoramaDlt( vector< Correspondence > sample );
 		
 		int scoreSolution( vector< Correspondence > allCorrespondences);
 	

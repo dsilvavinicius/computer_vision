@@ -1,4 +1,4 @@
-#include "Dlt.h"
+#include "PanoramaDlt.h"
 
 #include <gtest/gtest.h>
 
@@ -6,7 +6,7 @@ namespace math
 {
 	namespace test
 	{
-        class DltTest : public ::testing::Test
+        class PanoramaDltTest : public ::testing::Test
 		{
 		protected:
 			void SetUp() {}
@@ -14,7 +14,7 @@ namespace math
 		
 		/** Tests Dlt by creating a transform H and correlating generated points with transformed points. Test pass if the Dlt
 		 * solution is the inverse of H. */
-		TEST_F( DltTest, SimpleTransform )
+		TEST_F( PanoramaDltTest, SimpleTransform )
 		{
 			// The transformation is a rotation around z axis, a translation and an anisotropic scale.
 			MatrixXd H(3, 3);
@@ -41,7 +41,7 @@ namespace math
 			correspondences.push_back( Correspondence( p2i0, p2i1 ) );
 			correspondences.push_back( Correspondence( p3i0, p3i1 ) );
 			
-			Dlt dlt( correspondences );
+			PanoramaDlt dlt( correspondences );
 			MatrixXd dltSolution = dlt.solve();
 			
 			VectorXd transfP0 = dltSolution * p0i0; transfP0 = transfP0 / transfP0[2];

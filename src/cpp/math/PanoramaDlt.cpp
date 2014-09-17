@@ -1,15 +1,15 @@
-#include "Dlt.h"
+#include "PanoramaDlt.h"
 #include <iostream>
 
 using namespace std;
 
 namespace math
 {
-	Dlt::Dlt( vector< Correspondence > sample )
+	PanoramaDlt::PanoramaDlt( vector< Correspondence > sample )
 	: DltBase( sample )
 	{}
 	
-	MatrixXd Dlt::createLinearSystem()
+	MatrixXd PanoramaDlt::createLinearSystem()
 	{
 		int sampleSize = m_sample->size();
 		MatrixXd A( 2 * sampleSize, 9 );
@@ -26,7 +26,7 @@ namespace math
 		return A;
 	}
 	
-	int Dlt::scoreSolution( vector< Correspondence > correspondences )
+	int PanoramaDlt::scoreSolution( vector< Correspondence > correspondences )
 	{
 		// First, calculates the distance variance.
 		vector< double > distances;

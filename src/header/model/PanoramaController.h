@@ -3,7 +3,7 @@
 #include <QPixmap>
 #include <vector>
 #include <opencv2/core/core.hpp>
-#include "Dlt.h"
+#include "PanoramaDlt.h"
 
 namespace cv {
 struct DMatch;}
