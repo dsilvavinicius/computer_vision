@@ -23,7 +23,7 @@ namespace math
 			void SetUp() {}
 		};
 		
-		TEST_F(RansacTest, DISABLED_CounterClockWise)
+		TEST_F(RansacTest, CounterClockWise)
 		{
 			Mat panoramaImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
 			Mat lastImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
@@ -31,15 +31,13 @@ namespace math
 			
 			Mat panoramaHomography = Mat::eye( 3, 3, CV_64F ); // Identity, at first.
 			Mat additionalTranslation = Mat::eye( 3, 3, CV_64F );
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true, 0.5,
-									 0.5);
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true );
 			lastImg = currentImg;
 			currentImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true, 1.,
-									 0.5 );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true );
 		}
 		
-		TEST_F(RansacTest, DISABLED_ClockWise)
+		TEST_F(RansacTest, ClockWise)
 		{
 			Mat panoramaImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
 			Mat lastImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
@@ -47,12 +45,10 @@ namespace math
 			
 			Mat panoramaHomography = Mat::eye( 3, 3, CV_64F ); // Identity, at first.
 			Mat additionalTranslation = Mat::eye( 3, 3, CV_64F );
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false, 0.5,
-									 0.5);
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false );
 			lastImg = currentImg;
 			currentImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false, 1.,
-									 0.5 );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false );
 		}
 	}
 }

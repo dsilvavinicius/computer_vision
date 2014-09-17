@@ -40,8 +40,7 @@ namespace model
 		 * panorama space is previously know. Then uses this already-known panoramaHomography to do the final map to
 		 * panorama space. The alpha paramters are used just for blending the final panorama image. */
 		static void map( const Mat& lastImg, const Mat& currentImg, Mat& in_out_panorama, Mat& in_out_panoramaHomography,
-						 Mat& in_out_additionalTranslation, const bool& isClockWise, const double& panoramaAlpha,
-						 const double& currentAlpha );
+						 Mat& in_out_additionalTranslation, const bool& isClockWise );
 		
 		/** Converts a QImage to OpenCV Mat. */
 		static cv::Mat QImageToCvMat( const QImage &inImage, bool inCloneImageData = true );

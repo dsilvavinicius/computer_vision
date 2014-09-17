@@ -27,12 +27,9 @@ namespace model
 		for( int i = 1; i < images.size(); ++i )
 		{
 			cout << "Adding photo " << i << endl << endl;
-			double panoramaAlpha = ( i != 1 ) ? 1.f : 0.5f;
-			double currentAlpha = 0.5f;
 			
 			currentImg = images[ i ];
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true,
-									 panoramaAlpha, currentAlpha );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true );
 			lastImg = currentImg;
 		}
 		
@@ -52,12 +49,9 @@ namespace model
 		for( int i = centerIdx + 1; i < images.size(); ++i )
 		{
 			cout << "Adding photo " << i << endl << endl;
-			double panoramaAlpha = ( i != centerIdx + 1 ) ? 1.f : 0.5f;
-			double currentAlpha = 0.5f;
 			
 			currentImg = images[ i ];
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true,
-									 panoramaAlpha, currentAlpha );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true );
 			lastImg = currentImg;
 		}
 		
@@ -68,13 +62,10 @@ namespace model
 		for( int i = centerIdx - 1; i > -1; --i )
 		{
 			cout << "Adding photo " << i << endl << endl;
-			double panoramaAlpha = ( i != centerIdx - 1 ) ? 1.f : 0.5f;
-			double currentAlpha = 0.5f;
 			
 			currentImg = images[ i ];
 			
-			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false,
-									 panoramaAlpha, currentAlpha );
+			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, false );
 			lastImg = currentImg;
 		}
 		
@@ -246,12 +237,11 @@ namespace model
 	}
 	
 	void PanoramaController::map( const Mat& lastImg, const Mat& currentImg, Mat& panorama, Mat& panoramaHomography,
-								  Mat& additionalTranslation, const bool& isClockWise, const double& panoramaAlpha,
-								  const double& currentAlpha )
+								  Mat& additionalTranslation, const bool& isClockWise )
 	{
 		vector< Correspondence > bestCorrespondences;
 		vector< Correspondence > correspondences = PanoramaController::match(currentImg, lastImg, &bestCorrespondences);
-		Ransac< Correspondence > ransac( bestCorrespondences, 4, 0.99 );
+		Ransac< Correspondence, Dlt > ransac( bestCorrespondences, 4, 0.99 );
 		MatrixXd H = ransac.compute();
 		
 		Mat cvH;
@@ -318,7 +308,6 @@ namespace model
 		
 		currentToPanorama( roiPanorama ).copyTo( panoramaTransformed( roiPanorama ), mask );
 		
-		imshow( "Current to panorama", currentToPanorama );
 		imshow( "Panorama Transformed", panoramaTransformed );
 		waitKey();
 		
