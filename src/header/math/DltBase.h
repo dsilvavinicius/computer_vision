@@ -29,11 +29,19 @@ namespace math
 		
 		/** Scores the solution of this DLT instance with the number of inliers in the given set of
 		 * correspondences. */
-		virtual int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) = 0;
+		virtual int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) const = 0;
 	
 	protected:
+		/** Assembles the DLT normalizers. Default implementation makes two 3x3 matrices. */
+		virtual pair< MatrixXd, MatrixXd > buildNormalizers( const VectorXd& centroid0, const double& scale0,
+															 const VectorXd& centroid1, const double& scale1 );
+		
 		/** Creates the linear system to solve. */
-		virtual MatrixXd createLinearSystem() = 0;
+		virtual MatrixXd createLinearSystem() const = 0;
+		
+		/** Assembles the solution of the linear system into the final result m_resultH. The default implementation
+		 * makes a 3x3 matrix. */
+		virtual MatrixXd buildSolutionMatrix( VectorXd& solution ) const;
 		
 		/** Applies restrions on the linear system result before denormalization. At the time this method is called m_resultH
 		 * already has the current normalized solution of the linear system. Default implementation does nothing. */

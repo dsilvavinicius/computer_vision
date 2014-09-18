@@ -17,10 +17,10 @@ namespace math
 	public:
 		PanoramaDlt( vector< Correspondence >& sample );
 		
-		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences);
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences) const;
 	
 	protected:
-		MatrixXd createLinearSystem();
+		MatrixXd createLinearSystem() const;
 	};
 }
 

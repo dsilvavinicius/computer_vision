@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include "Correspondence.h"
 #include <EssentialMatrixDlt.h>
+#include <ReconstructionRansac.h>
 
 using namespace Eigen;
 using namespace std;
@@ -12,6 +13,7 @@ using namespace math;
 
 namespace model
 {
+	
 	class ReconstructionController
 	{
 	public:
@@ -27,7 +29,7 @@ namespace model
 		static MatrixXd computeP( MatrixXd& E );
 		
 		shared_ptr< vector< Correspondence > > m_correspondences;
-		shared_ptr< EssentialMatrixDlt > m_essentialMatDlt;
+		shared_ptr< ReconstructionRansac > m_ransac;
 	};
 }
 

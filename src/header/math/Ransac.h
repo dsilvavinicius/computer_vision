@@ -12,6 +12,7 @@
 #include <Eigen/Dense>
 
 #include "PanoramaDlt.h"
+#include "EssentialMatrixDlt.h"
 
 using namespace std;
 using namespace Eigen;
@@ -98,6 +99,10 @@ namespace math
 	{
 		return Solver( sample );
 	}
+	
+	/** Dummy specialization. This code will be overriden by ReconstructionRansac. What a shame! */
+	template <>
+	EssentialMatrixDlt Ransac< Correspondence, EssentialMatrixDlt >::createSolver( vector< Correspondence >& sample );
 	
 	template< typename Correspondence, typename Solver >
 	MatrixXd Ransac< Correspondence, Solver >::compute()

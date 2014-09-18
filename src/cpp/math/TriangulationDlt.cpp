@@ -8,7 +8,7 @@ namespace math
 	m_P1( P1 )
 	{}
 	
-	MatrixXd TriangulationDlt::createLinearSystem()
+	MatrixXd TriangulationDlt::createLinearSystem() const
 	{
 		MatrixXd A( 4, 4 );
 		

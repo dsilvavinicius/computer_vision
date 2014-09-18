@@ -1,5 +1,7 @@
 #include "ReconstructionController.h"
 #include <Ransac.h>
+#include <TriangulationDlt.h>
+#include <ReconstructionRansac.h>
 
 namespace model
 {
@@ -7,14 +9,13 @@ namespace model
 	: m_correspondences( make_shared< vector< Correspondence > >( correspondences ) )
 	{
 		if( correspondences.size() < 8 ) { throw logic_error("8 correspondences needed to compute essential matrix."); }
-		m_essentialMatDlt = make_shared< EssentialMatrixDlt >( correspondences, K0, K1 );
+		m_ransac = make_shared< ReconstructionRansac >( make_shared< vector< Correspondence > >( correspondences ), K0, K1 );
 	}
 
 	vector< VectorXd > ReconstructionController::reconstruct()
 	{
-		//Ransac< Correspondence, EssentialMatrixDlt > ransac( m_correspondences, 8 );
-		//MatrixXd E = ransac.compute();
-		//MatrixXd P = computeP( E );
+		MatrixXd E = m_ransac->compute();
+		MatrixXd P = computeP( E );
 	}
 	
 	MatrixXd ReconstructionController::computeP( MatrixXd& E )
@@ -35,7 +36,8 @@ namespace model
 			 PnoT( 1, 0 ), PnoT( 1, 1 ), PnoT( 1, 2 ), u3[ 1 ],
 			 PnoT( 2, 0 ), PnoT( 2, 1 ), PnoT( 2, 2 ), u3[ 2 ];
 		
-		/**if()
+		/*TriangulationDlt dlt(  );
+		if()
 		{
 		}*/
 	}

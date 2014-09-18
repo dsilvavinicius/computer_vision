@@ -9,7 +9,7 @@ namespace math
 	: DltBase( sample )
 	{}
 	
-	MatrixXd PanoramaDlt::createLinearSystem()
+	MatrixXd PanoramaDlt::createLinearSystem() const
 	{
 		int sampleSize = m_sample->size();
 		MatrixXd A( 2 * sampleSize, 9 );
@@ -26,7 +26,7 @@ namespace math
 		return A;
 	}
 	
-	int PanoramaDlt::scoreSolution( shared_ptr< vector< Correspondence > > correspondences )
+	int PanoramaDlt::scoreSolution( shared_ptr< vector< Correspondence > > correspondences ) const
 	{
 		// First, calculates the distance variance.
 		vector< double > distances;

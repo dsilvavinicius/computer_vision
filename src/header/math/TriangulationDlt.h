@@ -14,7 +14,7 @@ namespace math
 		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
 	
 	protected:
-		MatrixXd createLinearSystem();
+		MatrixXd createLinearSystem() const;
 		
 		/** Saves the final 3D point. */
 		void onDenormalizationEnd();

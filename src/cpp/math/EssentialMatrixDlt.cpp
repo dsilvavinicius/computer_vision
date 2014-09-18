@@ -2,13 +2,14 @@
 
 namespace math
 {
-	EssentialMatrixDlt::EssentialMatrixDlt( vector< Correspondence >& correspondences, MatrixXd& K0, MatrixXd K1 )
+	EssentialMatrixDlt::EssentialMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0,
+											shared_ptr< MatrixXd > K1 )
 	: DltBase( correspondences ),
-	m_K0( make_shared< MatrixXd >( K0 ) ),
-	m_K1( make_shared< MatrixXd >( K1 ) )
+	m_K0( K0 ),
+	m_K1( K1 )
 	{}
 	
-	MatrixXd EssentialMatrixDlt::createLinearSystem()
+	MatrixXd EssentialMatrixDlt::createLinearSystem() const
 	{
 		int sampleSize = m_sample->size();
 		MatrixXd A( sampleSize, 9 );
@@ -40,7 +41,7 @@ namespace math
 		*m_resultH = ( m_K1->transpose() ) * ( *m_resultH ) * ( *m_K0 );
 	}
 	
-	int EssentialMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences )
+	int EssentialMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) const
 	{
 		
 	}
