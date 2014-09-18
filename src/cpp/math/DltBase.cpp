@@ -9,7 +9,9 @@ namespace math
 		m_sample( make_shared< vector< Correspondence > >( sample ) )
 	{}
 	
-	void DltBase::applyRestrictions() { ; }
+	void DltBase::applyRestrictions() {}
+	
+	void DltBase::onDenormalizationEnd() {}
 	
 	MatrixXd DltBase::solve()
 	{

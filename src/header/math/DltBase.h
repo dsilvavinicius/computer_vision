@@ -32,8 +32,13 @@ namespace math
 		/** Creates the linear system to solve. */
 		virtual MatrixXd createLinearSystem() = 0;
 		
-		/** Applies restrions on the linear system result before denormalization. Default implementation does nothing. */
+		/** Applies restrions on the linear system result before denormalization. At the time this method is called m_resultH
+		 * already has the current normalized solution of the linear system. Default implementation does nothing. */
 		virtual void applyRestrictions();
+		
+		/** Called after the denormalization is done (m_resultH will have the denormalized result at this time). Default
+		 * implementation does nothing. */
+		virtual void onDenormalizationEnd();
 	
 		/** Normalizes the points in the sets S0 and S1 which are the sets being corresponded, resulting in one normalization
 		 * matrix for each set. The normalization puts the centroid of the point set at origin and scales the space as the
