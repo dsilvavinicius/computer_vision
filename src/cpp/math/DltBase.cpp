@@ -5,7 +5,7 @@ using namespace std;
 
 namespace math
 {
-	DltBase::DltBase( vector< Correspondence > sample ) :
+	DltBase::DltBase( vector< Correspondence >& sample ) :
 		m_sample( make_shared< vector< Correspondence > >( sample ) )
 	{}
 	
@@ -34,11 +34,15 @@ namespace math
 			//cout << "SVD V matrix: " << endl << svd.matrixV() << endl << endl;
 			
 			VectorXd hCol = svd.matrixV().col(7);
-			
-			m_resultH = make_shared< MatrixXd >(3, 3);
-			(*m_resultH) << hCol[0], hCol[1], hCol[2],
-							hCol[3], hCol[4], hCol[5],
-							hCol[6], hCol[7], hCol[8];
+			int resultDim = sqrt( hCol.innerSize() );
+			m_resultH = make_shared< MatrixXd >(resultDim, resultDim);
+			for( int i = 0; i < resultDim; ++i )
+			{
+				for( int j = 0; j < resultDim; ++j )
+				{
+					(*m_resultH)( i, j ) = hCol[ resultDim * i + j ];
+				}
+			}
 			
 			applyRestrictions();
 			
@@ -48,6 +52,15 @@ namespace math
 			
 			return *m_resultH;
 		}
+	}
+	
+	MatrixXd DltBase::getSolution()
+	{
+		if( m_resultH == nullptr )
+		{
+			solve();
+		}
+		return *m_resultH;
 	}
 	
 	void DltBase::normalize()

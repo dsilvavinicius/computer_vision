@@ -8,7 +8,10 @@ namespace math
 	class EssentialMatrixDlt : public DltBase
 	{
 	public:
-		int scoreSolution( vector< Correspondence > allCorrespondences );
+		/** Builds this DLT, given the correspondence vector and camera calibration matrices. */
+		EssentialMatrixDlt( vector< Correspondence >& correspondences, MatrixXd& K0, MatrixXd K1 );
+		
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
 		
 		/** Calculates the essential matrix after fundamental matrix normalization. */
 		void onDenormalizationEnd();
@@ -20,6 +23,9 @@ namespace math
 		
 		/** Applies the fundamental matrix restrictions. */
 		void applyRestrictions();
+	private:
+		shared_ptr< MatrixXd > m_K0;
+		shared_ptr< MatrixXd > m_K1;
 	};
 }
 

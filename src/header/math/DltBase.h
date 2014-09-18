@@ -18,15 +18,18 @@ namespace math
 	{
 	public:
 		/** Inits this Dlt, given the sample of correspondences. */
-		DltBase( vector< Correspondence > sample );
+		DltBase( vector< Correspondence >& sample );
 		
 		/** Computes the results of the generated linear system the system is normalized before computing results and
 		 * denormalized afterwards. */
 		MatrixXd solve();
 		
+		/** Returns the already computed solution of the linear system. */
+		MatrixXd getSolution();
+		
 		/** Scores the solution of this DLT instance with the number of inliers in the given set of
 		 * correspondences. */
-		virtual int scoreSolution( vector< Correspondence > allCorrespondences ) = 0;
+		virtual int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) = 0;
 	
 	protected:
 		/** Creates the linear system to solve. */

@@ -15,9 +15,9 @@ namespace math
 	class PanoramaDlt : public DltBase
 	{
 	public:
-		PanoramaDlt( vector< Correspondence > sample );
+		PanoramaDlt( vector< Correspondence >& sample );
 		
-		int scoreSolution( vector< Correspondence > allCorrespondences);
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences);
 	
 	protected:
 		MatrixXd createLinearSystem();

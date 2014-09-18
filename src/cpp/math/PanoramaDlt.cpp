@@ -5,7 +5,7 @@ using namespace std;
 
 namespace math
 {
-	PanoramaDlt::PanoramaDlt( vector< Correspondence > sample )
+	PanoramaDlt::PanoramaDlt( vector< Correspondence >& sample )
 	: DltBase( sample )
 	{}
 	
@@ -26,11 +26,11 @@ namespace math
 		return A;
 	}
 	
-	int PanoramaDlt::scoreSolution( vector< Correspondence > correspondences )
+	int PanoramaDlt::scoreSolution( shared_ptr< vector< Correspondence > > correspondences )
 	{
 		// First, calculates the distance variance.
 		vector< double > distances;
-		for( Correspondence correspondence : correspondences )
+		for( Correspondence correspondence : *correspondences )
 		{
 			VectorXd transformed = ( *m_resultH ) * correspondence.first;
 			transformed = transformed / transformed[ 2 ];

@@ -32,7 +32,9 @@ namespace math
 		 * @param nElementsPerSample is the number of elements in a sample. The sample defines the linear system.
 		 * @param epsilon is the initial probability of outliers in samples.
 		 */
-		Ransac( vector< Correspondence > set, int nElementsPerSample, double epsilon );
+		Ransac( shared_ptr< vector< Correspondence > > set, int nElementsPerSample, double epsilon = 1. );
+		
+		Ransac( vector< Correspondence >& set, int nElementsPerSample, double epsilon = 1. );
 		
 		/** Computes the result of the linear system.
 		 * @param evaluator evaluates the vector of samples and returns the system solution.
@@ -40,19 +42,21 @@ namespace math
 		 */
 		MatrixXd compute();
 		
-		/** Table for some precomputed values of number of iterations for Ransac. The key is a pair with first member being
-		 * the number of elements in the sample and the second member being the percentage of outliers in the set. */
-		//static RansacIterTable m_iterTable;
-		
-	private:
-		/** Calculates the iteration table key, given the number of elements in sample and probability of having outliers. */
-		//static float calcIterTableKey( int numElements, float outlierProb );
+		shared_ptr< Solver > getSolver();
+	
+	protected:
+		/** Method to create the solvers for RANSAC iterations. Default implementation just calls the solver constructor
+		 * with the current sample as parameter. */
+		virtual Solver createSolver( vector< Correspondence >& sample );
 		
 		/** Gets the number of iteration, give the number of elements in sample and the probability of having outliers. */
 		static double getIterNumber( int numElements, float outlierProb );
 		
 		/** The samples. */
-		vector< Correspondence > m_set;
+		shared_ptr< vector< Correspondence > > m_set;
+		
+		/** The solver of the best iteration of the RANSAC loop. */
+		shared_ptr< Solver > m_bestSolver;
 		
 		/** Probability of getting outliers. */
 		double m_epsilon;
@@ -64,15 +68,6 @@ namespace math
 		double m_nIter;
 	};
 	
-	//template< typename T>
-	//RansacIterTable Ransac< T >::m_iterTable = Ransac< T >::genIterTable();
-	
-	/*template< typename T>
-	float Ransac< T >::calcIterTableKey( int numElements, float outlierProb )
-	{
-		return numElements * outlierProb;
-	}*/
-	
 	template< typename Correspondence, typename Solver >
 	double Ransac< Correspondence, Solver >::getIterNumber( int numElements, float outlierProb )
 	{
@@ -83,22 +78,30 @@ namespace math
 	}
 	
 	template< typename Correspondence, typename Solver >
-	Ransac< Correspondence, Solver >::Ransac( vector< Correspondence > set, int nElementsPerSample,
+	Ransac< Correspondence, Solver >::Ransac( vector< Correspondence >& set, int nElementsPerSample, double epsilon)
+	: Ransac( make_shared< vector< Correspondence > >( set ), nElementsPerSample, epsilon )
+	{}
+	
+	template< typename Correspondence, typename Solver >
+	Ransac< Correspondence, Solver >::Ransac( shared_ptr< vector< Correspondence > > set, int nElementsPerSample,
 																double epsilon ) :
 		m_set( set ),
 		m_nElementsPerSample( nElementsPerSample ),
 		m_epsilon( epsilon )
 	{
-		//m_epsilon = epsilon > 0.5 ? 0.5 : epsilon;
-		
 		m_nIter = getIterNumber( m_nElementsPerSample, m_epsilon );
 		srand( time( NULL ) );
 	}
 	
 	template< typename Correspondence, typename Solver >
+	Solver Ransac< Correspondence, Solver >::createSolver( vector< Correspondence >& sample )
+	{
+		return Solver( sample );
+	}
+	
+	template< typename Correspondence, typename Solver >
 	MatrixXd Ransac< Correspondence, Solver >::compute()
 	{
-		MatrixXd bestSol;
 		for( double iter = 0; iter < m_nIter && iter < 20000.; ++iter ) 
 		{
 			//cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
@@ -108,30 +111,36 @@ namespace math
 			
 			for( int i = 0; i < m_nElementsPerSample; ++i )
 			{
-				sample.push_back( m_set[ rand() % m_set.size() ] );
+				sample.push_back( ( *m_set )[ rand() % m_set->size() ] );
 			}
 			
-			Solver solver( sample );
+			Solver solver = createSolver( sample );
 			MatrixXd systemSol = solver.solve();
 			
 			int currInliers = solver.scoreSolution( m_set );
-			double newEpsilon = 1 - ((double) currInliers /  m_set.size() );
+			double newEpsilon = 1 - ((double) currInliers /  m_set->size() );
 			//cout << "Iter score: " << newEpsilon << endl << endl;
 			
 			if( newEpsilon < m_epsilon )
 			{
-				cout << "Better result. Inliers: " << currInliers << " of " << m_set.size() << ", Prev epsilon: "
+				cout << "Better result. Inliers: " << currInliers << " of " << m_set->size() << ", Prev epsilon: "
 					 << m_epsilon << ", new Epsilon: " << newEpsilon << ", Prev iter: " << m_nIter;
 				
 				m_epsilon = newEpsilon;
 				m_nIter = getIterNumber( m_nElementsPerSample, m_epsilon );
 				
 				cout << ", New Iter: " << m_nIter << ", Current Iter: " << iter << endl << endl;
-				bestSol = systemSol;
+				m_bestSolver = make_shared< Solver >( solver );
 			}
 		}
 		
-		return bestSol;
+		return m_bestSolver->getSolution();
+	}
+	
+	template< typename Correspondence, typename Solver >
+	shared_ptr< Solver > Ransac< Correspondence, Solver >::getSolver()
+	{
+		return m_bestSolver;
 	}
 }
 
