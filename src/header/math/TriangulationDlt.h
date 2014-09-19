@@ -9,14 +9,23 @@ namespace math
 	class TriangulationDlt : public DltBase
 	{
 	public:
-		TriangulationDlt( vector< Correspondence>& correspondence, MatrixXd& P0, MatrixXd& P1);
+		TriangulationDlt( vector< Correspondence>& correspondence, const MatrixXd& P0, const MatrixXd& P1);
 		
-		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) const;
 	
+		/** Gets the final reconstructed 3d point. It's the same value returned by getSolution() or solve(), but as
+		 * a VectorXd instead of MatrixXd. */
+		VectorXd getPoint3D();
 	protected:
+		void buildAndApplyNormalizers( const VectorXd& centroid0, const double& scale0, const VectorXd& centroid1,
+									   const double& scale1 );
+		
+		void normalize();
+		
 		MatrixXd createLinearSystem() const;
 		
-		/** Saves the final 3D point. */
+		MatrixXd buildSolutionMatrix( VectorXd& solution ) const;
+		
 		void onDenormalizationEnd();
 	
 	private:
@@ -25,9 +34,6 @@ namespace math
 		
 		/** Camera matrix P1. */
 		MatrixXd m_P1;
-		
-		/** Final reconstructed 3D point. */
-		VectorXd m_3DPoint;
 	};
 }
 

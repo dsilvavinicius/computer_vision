@@ -17,28 +17,4 @@ namespace model
 		MatrixXd E = m_ransac->compute();
 		MatrixXd P = computeP( E );
 	}
-	
-	MatrixXd ReconstructionController::computeP( MatrixXd& E )
-	{
-		JacobiSVD< MatrixXd > svd( E, ComputeFullU | ComputeFullV );
-		MatrixXd U = svd.matrixU();
-		MatrixXd Vt = svd.matrixV().transpose();
-		MatrixXd W( 3 , 3);
-		W << 0., -1., 0.,
-			 1., 0., 0.,
-			 0., 0., 1.;
-		VectorXd u3 = U.col(2);
-		
-		MatrixXd PnoT = U * W * Vt; // P without translation part.
-		
-		MatrixXd P( 3, 4 );
-		P << PnoT( 0, 0 ), PnoT( 0, 1 ), PnoT( 0, 2 ), u3[ 0 ],
-			 PnoT( 1, 0 ), PnoT( 1, 1 ), PnoT( 1, 2 ), u3[ 1 ],
-			 PnoT( 2, 0 ), PnoT( 2, 1 ), PnoT( 2, 2 ), u3[ 2 ];
-		
-		/*TriangulationDlt dlt(  );
-		if()
-		{
-		}*/
-	}
 }

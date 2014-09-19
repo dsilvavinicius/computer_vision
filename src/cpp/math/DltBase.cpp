@@ -45,10 +45,25 @@ namespace math
 		double scale0 = 1.414213562 / ( distanceSum0 / m_sample->size() );
 		double scale1 = 1.414213562 / ( distanceSum1 / m_sample->size() );
 		
-		pair< MatrixXd, MatrixXd > normalizers = buildNormalizers( centroid0, scale0, centroid1, scale1 );
-		m_S0Normalizer = make_shared< MatrixXd >( normalizers.first );
-		m_S1Normalizer = make_shared< MatrixXd >( normalizers.second );
+		buildAndApplyNormalizers( centroid0, scale0, centroid1, scale1 );
+	}
+	
+	void DltBase::buildAndApplyNormalizers(const VectorXd& centroid0, const double& scale0,
+														 const VectorXd& centroid1, const double& scale1 )
+	{
+		m_S0Normalizer = make_shared< MatrixXd >( 3, 3) ;
+		( *m_S0Normalizer ) << scale0	, 0.	, -centroid0[ 0 ],
+							0.		, scale0, -centroid0[ 1 ],
+							0.		, 0.	, 1;
+							 
+		m_S1Normalizer = make_shared< MatrixXd >( 3, 3 );
+		( *m_S1Normalizer ) << scale1	, 0.	, -centroid1[ 0 ],
+								0.		, scale1, -centroid1[ 1 ],
+								0.		, 0.	, 1;
 		
+		//cout << "S0 normalizer: " << endl << *m_S0Normalizer << endl << endl
+		//	 << "S1 normalizer: " << endl << *m_S1Normalizer << endl << endl;
+
 		for( int i = 0; i < m_sample->size(); ++i )
 		{
 			VectorXd p0 = (*m_S0Normalizer) * (*m_sample)[ i ].first;
@@ -59,25 +74,6 @@ namespace math
 			p1 = p1 / p1[ 2 ];
 			(*m_sample)[ i ].second = p1;
 		}
-	}
-	
-	pair< MatrixXd, MatrixXd > DltBase::buildNormalizers(const VectorXd& centroid0, const double& scale0,
-														 const VectorXd& centroid1, const double& scale1 )
-	{
-		MatrixXd s0Normalizer( 3, 3) ;
-		s0Normalizer << scale0	, 0.	, -centroid0[ 0 ],
-						0.		, scale0, -centroid0[ 1 ],
-						0.		, 0.	, 1;
-							 
-		MatrixXd s1Normalizer( 3, 3 );
-		s1Normalizer << scale1	, 0.	, -centroid1[ 0 ],
-						0.		, scale1, -centroid1[ 1 ],
-						0.		, 0.	, 1;
-		
-		//cout << "S0 normalizer: " << endl << *m_S0Normalizer << endl << endl
-		//	 << "S1 normalizer: " << endl << *m_S1Normalizer << endl << endl;
-							 
-		return pair< MatrixXd, MatrixXd >( s0Normalizer, s1Normalizer );
 	}
 	
 	MatrixXd DltBase::buildSolutionMatrix( VectorXd& solution ) const
@@ -133,6 +129,18 @@ namespace math
 	void DltBase::denormalize()
 	{
 		*m_resultH = m_S1Normalizer->inverse() * (*m_resultH) * (*m_S0Normalizer);
+		
+		// Denormalizing sample points.
+		for( int i = 0; i < m_sample->size(); ++i )
+		{
+			VectorXd p0 = m_S0Normalizer->inverse() * (*m_sample)[ i ].first;
+			p0 = p0 / p0[ 2 ];
+			(*m_sample)[ i ].first = p0;
+			
+			VectorXd p1 = m_S1Normalizer->inverse() * (*m_sample)[ i ].second;
+			p1 = p1 / p1[ 2 ];
+			(*m_sample)[ i ].second = p1;
+		}
 	}
 	
 	void DltBase::onDenormalizationEnd() {}

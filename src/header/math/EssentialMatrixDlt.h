@@ -4,7 +4,8 @@
 
 namespace math
 {
-	/** DLT to calculate the essential matrix. */
+	/** DLT to calculate the camera matrices of two images, given correspondence points in the images and the camera
+	 * calibration matrices. Camera 0 is assumed to be at origin and not rotated. */
 	class EssentialMatrixDlt : public DltBase
 	{
 	public:
@@ -24,8 +25,23 @@ namespace math
 		/** Applies the fundamental matrix restrictions. */
 		void applyRestrictions();
 	private:
+		/** Computes camera's P' matrix, checking all the 4 possible solution and choosing the one which reconstructs points
+		 * in front of both cameras. */
+		MatrixXd computeP( MatrixXd& E );
+		
+		/** The camera matrix P1 have 4 possible solutions when calculated from the camera Essential Matrix. The correct
+		 * solution will be in front of both cameras (represented by P0 and P1). This method checks if one of these solution
+		 * is the correct. */
+		bool checkP1( const MatrixXd& P0, const MatrixXd& P1 ) const;
+		
+		/** Calibration matrix for camera 0. */
 		shared_ptr< MatrixXd > m_K0;
+		
+		/** Calibration matrix for camera 1. */
 		shared_ptr< MatrixXd > m_K1;
+		
+		/** Solution matrix for camera 0. */
+		shared_ptr< MatrixXd > m_P0;
 	};
 }
 

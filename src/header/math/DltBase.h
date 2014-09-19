@@ -32,9 +32,15 @@ namespace math
 		virtual int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) const = 0;
 	
 	protected:
-		/** Assembles the DLT normalizers. Default implementation makes two 3x3 matrices. */
-		virtual pair< MatrixXd, MatrixXd > buildNormalizers( const VectorXd& centroid0, const double& scale0,
+		/** Assembles the DLT normalizers and apply them on the sample points on normalization. Default implementation makes
+		 * two 3x3 matrices as normalizers. */
+		virtual void buildAndApplyNormalizers( const VectorXd& centroid0, const double& scale0,
 															 const VectorXd& centroid1, const double& scale1 );
+		
+		/** Normalizes the points in the sets S0 and S1 which are the sets being corresponded, resulting in one normalization
+		 * matrix for each set. The normalization puts the centroid of the point set at origin and scales the space as the
+		 * mean distance from origin is sqrt(2). Default implementation does a 3x3 matrix for 2D dataset normalization. */
+		virtual void normalize();
 		
 		/** Creates the linear system to solve. */
 		virtual MatrixXd createLinearSystem() const = 0;
@@ -50,14 +56,9 @@ namespace math
 		/** Called after the denormalization is done (m_resultH will have the denormalized result at this time). Default
 		 * implementation does nothing. */
 		virtual void onDenormalizationEnd();
-	
-		/** Normalizes the points in the sets S0 and S1 which are the sets being corresponded, resulting in one normalization
-		 * matrix for each set. The normalization puts the centroid of the point set at origin and scales the space as the
-		 * mean distance from origin is sqrt(2). */
-		void normalize();
 		
-		/** Denormalizes homography H that maps points from first set S0 to second set S1. */
-		void denormalize();
+		/** Denormalizes the linear system result. Default implementation denormalizes a 3x3 matrix. */
+		virtual void denormalize();
 		
 		shared_ptr< MatrixXd > m_S0Normalizer;
 		shared_ptr< MatrixXd > m_S1Normalizer;
