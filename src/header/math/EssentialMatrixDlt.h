@@ -12,10 +12,16 @@ namespace math
 		/** Builds this DLT, given the correspondence vector and camera calibration matrices. */
 		EssentialMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0, shared_ptr< MatrixXd > K1 );
 		
-		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) const;
+		/** Verifies the number of inliers for the calculated camera matrices and saves the reconstructed 3D points. */
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
 		
 		/** Calculates the essential matrix after fundamental matrix normalization. */
 		void onDenormalizationEnd();
+		
+		MatrixXd getP0() const;
+		
+		/** Get the reconstructed 3D points. */
+		shared_ptr< vector< VectorXd > > getPoints3D() const;
 	
 	protected:
 		/** Creates the linear system for the fundamental matrix computation (the essential matrix is computed after
@@ -42,6 +48,9 @@ namespace math
 		
 		/** Solution matrix for camera 0. */
 		shared_ptr< MatrixXd > m_P0;
+		
+		/** Reconstructed 3D points. */
+		shared_ptr< vector< VectorXd > > m_points3D;
 	};
 }
 

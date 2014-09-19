@@ -11,7 +11,7 @@ namespace math
 	public:
 		TriangulationDlt( vector< Correspondence>& correspondence, const MatrixXd& P0, const MatrixXd& P1);
 		
-		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) const;
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
 	
 		/** Gets the final reconstructed 3d point. It's the same value returned by getSolution() or solve(), but as
 		 * a VectorXd instead of MatrixXd. */

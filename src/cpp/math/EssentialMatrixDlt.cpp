@@ -113,9 +113,10 @@ namespace math
 		*m_resultH = computeP( E );
 	}
 	
-	int EssentialMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) const
+	int EssentialMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences )
 	{
-		// First, calculates the distance variance.
+		m_points3D = make_shared< vector< VectorXd > >();
+		
 		vector< double > distances;
 		for( Correspondence correspondence : *allCorrespondences )
 		{
@@ -125,6 +126,7 @@ namespace math
 			TriangulationDlt dlt( pair, *m_P0, *m_resultH );
 			dlt.solve();
 			VectorXd point3D = dlt.getPoint3D();
+			m_points3D->push_back( point3D );
 			
 			VectorXd v0Expected = ( *m_P0 ) * point3D;
 			v0Expected = v0Expected / v0Expected[ 2 ];
@@ -158,4 +160,8 @@ namespace math
 		
 		return inliers;
 	}
+	
+	MatrixXd EssentialMatrixDlt::getP0() const { return *m_P0; }
+	
+	shared_ptr< vector< VectorXd > > EssentialMatrixDlt::getPoints3D() const { return m_points3D; }
 }

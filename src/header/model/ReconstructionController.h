@@ -22,12 +22,8 @@ namespace model
 		ReconstructionController( vector< Correspondence >& correspondences, MatrixXd& K0, MatrixXd& K1 );
 		
 		/** Reconstructs the 3d points. */
-		vector< VectorXd > reconstruct();
+		shared_ptr< vector< VectorXd > > reconstruct();
 	private:
-		/** Computes P', the camera matrix, given E, the essential matrix. The other camera matrix P is assumed to be
-		 * [ I | 0 ], i.e. on origin with no rotation. */
-		static MatrixXd computeP( MatrixXd& E );
-		
 		shared_ptr< vector< Correspondence > > m_correspondences;
 		shared_ptr< ReconstructionRansac > m_ransac;
 	};

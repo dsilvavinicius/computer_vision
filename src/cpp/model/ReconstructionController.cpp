@@ -12,9 +12,10 @@ namespace model
 		m_ransac = make_shared< ReconstructionRansac >( make_shared< vector< Correspondence > >( correspondences ), K0, K1 );
 	}
 
-	vector< VectorXd > ReconstructionController::reconstruct()
+	shared_ptr< vector< VectorXd > > ReconstructionController::reconstruct()
 	{
 		MatrixXd E = m_ransac->compute();
-		MatrixXd P = computeP( E );
+		shared_ptr< vector< VectorXd > > points3D = m_ransac->getSolver()->getPoints3D();
+		return points3D;
 	}
 }

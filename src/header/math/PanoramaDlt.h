@@ -17,7 +17,7 @@ namespace math
 	public:
 		PanoramaDlt( vector< Correspondence >& sample );
 		
-		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences) const;
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences);
 	
 	protected:
 		MatrixXd createLinearSystem() const;

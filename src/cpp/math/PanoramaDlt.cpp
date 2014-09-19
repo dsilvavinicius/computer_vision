@@ -26,7 +26,7 @@ namespace math
 		return A;
 	}
 	
-	int PanoramaDlt::scoreSolution( shared_ptr< vector< Correspondence > > correspondences ) const
+	int PanoramaDlt::scoreSolution( shared_ptr< vector< Correspondence > > correspondences )
 	{
 		// First, calculates the distance variance.
 		vector< double > distances;
