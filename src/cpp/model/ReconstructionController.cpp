@@ -14,6 +14,30 @@ namespace model
 		m_ransac = make_shared< ReconstructionRansac >( make_shared< vector< Correspondence > >( correspondences ), K0, K1 );
 	}
 	
+	vector< MatrixXd > ReconstructionController::readCalibrationMatrices( vector< string >& camFileNames )
+	{
+		vector< MatrixXd > camMatrices;
+		
+		for( string fileName : camFileNames )
+		{
+			ifstream ifs( fileName );
+			if( ifs.fail() ) { throw runtime_error( "Cannot open file" + fileName ); }
+			
+			MatrixXd P(3, 4);
+			ifs >> P(0, 0) >> P(0, 1) >> P(0, 2) >> P(0, 3)
+				>> P(1, 0) >> P(1, 1) >> P(1, 2) >> P(1, 3)
+				>> P(2, 0) >> P(2, 1) >> P(2, 2) >> P(2, 3);
+			
+			MatrixXd KR1 = P.block( 0, 0, 3, 3 );
+			HouseholderQR< MatrixXd > qr( KR1 );
+			MatrixXd K = qr.matrixQR().triangularView<Upper>();
+			
+			camMatrices.push_back( K );
+		}
+		
+		return camMatrices;
+	}
+	
 	vector< map< int, Line > > ReconstructionController::readLineCorrespondence( vector< string >& lineFileNames,
 																			   string& correspondenceFileName )
 	{
