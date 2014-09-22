@@ -21,6 +21,10 @@ namespace model
 		* matrices for each image. */
 		ReconstructionController( vector< Correspondence >& correspondences, MatrixXd& K0, MatrixXd& K1 );
 		
+		/** Reads the file with line correspondences. */
+		static vector< map< int, Line > > readLineCorrespondence( vector< string >& lineFileNames,
+																string& correspondenceFileName );
+		
 		/** Reconstructs the 3d points. */
 		shared_ptr< vector< VectorXd > > reconstruct();
 	private:

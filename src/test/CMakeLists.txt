@@ -14,6 +14,7 @@ add_executable (Tests
 	${CPP_DIR}/${MATH_DIR}/PanoramaDltTest.cpp
 	${CPP_DIR}/${MATH_DIR}/RansacTest.cpp
 	${CPP_DIR}/${MODEL_DIR}/PanoramaControllerTest.cpp
+	${CPP_DIR}/${MODEL_DIR}/ReconstructionControllerTest.cpp
 	${CPP_DIR}/main.cpp)
 
 target_include_directories (Tests PUBLIC

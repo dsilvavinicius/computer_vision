@@ -10,6 +10,7 @@ using namespace Eigen;
 namespace math
 {
 	using Correspondence = pair< VectorXd, VectorXd >;
+	using Line = pair< VectorXd, VectorXd >;
 
 	ostream& operator<<( ostream& out, const Correspondence& correspondence );
 	ostream& operator<<( ostream& out, const vector<Correspondence>& correspondences );

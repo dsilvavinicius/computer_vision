@@ -79,7 +79,7 @@ add_library(Computer_Vision_Lib
 	${HEADER_DIR}/${MATH_DIR}/SimilarityFromAffineRectificator.h		${CPP_DIR}/${MATH_DIR}/SimilarityFromAffineRectificator.cpp
 	${HEADER_DIR}/${MATH_DIR}/SimilarityFromProjRectificator.h			${CPP_DIR}/${MATH_DIR}/SimilarityFromProjRectificator.cpp
 	${HEADER_DIR}/${MATH_DIR}/ReconstructionRansac.h					${CPP_DIR}/${MATH_DIR}/ReconstructionRansac.cpp
-	${HEADER_DIR}/${MATH_DIR}/Ransac.h
+	${HEADER_DIR}/${MATH_DIR}/Ransac.h									${CPP_DIR}/${MATH_DIR}/Ransac.cpp
 	${HEADER_DIR}/${MATH_DIR}/TriangulationDlt.h						${CPP_DIR}/${MATH_DIR}/TriangulationDlt.cpp
 	${HEADER_DIR}/${MATH_DIR}/EssentialMatrixDlt.h						${CPP_DIR}/${MATH_DIR}/EssentialMatrixDlt.cpp
 	${HEADER_DIR}/${MATH_DIR}/PanoramaDlt.h								${CPP_DIR}/${MATH_DIR}/PanoramaDlt.cpp

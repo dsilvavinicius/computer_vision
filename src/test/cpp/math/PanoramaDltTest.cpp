@@ -14,7 +14,7 @@ namespace math
 		
 		/** Tests Dlt by creating a transform H and correlating generated points with transformed points. Test pass if the Dlt
 		 * solution is the inverse of H. */
-		TEST_F( PanoramaDltTest, SimpleTransform )
+		TEST_F( PanoramaDltTest, DISABLED_SimpleTransform )
 		{
 			// The transformation is a rotation around z axis, a translation and an anisotropic scale.
 			MatrixXd H(3, 3);

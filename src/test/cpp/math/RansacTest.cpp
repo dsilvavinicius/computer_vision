@@ -22,7 +22,7 @@ namespace math
 			void SetUp() {}
 		};
 		
-		TEST_F(RansacTest, CounterClockWise)
+		TEST_F(RansacTest, DISABLED_CounterClockWise)
 		{
 			Mat panoramaImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
 			Mat lastImg = imread( "../../../src/images/panorama_yosemite/yosemite1.jpg" );
@@ -36,7 +36,7 @@ namespace math
 			PanoramaController::map( lastImg, currentImg, panoramaImg, panoramaHomography, additionalTranslation, true );
 		}
 		
-		TEST_F(RansacTest, ClockWise)
+		TEST_F(RansacTest, DISABLED_ClockWise)
 		{
 			Mat panoramaImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
 			Mat lastImg = imread( "../../../src/images/panorama_yosemite/yosemite3.jpg" );
