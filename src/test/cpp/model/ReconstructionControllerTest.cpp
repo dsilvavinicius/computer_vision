@@ -118,6 +118,13 @@ namespace model
 			ReconstructionController controller( correspondences, K0, K1 );
 			shared_ptr< vector< VectorXd > > points3D = controller.reconstruct();
 			
+			shared_ptr< EssentialMatrixDlt > solver = controller.getRansac()->getSolver();
+			MatrixXd P0 = solver->getP0();
+			MatrixXd P1 = solver->getSolution();
+			
+			cout << "Final camera matrices:" << endl << endl << "P0: " << P0 << endl << endl << "P1: " << P1
+				 << endl << endl;			
+			
 			cout << "Reconstructed points:" << endl << endl;
 			for( VectorXd point3D : *points3D )
 			{

@@ -29,6 +29,8 @@ namespace model
 		
 		/** Reconstructs the 3d points. */
 		shared_ptr< vector< VectorXd > > reconstruct();
+		
+		shared_ptr< ReconstructionRansac > getRansac();
 	private:
 		shared_ptr< vector< Correspondence > > m_correspondences;
 		shared_ptr< ReconstructionRansac > m_ransac;

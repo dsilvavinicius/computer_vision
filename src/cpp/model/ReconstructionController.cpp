@@ -115,4 +115,6 @@ namespace model
 		shared_ptr< vector< VectorXd > > points3D = m_ransac->getSolver()->getPoints3D();
 		return points3D;
 	}
+	
+	shared_ptr< ReconstructionRansac > ReconstructionController::getRansac() { return m_ransac; }
 }
