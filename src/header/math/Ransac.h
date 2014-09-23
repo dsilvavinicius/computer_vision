@@ -33,9 +33,9 @@ namespace math
 		 * @param nElementsPerSample is the number of elements in a sample. The sample defines the linear system.
 		 * @param epsilon is the initial probability of outliers in samples.
 		 */
-		Ransac( shared_ptr< vector< Correspondence > > set, int nElementsPerSample, double epsilon = 1. );
+		Ransac( shared_ptr< vector< Correspondence > > set, int nElementsPerSample, double epsilon = 0.99 );
 		
-		Ransac( vector< Correspondence >& set, int nElementsPerSample, double epsilon = 1. );
+		Ransac( vector< Correspondence >& set, int nElementsPerSample, double epsilon = 0.99 );
 		
 		/** Computes the result of the linear system.
 		 * @param evaluator evaluates the vector of samples and returns the system solution.
@@ -107,10 +107,11 @@ namespace math
 	template< typename Correspondence, typename Solver >
 	MatrixXd Ransac< Correspondence, Solver >::compute()
 	{
+		cout << "Starting max iters: " << m_nIter << endl << endl;
 		for( double iter = 0; iter < m_nIter && iter < 20000.; ++iter ) 
 		{
-			//cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
-			//	 << "Current iter: " << iter << endl << endl;
+			cout << "Current epsilon: " << m_epsilon << endl << "Current max iters: " << m_nIter << endl
+				 << "Current iter: " << iter << endl << endl;
 			
 			vector< Correspondence > sample;
 			
@@ -124,7 +125,7 @@ namespace math
 			
 			int currInliers = solver.scoreSolution( m_set );
 			double newEpsilon = 1 - ((double) currInliers /  m_set->size() );
-			//cout << "Iter score: " << newEpsilon << endl << endl;
+			cout << "Iter score: " << newEpsilon << endl << endl;
 			
 			if( newEpsilon < m_epsilon )
 			{

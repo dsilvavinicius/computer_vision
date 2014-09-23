@@ -1,6 +1,10 @@
 #include "EssentialMatrixDlt.h"
 #include "TriangulationDlt.h"
 
+#include <iostream>
+
+using namespace std;
+
 namespace math
 {
 	EssentialMatrixDlt::EssentialMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0,
@@ -39,7 +43,14 @@ namespace math
 	
 	bool EssentialMatrixDlt::checkP1( const MatrixXd& P0, const MatrixXd& P1 ) const
 	{
-		TriangulationDlt dlt( *m_sample, P0, P1 );
+		VectorXd p0 = ( *m_sample )[ 0 ].first;
+		VectorXd p1 = ( *m_sample )[ 0 ].second;
+		VectorXd p03d( 4 ); p03d << p0[ 0 ], p0[ 1 ], p0[ 2 ], 1.;
+		VectorXd p13d( 4 ); p13d << p1[ 0 ], p1[ 1 ], p1[ 2 ], 1.;
+		vector< Correspondence > pair( 1 );
+		pair[ 0 ] = Correspondence( p03d, p13d );
+		
+		TriangulationDlt dlt( pair, P0, P1 );
 		dlt.solve();
 		VectorXd point3D = dlt.getPoint3D();
 		
@@ -122,6 +133,8 @@ namespace math
 		{
 			vector< Correspondence > pair;
 			pair.push_back( correspondence );
+			
+			cout << "Score sol: P0: " << endl << *m_P0 << endl << endl << "P1: " << endl << *m_resultH << endl << endl;
 			
 			TriangulationDlt dlt( pair, *m_P0, *m_resultH );
 			dlt.solve();

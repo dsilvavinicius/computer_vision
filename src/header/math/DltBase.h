@@ -53,12 +53,12 @@ namespace math
 		 * already has the current normalized solution of the linear system. Default implementation does nothing. */
 		virtual void applyRestrictions();
 		
+		/** Denormalizes the linear system result. Default implementation denormalizes a 3x3 matrix. */
+		virtual void denormalize();
+		
 		/** Called after the denormalization is done (m_resultH will have the denormalized result at this time). Default
 		 * implementation does nothing. */
 		virtual void onDenormalizationEnd();
-		
-		/** Denormalizes the linear system result. Default implementation denormalizes a 3x3 matrix. */
-		virtual void denormalize();
 		
 		shared_ptr< MatrixXd > m_S0Normalizer;
 		shared_ptr< MatrixXd > m_S1Normalizer;

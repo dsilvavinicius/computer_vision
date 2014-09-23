@@ -111,7 +111,7 @@ namespace math
 			
 			//cout << "SVD V matrix: " << endl << svd.matrixV() << endl << endl;
 			
-			VectorXd hCol = svd.matrixV().col(7);
+			VectorXd hCol = svd.matrixV().rightCols( 1 );
 			m_resultH = make_shared< MatrixXd >( buildSolutionMatrix( hCol ) );
 			
 			applyRestrictions();
@@ -119,6 +119,8 @@ namespace math
 			//cout << "H before denormalization: " << endl << *m_resultH << endl;
 			denormalize();
 			//cout << "H after denormalization: " << endl << *m_resultH << endl;
+			
+			onDenormalizationEnd();
 			
 			return *m_resultH;
 		}

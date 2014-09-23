@@ -7,7 +7,11 @@ namespace math
 	m_P0( P0 ),
 	m_P1( P1 )
 	{
-		if( correspondence.size() != 1 ) { throw logic_error( "The triangulation needs one correspondence pair only." ); }
+		if( correspondence.size() != 1 ) {
+			stringstream ss;
+			ss << "The triangulation needs one correspondence pair only. Actual size is " << correspondence.size();
+			throw logic_error( ss.str() );
+		}
 	}
 	
 	void TriangulationDlt::buildAndApplyNormalizers( const VectorXd& centroid0, const double& scale0,
@@ -64,22 +68,20 @@ namespace math
 		VectorXd p0r0 = m_P0.row( 0 );
 		VectorXd p0r1 = m_P0.row( 1 );
 		VectorXd p0r2 = m_P0.row( 2 );
-		VectorXd p0r3 = m_P0.row( 3 );
 		
 		VectorXd p1r0 = m_P1.row( 0 );
 		VectorXd p1r1 = m_P1.row( 1 );
 		VectorXd p1r2 = m_P1.row( 2 );
-		VectorXd p1r3 = m_P1.row( 3 );
 		
-		VectorXd v0xTimesP0R3MinusP0R1 = v0[ 0 ] * p0r3 - p0r1;
-		VectorXd v0yTimesP0R3MinusP0R2 = v0[ 1 ] * p0r3 - p0r2;
-		VectorXd v1xTimesP0R3MinusP0R1 = v1[ 0 ] * p1r3 - p1r1;
-		VectorXd v1yTimesP0R3MinusP0R2 = v1[ 1 ] * p1r3 - p1r2;
+		VectorXd v0xTimesP0R2MinusP0R0 = v0[ 0 ] * p0r2 - p0r0;
+		VectorXd v0yTimesP0R2MinusP0R1 = v0[ 1 ] * p0r2 - p0r1;
+		VectorXd v1xTimesP0R2MinusP0R0 = v1[ 0 ] * p1r2 - p1r0;
+		VectorXd v1yTimesP0R2MinusP0R1 = v1[ 1 ] * p1r2 - p1r1;
 		
-		A << v0xTimesP0R3MinusP0R1[ 0 ], v0xTimesP0R3MinusP0R1[ 1 ], v0xTimesP0R3MinusP0R1[ 2 ], v0xTimesP0R3MinusP0R1[ 3 ],
-			 v0yTimesP0R3MinusP0R2[ 0 ], v0yTimesP0R3MinusP0R2[ 1 ], v0yTimesP0R3MinusP0R2[ 2 ], v0yTimesP0R3MinusP0R2[ 3 ],
-			 v1xTimesP0R3MinusP0R1[ 0 ], v1xTimesP0R3MinusP0R1[ 1 ], v1xTimesP0R3MinusP0R1[ 2 ], v1xTimesP0R3MinusP0R1[ 3 ],
-			 v1yTimesP0R3MinusP0R2[ 0 ], v1yTimesP0R3MinusP0R2[ 1 ], v1yTimesP0R3MinusP0R2[ 2 ], v1yTimesP0R3MinusP0R2[ 3 ];
+		A << v0xTimesP0R2MinusP0R0[ 0 ], v0xTimesP0R2MinusP0R0[ 1 ], v0xTimesP0R2MinusP0R0[ 2 ], v0xTimesP0R2MinusP0R0[ 3 ],
+			 v0yTimesP0R2MinusP0R1[ 0 ], v0yTimesP0R2MinusP0R1[ 1 ], v0yTimesP0R2MinusP0R1[ 2 ], v0yTimesP0R2MinusP0R1[ 3 ],
+			 v1xTimesP0R2MinusP0R0[ 0 ], v1xTimesP0R2MinusP0R0[ 1 ], v1xTimesP0R2MinusP0R0[ 2 ], v1xTimesP0R2MinusP0R0[ 3 ],
+			 v1yTimesP0R2MinusP0R1[ 0 ], v1yTimesP0R2MinusP0R1[ 1 ], v1yTimesP0R2MinusP0R1[ 2 ], v1yTimesP0R2MinusP0R1[ 3 ];
 		
 		return A;
 	}
@@ -90,6 +92,11 @@ namespace math
 		formatedSolution << solution[ 0 ], solution[ 1 ], solution[ 2 ], solution[ 3 ];
 		
 		return formatedSolution;
+	}
+	
+	void TriangulationDlt::denormalize()
+	{
+		
 	}
 	
 	void TriangulationDlt::onDenormalizationEnd()
