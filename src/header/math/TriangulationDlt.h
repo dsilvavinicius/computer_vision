@@ -26,6 +26,8 @@ namespace math
 		
 		MatrixXd buildSolutionMatrix( VectorXd& solution ) const;
 		
+		void denormalize();
+		
 		void onDenormalizationEnd();
 	
 	private:

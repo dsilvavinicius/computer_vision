@@ -59,7 +59,8 @@ namespace math
 		MatrixXd R = qr.householderQ();
 		
 		VectorXd zRotated = R.col( 2 );
-		return point3D[2] > 0. && point3D.dot( zRotated ) > 0.;
+		VectorXd zRotated3d( 4 ); zRotated3d << zRotated[ 0 ], zRotated[ 1 ], zRotated[ 2 ], 1.;
+		return point3D[2] > 0. && point3D.dot( zRotated3d ) > 0.;
 	}
 	
 	MatrixXd EssentialMatrixDlt::computeP( MatrixXd& E )
@@ -134,7 +135,7 @@ namespace math
 			vector< Correspondence > pair;
 			pair.push_back( correspondence );
 			
-			cout << "Score sol: P0: " << endl << *m_P0 << endl << endl << "P1: " << endl << *m_resultH << endl << endl;
+			//cout << "Score sol: P0: " << endl << *m_P0 << endl << endl << "P1: " << endl << *m_resultH << endl << endl;
 			
 			TriangulationDlt dlt( pair, *m_P0, *m_resultH );
 			dlt.solve();

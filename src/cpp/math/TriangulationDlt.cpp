@@ -17,7 +17,7 @@ namespace math
 	void TriangulationDlt::buildAndApplyNormalizers( const VectorXd& centroid0, const double& scale0,
 													 const VectorXd& centroid1, const double& scale1 )
 	{
-		m_S0Normalizer = make_shared< MatrixXd >( 4, 4);
+		/*m_S0Normalizer = make_shared< MatrixXd >( 4, 4);
 		( *m_S0Normalizer ) << scale0	, 0.	, 0		, -centroid0[ 0 ],
 							   0.		, scale0, 0		, -centroid0[ 1 ],
 							   0.		, 0.	, scale0, -centroid0[ 2 ],
@@ -38,12 +38,12 @@ namespace math
 			
 		VectorXd p1 = (*m_S1Normalizer) * (*m_sample)[ 0 ].second;
 		p1 = p1 / p1[ 3 ];
-		( *m_sample )[ 0 ].second = p1;
+		( *m_sample )[ 0 ].second = p1;*/
 	}
 	
 	void TriangulationDlt::normalize()
 	{
-		VectorXd v0 = ( *m_sample )[ 0 ].first;
+		/*VectorXd v0 = ( *m_sample )[ 0 ].first;
 		VectorXd v1 = ( *m_sample )[ 0 ].second;
 		
 		VectorXd centroid0( 4 );
@@ -54,7 +54,7 @@ namespace math
 		double scale0 = 1.414213562 / v0.norm();
 		double scale1 = 1.414213562 / v1.norm();
 		
-		buildAndApplyNormalizers( centroid0, scale0, centroid1, scale1);
+		buildAndApplyNormalizers( centroid0, scale0, centroid1, scale1);*/
 	}
 
 	
@@ -73,10 +73,20 @@ namespace math
 		VectorXd p1r1 = m_P1.row( 1 );
 		VectorXd p1r2 = m_P1.row( 2 );
 		
+		//=====================================================
+		// MAYBE THE FOLLOWING VECTORS SHOULDN'T BE NORMALIZED.
+		//=====================================================
 		VectorXd v0xTimesP0R2MinusP0R0 = v0[ 0 ] * p0r2 - p0r0;
+		v0xTimesP0R2MinusP0R0.normalize();
+		
 		VectorXd v0yTimesP0R2MinusP0R1 = v0[ 1 ] * p0r2 - p0r1;
+		v0yTimesP0R2MinusP0R1.normalize();
+		
 		VectorXd v1xTimesP0R2MinusP0R0 = v1[ 0 ] * p1r2 - p1r0;
+		v1xTimesP0R2MinusP0R0.normalize();
+		
 		VectorXd v1yTimesP0R2MinusP0R1 = v1[ 1 ] * p1r2 - p1r1;
+		v1yTimesP0R2MinusP0R1.normalize();
 		
 		A << v0xTimesP0R2MinusP0R0[ 0 ], v0xTimesP0R2MinusP0R0[ 1 ], v0xTimesP0R2MinusP0R0[ 2 ], v0xTimesP0R2MinusP0R0[ 3 ],
 			 v0yTimesP0R2MinusP0R1[ 0 ], v0yTimesP0R2MinusP0R1[ 1 ], v0yTimesP0R2MinusP0R1[ 2 ], v0yTimesP0R2MinusP0R1[ 3 ],
@@ -94,15 +104,11 @@ namespace math
 		return formatedSolution;
 	}
 	
-	void TriangulationDlt::denormalize()
-	{
-		
-	}
+	void TriangulationDlt::denormalize() {}
 	
 	void TriangulationDlt::onDenormalizationEnd()
 	{
-		( *m_resultH ) = ( *m_resultH ) / ( *m_resultH )( 4, 1 );
-		
+		( *m_resultH ) = ( *m_resultH ) / ( *m_resultH )( 3, 0 );
 	}
 	
 	VectorXd TriangulationDlt::getPoint3D()
