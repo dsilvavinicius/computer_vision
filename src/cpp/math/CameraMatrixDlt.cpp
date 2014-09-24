@@ -1,4 +1,4 @@
-#include "EssentialMatrixDlt.h"
+#include "CameraMatrixDlt.h"
 #include "TriangulationDlt.h"
 
 #include <iostream>
@@ -7,14 +7,14 @@ using namespace std;
 
 namespace math
 {
-	EssentialMatrixDlt::EssentialMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0,
+	CameraMatrixDlt::CameraMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0,
 											shared_ptr< MatrixXd > K1 )
 	: DltBase( correspondences ),
 	m_K0( K0 ),
 	m_K1( K1 )
 	{}
 	
-	MatrixXd EssentialMatrixDlt::createLinearSystem() const
+	MatrixXd CameraMatrixDlt::createLinearSystem() const
 	{
 		int sampleSize = m_sample->size();
 		MatrixXd A( sampleSize, 9 );
@@ -25,30 +25,42 @@ namespace math
 			VectorXd v0 = (*m_sample)[i].first;
 			VectorXd v1 = (*m_sample)[i].second;
 			
-			block 	<< v1[ 0 ] * v0[ 0 ], v1[ 0 ] * v0[ 1 ], v1[0], v1[ 1 ] * v0[ 0 ], v1[ 1 ] * v0[ 1 ], v1[ 1 ],
+			cout << "Sample correspondence " << i << ":" << endl << v0 << endl << endl << v1 << endl << endl;
+			
+			block 	<< v1[ 0 ] * v0[ 0 ], v1[ 0 ] * v0[ 1 ], v1[ 0 ], v1[ 1 ] * v0[ 0 ], v1[ 1 ] * v0[ 1 ], v1[ 1 ],
 					   v0[ 0 ], v0[ 1 ], 1.;
 		}
 		
 		return A;
 	}
 	
-	void EssentialMatrixDlt::applyRestrictions()
+	void CameraMatrixDlt::applyRestrictions()
 	{
+		
 		JacobiSVD< MatrixXd > Fsvd( *m_resultH, ComputeFullU | ComputeFullV );
 		VectorXd singularValues = Fsvd.singularValues();
 		DiagonalMatrix< double, 3, 3 > D( singularValues[ 0 ], singularValues[ 1 ], 0. );
+		MatrixXd DMat = D.toDenseMatrix();
+		MatrixXd restricted = Fsvd.matrixU() * DMat * Fsvd.matrixV().transpose();
 		
-		*m_resultH = Fsvd.matrixU() * D * Fsvd.matrixV().transpose();
+		cout << "========== Restriction appliance =============: " << endl
+			 << "Singular diagonal: " << endl << DMat << endl << endl
+			 << "U:" << endl << Fsvd.matrixU() << endl << endl
+			 << "V:" << endl << Fsvd.matrixV() << endl << endl
+			 << "Rectricted Matrix: " << endl << restricted << endl << endl
+			 << "Determinant: " << restricted.determinant() << endl << endl
+			 << "========== Restriction appliance End =============" << endl << endl;
+		
+		*m_resultH = restricted;
 	}
 	
-	bool EssentialMatrixDlt::checkP1( const MatrixXd& P0, const MatrixXd& P1 ) const
+	bool CameraMatrixDlt::checkP1( const MatrixXd& P0, const MatrixXd& P1 ) const
 	{
 		VectorXd p0 = ( *m_sample )[ 0 ].first;
 		VectorXd p1 = ( *m_sample )[ 0 ].second;
-		VectorXd p03d( 4 ); p03d << p0[ 0 ], p0[ 1 ], p0[ 2 ], 1.;
-		VectorXd p13d( 4 ); p13d << p1[ 0 ], p1[ 1 ], p1[ 2 ], 1.;
+		
 		vector< Correspondence > pair( 1 );
-		pair[ 0 ] = Correspondence( p03d, p13d );
+		pair[ 0 ] = Correspondence( p0, p1 );
 		
 		TriangulationDlt dlt( pair, P0, P1 );
 		dlt.solve();
@@ -60,72 +72,93 @@ namespace math
 		
 		VectorXd zRotated = R.col( 2 );
 		VectorXd zRotated3d( 4 ); zRotated3d << zRotated[ 0 ], zRotated[ 1 ], zRotated[ 2 ], 1.;
+		
+		cout << "========== P1 Check =============: " << endl
+			 << "p0: " << endl << p0 << endl << endl 
+			 << "p1: " << endl << p1 << endl << endl
+			 << "3d point: " << endl << point3D << endl << endl
+			 << "Camera Z: " << endl << zRotated3d << endl << endl
+			 << "========== P1 Check End =============: " << endl << endl;
+		
 		return point3D[2] > 0. && point3D.dot( zRotated3d ) > 0.;
 	}
 	
-	MatrixXd EssentialMatrixDlt::computeP( MatrixXd& E )
+	MatrixXd CameraMatrixDlt::computeP( MatrixXd& E )
 	{
 		JacobiSVD< MatrixXd > svd( E, ComputeFullU | ComputeFullV );
 		MatrixXd U = svd.matrixU();
 		MatrixXd Vt = svd.matrixV().transpose();
+		
 		MatrixXd W( 3 , 3);
 		W << 0., -1., 0.,
 			 1., 0., 0.,
 			 0., 0., 1.;
+		
 		VectorXd u3 = U.col(2);
 		
-		m_P0 = make_shared< MatrixXd >( 3, 4 ); // Just K0: no translation or rotation.
-		*m_P0 << ( *m_K0 )( 0, 0 ), ( *m_K0 )( 0, 1 ), ( *m_K0 )( 0, 2 ), 0.,
-				 ( *m_K0 )( 1, 0 ), ( *m_K0 )( 1, 1 ), ( *m_K0 )( 1, 2 ), 0.,
-				 ( *m_K0 )( 2, 0 ), ( *m_K0 )( 2, 1 ), ( *m_K0 )( 2, 2 ), 0.;
+		m_P0 = make_shared< MatrixXd >( MatrixXd::Zero( 3, 4 ) ); // Just K0: no translation or rotation.
+		m_P0->block( 0, 0, 3, 3 ) = *m_K0;
 		
 		MatrixXd P1noT = U * W * Vt; // P without translation part.
 		
 		MatrixXd P1( 3, 4 );
-		P1 << P1noT( 0, 0 ), P1noT( 0, 1 ), P1noT( 0, 2 ), u3[ 0 ],
-			  P1noT( 1, 0 ), P1noT( 1, 1 ), P1noT( 1, 2 ), u3[ 1 ],
-			  P1noT( 2, 0 ), P1noT( 2, 1 ), P1noT( 2, 2 ), u3[ 2 ];
+		P1.block( 0, 0, 3, 3 ) = P1noT;
+		P1.block( 0, 3, 3, 1 ) = u3;
 		
+		MatrixXd bestP1;
+		int numCorrectSolutions = 0;
 		if( checkP1( *m_P0, P1 ) )
 		{
-			*m_resultH = P1;
-			return *m_resultH;
+			++numCorrectSolutions;
+			bestP1 = P1;
+			//return P1;
 		}
 		
-		P1.block( 0, 3, 3, 1 ) << -u3[ 0 ], -u3[ 1 ], -u3[ 2 ];
+		P1.block( 0, 3, 3, 1 ) = -u3;
+		
 		if( checkP1( *m_P0, P1 ) )
 		{
-			*m_resultH = P1;
-			return *m_resultH;
+			++numCorrectSolutions;
+			bestP1 = P1;
+			//return P1;
 		}
 		
 		P1noT = U * W.transpose() * Vt;
-		P1 << P1noT( 0, 0 ), P1noT( 0, 1 ), P1noT( 0, 2 ), u3[ 0 ],
-			  P1noT( 1, 0 ), P1noT( 1, 1 ), P1noT( 1, 2 ), u3[ 1 ],
-			  P1noT( 2, 0 ), P1noT( 2, 1 ), P1noT( 2, 2 ), u3[ 2 ];
+		P1.block( 0, 0, 3, 3 ) = P1noT;
+		P1.block( 0, 3, 3, 1 ) = u3;
+		
 		if( checkP1( *m_P0, P1 ) )
 		{
-			*m_resultH = P1;
-			return *m_resultH;
+			++numCorrectSolutions;
+			bestP1 = P1;
+			//return P1;
 		}
 		
-		P1.block( 0, 3, 3, 1 ) << -u3[ 0 ], -u3[ 1 ], -u3[ 2 ];
+		P1.block( 0, 3, 3, 1 ) = -u3;
+		
 		if( checkP1( *m_P0, P1 ) )
 		{
-			*m_resultH = P1;
-			return *m_resultH;
+			++numCorrectSolutions;
+			bestP1 = P1;
+			//return P1;
 		}
 		
-		throw runtime_error( "None of the results for P1 was accepted!" );
+		if( numCorrectSolutions == 0 ) throw runtime_error( "None of the results for P1 was accepted!" );
+		if( numCorrectSolutions > 1 ) throw runtime_error( "More thant one solution found." );
+		
+		return bestP1;
 	}
 	
-	void EssentialMatrixDlt::onDenormalizationEnd()
+	void CameraMatrixDlt::onDenormalizationEnd()
 	{
 		MatrixXd E = ( m_K1->transpose() ) * ( *m_resultH ) * ( *m_K0 );
+		
+		cout << "E: " << endl << E << endl << endl;
+		
 		*m_resultH = computeP( E );
 	}
 	
-	int EssentialMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences )
+	int CameraMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences )
 	{
 		m_points3D = make_shared< vector< VectorXd > >();
 		
@@ -175,7 +208,7 @@ namespace math
 		return inliers;
 	}
 	
-	MatrixXd EssentialMatrixDlt::getP0() const { return *m_P0; }
+	MatrixXd CameraMatrixDlt::getP0() const { return *m_P0; }
 	
-	shared_ptr< vector< VectorXd > > EssentialMatrixDlt::getPoints3D() const { return m_points3D; }
+	shared_ptr< vector< VectorXd > > CameraMatrixDlt::getPoints3D() const { return m_points3D; }
 }

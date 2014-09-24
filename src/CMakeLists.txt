@@ -81,7 +81,7 @@ add_library(Computer_Vision_Lib
 	${HEADER_DIR}/${MATH_DIR}/ReconstructionRansac.h					${CPP_DIR}/${MATH_DIR}/ReconstructionRansac.cpp
 	${HEADER_DIR}/${MATH_DIR}/Ransac.h									${CPP_DIR}/${MATH_DIR}/Ransac.cpp
 	${HEADER_DIR}/${MATH_DIR}/TriangulationDlt.h						${CPP_DIR}/${MATH_DIR}/TriangulationDlt.cpp
-	${HEADER_DIR}/${MATH_DIR}/EssentialMatrixDlt.h						${CPP_DIR}/${MATH_DIR}/EssentialMatrixDlt.cpp
+	${HEADER_DIR}/${MATH_DIR}/CameraMatrixDlt.h							${CPP_DIR}/${MATH_DIR}/CameraMatrixDlt.cpp
 	${HEADER_DIR}/${MATH_DIR}/PanoramaDlt.h								${CPP_DIR}/${MATH_DIR}/PanoramaDlt.cpp
 	${HEADER_DIR}/${MATH_DIR}/DltBase.h									${CPP_DIR}/${MATH_DIR}/DltBase.cpp
 	${HEADER_DIR}/${MATH_DIR}/Correspondence.h							${CPP_DIR}/${MATH_DIR}/Correspondence.cpp

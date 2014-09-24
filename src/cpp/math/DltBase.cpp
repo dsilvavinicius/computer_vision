@@ -45,6 +45,10 @@ namespace math
 		double scale0 = 1.414213562 / ( distanceSum0 / m_sample->size() );
 		double scale1 = 1.414213562 / ( distanceSum1 / m_sample->size() );
 		
+		cout << "Normalization: " << endl << endl << "centroid0 :" << endl << centroid0 << endl << endl
+			 << "centroid1:" << centroid1 << endl << endl << "scale0:" << scale0 << endl << endl
+			 << "scale1" << scale1 << endl << endl;
+		
 		buildAndApplyNormalizers( centroid0, scale0, centroid1, scale1 );
 	}
 	
@@ -53,8 +57,8 @@ namespace math
 	{
 		m_S0Normalizer = make_shared< MatrixXd >( 3, 3) ;
 		( *m_S0Normalizer ) << scale0	, 0.	, -centroid0[ 0 ],
-							0.		, scale0, -centroid0[ 1 ],
-							0.		, 0.	, 1;
+							   0.		, scale0, -centroid0[ 1 ],
+							   0.		, 0.	, 1;
 							 
 		m_S1Normalizer = make_shared< MatrixXd >( 3, 3 );
 		( *m_S1Normalizer ) << scale1	, 0.	, -centroid1[ 0 ],
@@ -109,18 +113,20 @@ namespace math
 			
 			JacobiSVD<MatrixXd> svd(A, ComputeThinV);
 			
-			//cout << "SVD V matrix: " << endl << svd.matrixV() << endl << endl;
-			
 			VectorXd hCol = svd.matrixV().rightCols( 1 );
 			m_resultH = make_shared< MatrixXd >( buildSolutionMatrix( hCol ) );
 			
+			//cout << "Built Solution: " << endl << *m_resultH << endl << endl;
+			
 			applyRestrictions();
 			
-			//cout << "H before denormalization: " << endl << *m_resultH << endl;
+			cout << "Restriction applied: " << endl << *m_resultH << endl << endl;
+
 			denormalize();
-			//cout << "H after denormalization: " << endl << *m_resultH << endl;
+			cout << "Denormalized: " << endl << *m_resultH << endl << endl;
 			
 			onDenormalizationEnd();
+			//cout << "After denormalization ending event: " << endl << *m_resultH << endl << endl;
 			
 			return *m_resultH;
 		}

@@ -45,7 +45,7 @@ namespace model
 
 		/** Tests the line reading for reconstruction. Checks the first and last correspondences of the first line and the
 		 * first correspondence of the last line */
-		TEST_F( ReconstructionControllerTest, LineReading )
+		TEST_F( ReconstructionControllerTest, DISABLED_LineReading )
 		{
 			VectorXd expected( 3 ); expected << 330.21, 283.428, 1.;
 			ASSERT_TRUE( m_lineCorrespondences[ 0 ][ 0 ].first.isApprox( expected, 1.0e-6 ) );
@@ -89,7 +89,7 @@ namespace model
 			waitKey();
 		}
 		
-		TEST_F( ReconstructionControllerTest, Reconstruction )
+		TEST_F( ReconstructionControllerTest, DISABLED_Reconstruction )
 		{
 			vector< string > camMatrixFileNames( m_numImgs );
 			for( int i = 0; i < m_numImgs; ++i )
@@ -118,7 +118,7 @@ namespace model
 			ReconstructionController controller( correspondences, K0, K1 );
 			shared_ptr< vector< VectorXd > > points3D = controller.reconstruct();
 			
-			shared_ptr< EssentialMatrixDlt > solver = controller.getRansac()->getSolver();
+			shared_ptr< CameraMatrixDlt > solver = controller.getRansac()->getSolver();
 			MatrixXd P0 = solver->getP0();
 			MatrixXd P1 = solver->getSolution();
 			

@@ -4,7 +4,7 @@
 #include <vector>
 #include <Eigen/Dense>
 #include "Correspondence.h"
-#include <EssentialMatrixDlt.h>
+#include <CameraMatrixDlt.h>
 #include <ReconstructionRansac.h>
 
 using namespace Eigen;

@@ -6,11 +6,11 @@ namespace math
 {
 	/** DLT to calculate the camera matrices of two images, given correspondence points in the images and the camera
 	 * calibration matrices. Camera 0 is assumed to be at origin and not rotated. */
-	class EssentialMatrixDlt : public DltBase
+	class CameraMatrixDlt : public DltBase
 	{
 	public:
 		/** Builds this DLT, given the correspondence vector and camera calibration matrices. */
-		EssentialMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0, shared_ptr< MatrixXd > K1 );
+		CameraMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0, shared_ptr< MatrixXd > K1 );
 		
 		/** Verifies the number of inliers for the calculated camera matrices and saves the reconstructed 3D points. */
 		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
@@ -30,6 +30,7 @@ namespace math
 		
 		/** Applies the fundamental matrix restrictions. */
 		void applyRestrictions();
+		
 	private:
 		/** Computes camera's P' matrix, checking all the 4 possible solution and choosing the one which reconstructs points
 		 * in front of both cameras. */

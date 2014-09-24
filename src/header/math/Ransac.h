@@ -12,7 +12,7 @@
 #include <Eigen/Dense>
 
 #include "PanoramaDlt.h"
-#include "EssentialMatrixDlt.h"
+#include "CameraMatrixDlt.h"
 
 using namespace std;
 using namespace Eigen;
@@ -102,7 +102,7 @@ namespace math
 	
 	/** Dummy specialization. This code will be overriden by ReconstructionRansac. What a shame! */
 	template <>
-	EssentialMatrixDlt Ransac< Correspondence, EssentialMatrixDlt >::createSolver( vector< Correspondence >& sample );
+	CameraMatrixDlt Ransac< Correspondence, CameraMatrixDlt >::createSolver( vector< Correspondence >& sample );
 	
 	template< typename Correspondence, typename Solver >
 	MatrixXd Ransac< Correspondence, Solver >::compute()
