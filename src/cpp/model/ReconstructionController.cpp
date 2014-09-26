@@ -38,8 +38,8 @@ namespace model
 		return camMatrices;
 	}
 	
-	vector< map< int, Line > > ReconstructionController::readLineCorrespondence( vector< string >& lineFileNames,
-																			   string& correspondenceFileName )
+	vector< map< int, Line > > ReconstructionController::readLineCorrespondence( const vector< string >& lineFileNames,
+																				 const string& correspondenceFileName )
 	{
 		int numImgs = lineFileNames.size();
 		// [ 0 ] is the vector of lines in img 0, [ 1 ] is the vector for lines in img 1, and so on.
@@ -108,12 +108,61 @@ namespace model
 		
 		return correspondencesPerLine;
 	}
+	
+	vector< Correspondence > ReconstructionController::lineCorrespToPointCorresp( const vector< map< int, Line > >& lineCorrespondences,
+																				  const int& imgIdx0, const int& imgIdx1)
+	{
+		vector< Correspondence > correspondences;
+		for( map< int, Line > lineCorrespondence : lineCorrespondences )
+		{
+			auto itL0 = lineCorrespondence.find( imgIdx0 );
+			auto itL1 = lineCorrespondence.find( imgIdx1 );
+			
+			if( itL0 != lineCorrespondence.end() && itL1 != lineCorrespondence.end() )
+			{
+				Line l0 = itL0->second;
+				Line l1 = itL1->second;
+				correspondences.push_back( Correspondence( l0.first, l1.first ) );
+				correspondences.push_back( Correspondence( l0.second, l1.second ) );
+			}
+		}
+		
+		return correspondences;
+	}
+	
+	vector< Correspondence > ReconstructionController::readLineCorrespConvertPointCorresp( const vector< string >& lineFileNames,
+																						   const string& correspondenceFileName,
+																						const int& imgIdx0, const int& imgIdx1 )
+	{
+		vector< map< int, Line > > lineCorrespondences = readLineCorrespondence( lineFileNames, correspondenceFileName );
+		return lineCorrespToPointCorresp( lineCorrespondences, imgIdx0, imgIdx1 );
+	}
 
 	shared_ptr< vector< VectorXd > > ReconstructionController::reconstruct()
 	{
 		MatrixXd E = m_ransac->compute();
 		shared_ptr< vector< VectorXd > > points3D = m_ransac->getSolver()->getPoints3D();
 		return points3D;
+	}
+	
+	vector< Correspondence > ReconstructionController::normalizeWithCamCalibration( const vector< Correspondence >& correspondences,
+																					const MatrixXd& K0, const MatrixXd& K1)
+	{
+		vector< Correspondence > normalizedCorrespondences;
+		cout << "=============== Read correspondences =================" << endl << endl;
+		for( int i = 0; i < 8; ++i )
+		{
+			Correspondence correspondence = correspondences[ i ];
+			VectorXd p0 = K0.inverse() * correspondence.first; p0 = p0 / p0[ 2 ];
+			VectorXd p1 = K1.inverse() * correspondence.second; p1 = p1 / p1[ 2 ];
+			
+			Correspondence normalized( p0, p1 );
+			cout << correspondence << endl << endl << "Normalized" << endl << normalized << endl << endl;
+			
+			normalizedCorrespondences.push_back( normalized );
+		}
+		
+		return normalizedCorrespondences;
 	}
 	
 	shared_ptr< ReconstructionRansac > ReconstructionController::getRansac() { return m_ransac; }

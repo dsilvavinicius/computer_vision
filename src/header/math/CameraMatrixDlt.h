@@ -4,7 +4,8 @@
 
 namespace math
 {
-	/** DLT to calculate the camera matrices of two images, given correspondence points in the images and the camera
+	/** DLT to calculate the camera matrices of two images, given correspondence points normalized by calibration matrices in
+	 * the images and the camera
 	 * calibration matrices. Camera 0 is assumed to be at origin and not rotated. */
 	class CameraMatrixDlt : public DltBase
 	{
@@ -15,21 +16,25 @@ namespace math
 		/** Verifies the number of inliers for the calculated camera matrices and saves the reconstructed 3D points. */
 		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
 		
-		/** Calculates the essential matrix after fundamental matrix normalization. */
-		void onDenormalizationEnd();
-		
 		MatrixXd getP0() const;
 		
 		/** Get the reconstructed 3D points. */
 		shared_ptr< vector< VectorXd > > getPoints3D() const;
 	
 	protected:
+		void normalize();
+		
 		/** Creates the linear system for the fundamental matrix computation (the essential matrix is computed after
 		 * denormalization of the fundamental matrix result). */
 		MatrixXd createLinearSystem() const;
 		
 		/** Applies the fundamental matrix restrictions. */
 		void applyRestrictions();
+		
+		void denormalize();
+		
+		/** Builds P1. */
+		void onDenormalizationEnd();
 		
 	private:
 		/** Computes camera's P' matrix, checking all the 4 possible solution and choosing the one which reconstructs points

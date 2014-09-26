@@ -17,7 +17,7 @@ namespace model
 		protected:
 			void SetUp()
 			{
-				m_numImgs = 10,
+				m_numImgs = 10;
 				m_imgs = vector< Mat >( m_numImgs );
 				vector< string > lineFileNames( m_numImgs );
 				
@@ -89,7 +89,7 @@ namespace model
 			waitKey();
 		}
 		
-		TEST_F( ReconstructionControllerTest, DISABLED_Reconstruction )
+		TEST_F( ReconstructionControllerTest, Reconstruction )
 		{
 			vector< string > camMatrixFileNames( m_numImgs );
 			for( int i = 0; i < m_numImgs; ++i )
@@ -106,30 +106,25 @@ namespace model
 			cout << "K0: " << endl << K0 << endl << endl
 				 << "K1: " << endl << K1 << endl << endl;
 			
-			vector< Correspondence > correspondences;
-			for( map< int, Line > lineCorrespondence : m_lineCorrespondences )
-			{
-				Line l0 = lineCorrespondence[ 0 ];
-				Line l1 = lineCorrespondence[ 1 ];
-				correspondences.push_back( Correspondence( l0.first, l1.first ) );
-				correspondences.push_back( Correspondence( l0.second, l1.second ) );
-			}
+			vector< Correspondence > correspondences = ReconstructionController::lineCorrespToPointCorresp( m_lineCorrespondences, 0 , 1 );
+			vector< Correspondence > normalized = ReconstructionController::normalizeWithCamCalibration( correspondences, K0, K1 );
 			
-			ReconstructionController controller( correspondences, K0, K1 );
+			ReconstructionController controller( normalized, K0, K1 );
 			shared_ptr< vector< VectorXd > > points3D = controller.reconstruct();
 			
 			shared_ptr< CameraMatrixDlt > solver = controller.getRansac()->getSolver();
 			MatrixXd P0 = solver->getP0();
 			MatrixXd P1 = solver->getSolution();
 			
-			cout << "Final camera matrices:" << endl << endl << "P0: " << P0 << endl << endl << "P1: " << P1
-				 << endl << endl;			
-			
-			cout << "Reconstructed points:" << endl << endl;
+			cout << "================= Reconstruction results ===================" << endl << endl
+				 << "Final camera matrices:" << endl << endl << "P0: " << P0 << endl << endl << "P1: " << P1 << endl << endl
+				 << "Reconstructed points:" << endl << endl;
 			for( VectorXd point3D : *points3D )
 			{
 				cout << point3D << endl << endl;
 			}
+			
+			cout << "================= Reconstruction results end ===================" << endl << endl;
 		}
 	}
 }

@@ -45,9 +45,12 @@ namespace math
 		double scale0 = 1.414213562 / ( distanceSum0 / m_sample->size() );
 		double scale1 = 1.414213562 / ( distanceSum1 / m_sample->size() );
 		
-		cout << "Normalization: " << endl << endl << "centroid0 :" << endl << centroid0 << endl << endl
-			 << "centroid1:" << centroid1 << endl << endl << "scale0:" << scale0 << endl << endl
-			 << "scale1" << scale1 << endl << endl;
+		cout << "========== Normalization ============= " << endl
+			 << "centroid0 :" << endl << centroid0 << endl << endl
+			 << "centroid1: " << endl << centroid1 << endl << endl
+			 << "scale0: " << endl << scale0 << endl << endl
+			 << "scale1: " << endl << scale1 << endl << endl
+			 << "========== Normalization End ============= " << endl << endl;
 		
 		buildAndApplyNormalizers( centroid0, scale0, centroid1, scale1 );
 	}
@@ -120,10 +123,10 @@ namespace math
 			
 			applyRestrictions();
 			
-			cout << "Restriction applied: " << endl << *m_resultH << endl << endl;
+			//cout << "Restriction applied: " << endl << *m_resultH << endl << endl;
 
 			denormalize();
-			cout << "Denormalized: " << endl << *m_resultH << endl << endl;
+			//cout << "Denormalized: " << endl << *m_resultH << endl << endl;
 			
 			onDenormalizationEnd();
 			//cout << "After denormalization ending event: " << endl << *m_resultH << endl << endl;

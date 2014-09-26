@@ -14,6 +14,8 @@ namespace math
 	m_K1( K1 )
 	{}
 	
+	void CameraMatrixDlt::normalize(){} ;
+	
 	MatrixXd CameraMatrixDlt::createLinearSystem() const
 	{
 		int sampleSize = m_sample->size();
@@ -25,8 +27,6 @@ namespace math
 			VectorXd v0 = (*m_sample)[i].first;
 			VectorXd v1 = (*m_sample)[i].second;
 			
-			cout << "Sample correspondence " << i << ":" << endl << v0 << endl << endl << v1 << endl << endl;
-			
 			block 	<< v1[ 0 ] * v0[ 0 ], v1[ 0 ] * v0[ 1 ], v1[ 0 ], v1[ 1 ] * v0[ 0 ], v1[ 1 ] * v0[ 1 ], v1[ 1 ],
 					   v0[ 0 ], v0[ 1 ], 1.;
 		}
@@ -37,22 +37,25 @@ namespace math
 	void CameraMatrixDlt::applyRestrictions()
 	{
 		
-		JacobiSVD< MatrixXd > Fsvd( *m_resultH, ComputeFullU | ComputeFullV );
-		VectorXd singularValues = Fsvd.singularValues();
-		DiagonalMatrix< double, 3, 3 > D( singularValues[ 0 ], singularValues[ 1 ], 0. );
+		JacobiSVD< MatrixXd > svd( *m_resultH, ComputeThinU | ComputeThinV );
+		VectorXd singularValues = svd.singularValues();
+		double singularValue = ( singularValues[ 0 ] + singularValues[ 1 ] ) * 0.5;
+		DiagonalMatrix< double, 3, 3 > D( singularValue, singularValue, 0. );
 		MatrixXd DMat = D.toDenseMatrix();
-		MatrixXd restricted = Fsvd.matrixU() * DMat * Fsvd.matrixV().transpose();
+		MatrixXd restricted = svd.matrixU() * DMat * svd.matrixV().transpose();
 		
-		cout << "========== Restriction appliance =============: " << endl
+		cout << "========== E Restricion Appliance =============: " << endl
 			 << "Singular diagonal: " << endl << DMat << endl << endl
-			 << "U:" << endl << Fsvd.matrixU() << endl << endl
-			 << "V:" << endl << Fsvd.matrixV() << endl << endl
-			 << "Rectricted Matrix: " << endl << restricted << endl << endl
+			 << "U:" << endl << svd.matrixU() << endl << endl
+			 << "V:" << endl << svd.matrixV() << endl << endl
+			 << "E: " << endl << restricted << endl << endl
 			 << "Determinant: " << restricted.determinant() << endl << endl
-			 << "========== Restriction appliance End =============" << endl << endl;
-		
+			 << "========== Restriction Appliance End =============" << endl << endl;
+			 
 		*m_resultH = restricted;
 	}
+	
+	void CameraMatrixDlt::denormalize(){} ;
 	
 	bool CameraMatrixDlt::checkP1( const MatrixXd& P0, const MatrixXd& P1 ) const
 	{
@@ -66,21 +69,33 @@ namespace math
 		dlt.solve();
 		VectorXd point3D = dlt.getPoint3D();
 		
-		MatrixXd KR1 = P1.block( 0, 0, 3, 3 ); // Calibration and rotation part.
-		HouseholderQR< MatrixXd > qr( KR1 );
+		MatrixXd SR1 = P1.block( 0, 0, 3, 3 ); // Calibration and rotation part.
+		HouseholderQR< MatrixXd > qr( SR1 );
 		MatrixXd R = qr.householderQ();
 		
 		VectorXd zRotated = R.col( 2 );
-		VectorXd zRotated3d( 4 ); zRotated3d << zRotated[ 0 ], zRotated[ 1 ], zRotated[ 2 ], 1.;
+		VectorXd zRotated3D( 4 ); zRotated3D << zRotated[ 0 ], zRotated[ 1 ], zRotated[ 2 ], 1.;
+		VectorXd t = P1.col( 3 );
+		VectorXd t3D( 4 ); t3D << t[ 0 ], t[ 1 ], t[ 2 ], 1.;
+		
+		MatrixXd P0withK0 = P0;
+		MatrixXd P1withK1 = P1;
+		P0withK0.block( 0, 0, 3, 3 ) = ( *m_K0 ) * P0.block( 0, 0, 3, 3 );
+		P1withK1.block( 0, 0, 3, 3 ) = ( *m_K1 ) * P1.block( 0, 0, 3, 3 );
 		
 		cout << "========== P1 Check =============: " << endl
-			 << "p0: " << endl << p0 << endl << endl 
-			 << "p1: " << endl << p1 << endl << endl
+			 << "P0:" << endl << P0 << endl << endl
+			 << "P1:" << endl << P1 << endl << endl
+			 << "P0 with K0:" << endl << P0withK0 << endl << endl
+			 << "P1 with K1:" << endl << P1withK1 << endl << endl
+			 << "x: " << endl << p0 << endl << endl 
+			 << "x': " << endl << p1 << endl << endl
 			 << "3d point: " << endl << point3D << endl << endl
-			 << "Camera Z: " << endl << zRotated3d << endl << endl
+			 << "Camera Z: " << endl << zRotated3D << endl << endl
+			 << "Translation: " << endl << t << endl << endl
 			 << "========== P1 Check End =============: " << endl << endl;
 		
-		return point3D[2] > 0. && point3D.dot( zRotated3d ) > 0.;
+		return point3D[2] > 0. && point3D.dot( zRotated3D + t3D ) > 0.;
 	}
 	
 	MatrixXd CameraMatrixDlt::computeP( MatrixXd& E )
@@ -89,21 +104,28 @@ namespace math
 		MatrixXd U = svd.matrixU();
 		MatrixXd Vt = svd.matrixV().transpose();
 		
+		cout << "========== P Computation =============: " << endl
+			 << "E: " << endl << E << endl << endl;
+			 
+		
 		MatrixXd W( 3 , 3);
 		W << 0., -1., 0.,
 			 1., 0., 0.,
 			 0., 0., 1.;
 		
 		VectorXd u3 = U.col(2);
+		cout << "u3 :" << u3 << endl << endl;
 		
-		m_P0 = make_shared< MatrixXd >( MatrixXd::Zero( 3, 4 ) ); // Just K0: no translation or rotation.
-		m_P0->block( 0, 0, 3, 3 ) = *m_K0;
+		m_P0 = make_shared< MatrixXd >( MatrixXd::Identity( 3, 4 ) ); // Just K0: no translation or rotation.
+		//m_P0->block( 0, 0, 3, 3 ) = *m_K0;
 		
 		MatrixXd P1noT = U * W * Vt; // P without translation part.
 		
 		MatrixXd P1( 3, 4 );
 		P1.block( 0, 0, 3, 3 ) = P1noT;
 		P1.block( 0, 3, 3, 1 ) = u3;
+		
+		cout << "1st sol: " << endl;
 		
 		MatrixXd bestP1;
 		int numCorrectSolutions = 0;
@@ -116,6 +138,8 @@ namespace math
 		
 		P1.block( 0, 3, 3, 1 ) = -u3;
 		
+		cout << "2nd sol: " << endl;
+		
 		if( checkP1( *m_P0, P1 ) )
 		{
 			++numCorrectSolutions;
@@ -127,6 +151,8 @@ namespace math
 		P1.block( 0, 0, 3, 3 ) = P1noT;
 		P1.block( 0, 3, 3, 1 ) = u3;
 		
+		cout << "3rd sol: " << endl;
+		
 		if( checkP1( *m_P0, P1 ) )
 		{
 			++numCorrectSolutions;
@@ -136,12 +162,16 @@ namespace math
 		
 		P1.block( 0, 3, 3, 1 ) = -u3;
 		
+		cout << "4th sol: " << endl;
+		
 		if( checkP1( *m_P0, P1 ) )
 		{
 			++numCorrectSolutions;
 			bestP1 = P1;
 			//return P1;
 		}
+		
+		cout << "========== P Computation End =============: " << endl << endl;
 		
 		if( numCorrectSolutions == 0 ) throw runtime_error( "None of the results for P1 was accepted!" );
 		if( numCorrectSolutions > 1 ) throw runtime_error( "More thant one solution found." );
@@ -151,11 +181,19 @@ namespace math
 	
 	void CameraMatrixDlt::onDenormalizationEnd()
 	{
-		MatrixXd E = ( m_K1->transpose() ) * ( *m_resultH ) * ( *m_K0 );
-		
-		cout << "E: " << endl << E << endl << endl;
-		
-		*m_resultH = computeP( E );
+		cout << "========== After denormalizing E =============: " << endl
+			 << "E: " << endl << *m_resultH << endl << endl;
+			 
+		for( Correspondence correspondence : *m_sample )
+		{
+			VectorXd p0 = correspondence.first;
+			VectorXd p1 = correspondence.second;
+			cout << correspondence
+				 << "Condition x'^T * E * x ( should be 0. ):" << endl << ( p1.transpose() * (*m_resultH) ) * p0 << endl << endl;
+		}
+			 
+		cout << "========== Denormalization End =============" << endl << endl;
+		*m_resultH = computeP( *m_resultH );
 	}
 	
 	int CameraMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences )
