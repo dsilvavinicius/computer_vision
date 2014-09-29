@@ -89,7 +89,7 @@ namespace model
 			waitKey();
 		}
 		
-		TEST_F( ReconstructionControllerTest, Reconstruction )
+		TEST_F( ReconstructionControllerTest, DISABLED_Reconstruction )
 		{
 			vector< string > camMatrixFileNames( m_numImgs );
 			for( int i = 0; i < m_numImgs; ++i )

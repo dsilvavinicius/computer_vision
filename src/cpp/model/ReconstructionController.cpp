@@ -29,13 +29,103 @@ namespace model
 				>> P(2, 0) >> P(2, 1) >> P(2, 2) >> P(2, 3);
 			
 			MatrixXd KR1 = P.block( 0, 0, 3, 3 );
-			HouseholderQR< MatrixXd > qr( KR1 );
+			FullPivHouseholderQR< MatrixXd > qr( KR1 );
 			MatrixXd K = qr.matrixQR().triangularView<Upper>();
+			
+			cout << "=========== Read calibration matrix ==============="
+				 << "QR: " << endl << qr.matrixQR() << endl << endl << "K: " << endl << K << endl << endl
+				 << "=========== Read calibration matrix end ===============";
 			
 			camMatrices.push_back( K );
 		}
 		
 		return camMatrices;
+	}
+	
+	vector< map< int, VectorXd > > ReconstructionController::readPointCorrespondence( const vector< string >& pointFileNames,
+																					  const string& correspondenceFileName )
+	{
+		int numImgs = pointFileNames.size();
+		// [ 0 ] is the vector of points in img 0, [ 1 ] is the vector for lines in img 1, and so on.
+		vector< vector< VectorXd > > pointsPerImg( numImgs ); 
+		
+		for( int i = 0; i < numImgs; ++i )
+		{
+			vector< VectorXd > imgPoints;
+			
+			ifstream pointIFS( pointFileNames[i] );
+			if( pointIFS.fail() ) { throw runtime_error( "Cannot open file " + pointFileNames[ i ] ); }
+			
+			VectorXd p( 3 );
+			while( pointIFS >> p[ 0 ] >> p[ 1 ] )
+			{
+				pointIFS.ignore( 200, '\n' );
+				
+				p[ 2 ] = 1.;
+				imgPoints.push_back( p );
+			}
+			pointIFS.close();
+			
+			pointsPerImg[ i ] = imgPoints;
+		}
+		
+		vector< map< int, VectorXd > > correspondencesPerPoint;
+		ifstream correspondenceIFS( correspondenceFileName );
+		if( correspondenceIFS.fail() ) { throw runtime_error( "Cannot open file " + correspondenceFileName ); }
+		
+		string line;
+		while( getline( correspondenceIFS, line ) )
+		{
+			map< int, VectorXd > correspondentPoints;
+			
+			stringstream ss( line );
+			
+			string token;
+			int imgIdx = 0;
+			while( getline( ss, token, ' ') )
+			{
+				while( ss.peek() == ' ' )
+				{
+					ss.get();
+				}
+				
+				if ( token.compare( "*" ) )
+				{
+					stringstream ss( token );
+					int pointIdx;
+					ss >> pointIdx;
+					
+					correspondentPoints[ imgIdx ] = pointsPerImg[ imgIdx ][ pointIdx ];
+					++imgIdx;
+				}
+			}
+			
+			correspondencesPerPoint.push_back( correspondentPoints );
+		}
+
+		correspondenceIFS.close();
+		
+		return correspondencesPerPoint;
+	}
+	
+	vector< Correspondence > ReconstructionController::restrictPointCorrespondencesToImgs(
+		const vector< map< int, VectorXd > >& pointMap, const int& imgIdx0, const int& imgIdx1 )
+	{
+		vector< Correspondence > correspondences;
+		for( map< int, VectorXd > correspondence : pointMap )
+		{
+			auto itP0 = correspondence.find( imgIdx0 );
+			auto itP1 = correspondence.find( imgIdx1 );
+			
+			if( itP0 != correspondence.end() && itP1 != correspondence.end() )
+			{
+				VectorXd p0 = itP0->second;
+				VectorXd p1 = itP1->second;
+				correspondences.push_back( Correspondence( p0, p1 ) );
+			}
+		}
+		
+		return correspondences;
 	}
 	
 	vector< map< int, Line > > ReconstructionController::readLineCorrespondence( const vector< string >& lineFileNames,

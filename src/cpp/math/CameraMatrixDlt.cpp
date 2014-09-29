@@ -31,13 +31,14 @@ namespace math
 					   v0[ 0 ], v0[ 1 ], 1.;
 		}
 		
+		cout << "Linear System Matrix: " << endl << A << endl << endl;
+		
 		return A;
 	}
 	
 	void CameraMatrixDlt::applyRestrictions()
 	{
-		
-		JacobiSVD< MatrixXd > svd( *m_resultH, ComputeThinU | ComputeThinV );
+		JacobiSVD< MatrixXd, FullPivHouseholderQRPreconditioner > svd( *m_resultH, ComputeFullU | ComputeFullV );
 		VectorXd singularValues = svd.singularValues();
 		double singularValue = ( singularValues[ 0 ] + singularValues[ 1 ] ) * 0.5;
 		DiagonalMatrix< double, 3, 3 > D( singularValue, singularValue, 0. );
@@ -69,43 +70,27 @@ namespace math
 		dlt.solve();
 		VectorXd point3D = dlt.getPoint3D();
 		
-		MatrixXd SR1 = P1.block( 0, 0, 3, 3 ); // Calibration and rotation part.
-		HouseholderQR< MatrixXd > qr( SR1 );
-		MatrixXd R = qr.householderQ();
-		
-		VectorXd zRotated = R.col( 2 );
-		VectorXd zRotated3D( 4 ); zRotated3D << zRotated[ 0 ], zRotated[ 1 ], zRotated[ 2 ], 1.;
-		VectorXd t = P1.col( 3 );
-		VectorXd t3D( 4 ); t3D << t[ 0 ], t[ 1 ], t[ 2 ], 1.;
-		
-		MatrixXd P0withK0 = P0;
-		MatrixXd P1withK1 = P1;
-		P0withK0.block( 0, 0, 3, 3 ) = ( *m_K0 ) * P0.block( 0, 0, 3, 3 );
-		P1withK1.block( 0, 0, 3, 3 ) = ( *m_K1 ) * P1.block( 0, 0, 3, 3 );
+		VectorXd reprojectedImg0 = P0 * point3D;
+		VectorXd reprojectedImg1 = P1 * point3D;
 		
 		cout << "========== P1 Check =============: " << endl
 			 << "P0:" << endl << P0 << endl << endl
 			 << "P1:" << endl << P1 << endl << endl
-			 << "P0 with K0:" << endl << P0withK0 << endl << endl
-			 << "P1 with K1:" << endl << P1withK1 << endl << endl
 			 << "x: " << endl << p0 << endl << endl 
 			 << "x': " << endl << p1 << endl << endl
 			 << "3d point: " << endl << point3D << endl << endl
-			 << "Camera Z: " << endl << zRotated3D << endl << endl
-			 << "Translation: " << endl << t << endl << endl
+			 << "Reprojected x: " << endl << reprojectedImg0 << endl << endl
+			 << "Reprojected x': " << endl << reprojectedImg1 << endl << endl
 			 << "========== P1 Check End =============: " << endl << endl;
 		
-		return point3D[2] > 0. && point3D.dot( zRotated3D + t3D ) > 0.;
+		return reprojectedImg0[2] > 0. && reprojectedImg1[2] > 0.;
 	}
 	
 	MatrixXd CameraMatrixDlt::computeP( MatrixXd& E )
 	{
-		JacobiSVD< MatrixXd > svd( E, ComputeFullU | ComputeFullV );
+		JacobiSVD< MatrixXd, FullPivHouseholderQRPreconditioner > svd( E, ComputeFullU | ComputeFullV );
 		MatrixXd U = svd.matrixU();
 		MatrixXd Vt = svd.matrixV().transpose();
-		
-		cout << "========== P Computation =============: " << endl
-			 << "E: " << endl << E << endl << endl;
 			 
 		
 		MatrixXd W( 3 , 3);
@@ -114,10 +99,16 @@ namespace math
 			 0., 0., 1.;
 		
 		VectorXd u3 = U.col(2);
-		cout << "u3 :" << u3 << endl << endl;
+		
+		cout << "========== P Computation =============: " << endl
+			 << "E: " << endl << E << endl << endl
+			 << "U: " << endl << U << endl << endl
+			 << "D: " << endl << svd.singularValues() << endl << endl
+			 << "Vt: " << endl << Vt << endl << endl
+			 << "W: " << endl << W << endl << endl
+			 << "u3 :" << u3 << endl << endl;
 		
 		m_P0 = make_shared< MatrixXd >( MatrixXd::Identity( 3, 4 ) ); // Just K0: no translation or rotation.
-		//m_P0->block( 0, 0, 3, 3 ) = *m_K0;
 		
 		MatrixXd P1noT = U * W * Vt; // P without translation part.
 		
@@ -171,10 +162,11 @@ namespace math
 			//return P1;
 		}
 		
-		cout << "========== P Computation End =============: " << endl << endl;
+		cout << "========== P Computation End ============= " << endl << endl
+			 << "Number of correct solutions: " << numCorrectSolutions << endl << endl;
 		
 		if( numCorrectSolutions == 0 ) throw runtime_error( "None of the results for P1 was accepted!" );
-		if( numCorrectSolutions > 1 ) throw runtime_error( "More thant one solution found." );
+		if( numCorrectSolutions > 1 ) throw runtime_error( "More than one solution found." );
 		
 		return bestP1;
 	}

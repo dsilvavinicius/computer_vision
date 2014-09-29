@@ -23,6 +23,12 @@ namespace model
 		
 		static vector< MatrixXd > readCalibrationMatrices( vector< string >& camFileNames );
 		
+		vector< map< int, VectorXd > > readPointCorrespondence( const vector< string >& pointFileNames,
+																const string& correspondenceFileName );
+		
+		vector< Correspondence > restrictPointCorrespondencesToImgs( const vector< map< int, VectorXd > >& pointMap,
+																	 const int& imgIdx0, const int& imgIdx1 );
+		
 		/** Reads the file with line correspondences. */
 		static vector< map< int, Line > > readLineCorrespondence( const vector< string >& lineFileNames,
 																  const string& correspondenceFileName );
