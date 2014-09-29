@@ -52,7 +52,7 @@ namespace math
 			MatrixXd m_P1;
 		};
 		
-		TEST_F( CameraMatrixDltTest, Triangulation )
+		TEST_F( CameraMatrixDltTest, DISABLED_Triangulation )
 		{
 			for( int i = 0; i < 1000; ++i )
 			{
@@ -79,7 +79,7 @@ namespace math
 			}
 		}
 		
-		TEST_F( CameraMatrixDltTest, RandomPoints )
+		TEST_F( CameraMatrixDltTest, DISABLED_RandomPoints )
 		{
 			int numPoints = 8;
 			vector< VectorXd > points3D( numPoints );
@@ -207,16 +207,19 @@ namespace math
 			shared_ptr< MatrixXd > pK0 = make_shared< MatrixXd >( Ks[ 0 ] );
 			shared_ptr< MatrixXd > pK1 = make_shared< MatrixXd >( Ks[ 1 ] );
 			
-			cout << "=============== Camera matrices ====================" << endl << endl
-					<< "K:" << endl << *pK0 << endl << endl << "K':" << endl << *pK1 << endl << endl
-					<< "=============== Camera matrices end ====================" << endl << endl;
-			
 			vector< Correspondence > normalizedCorrespondences = ReconstructionController::normalizeWithCamCalibration(
 				correspondences, *pK0, *pK1);
 			
 			CameraMatrixDlt dlt( normalizedCorrespondences, pK0, pK1 );
 			MatrixXd resultP1 = dlt.solve();
+			resultP1.block( 0, 0, 3, 3 ) = *pK1 * resultP1.block( 0, 0, 3, 3 );
 			MatrixXd resultP0 = dlt.getP0();
+			resultP0.block( 0, 0, 3, 3 ) = *pK0 * resultP0.block( 0, 0, 3, 3 );
+			
+			cout << "=============== Results ====================" << endl << endl
+				 << "K:" << endl << *pK0 << endl << endl << "K':" << endl << *pK1 << endl << endl
+				 << "P:" << endl << resultP0 << endl << endl << "P':" << endl << resultP1 << endl << endl
+				 << "=============== Results end ====================" << endl << endl;
 		}
 	}
 }

@@ -10,6 +10,7 @@ namespace math
 
 	ostream& operator<<( ostream& out, const vector< Correspondence >& correspondences )
 	{
+		out << "size: " << correspondences.size() << endl;
 		for( Correspondence correspondence : correspondences )
 		{
 			out << correspondence << endl;

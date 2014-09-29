@@ -89,7 +89,7 @@ namespace model
 			waitKey();
 		}
 		
-		TEST_F( ReconstructionControllerTest, DISABLED_Reconstruction )
+		TEST_F( ReconstructionControllerTest, Reconstruction )
 		{
 			vector< string > camMatrixFileNames( m_numImgs );
 			for( int i = 0; i < m_numImgs; ++i )
@@ -108,6 +108,9 @@ namespace model
 			
 			vector< Correspondence > correspondences = ReconstructionController::lineCorrespToPointCorresp( m_lineCorrespondences, 0 , 1 );
 			vector< Correspondence > normalized = ReconstructionController::normalizeWithCamCalibration( correspondences, K0, K1 );
+			
+			cout << "Correspondences:" << endl << correspondences << endl << endl;
+			cout << "Normalized correspondences:" << endl << normalized << endl << endl;
 			
 			ReconstructionController controller( normalized, K0, K1 );
 			shared_ptr< vector< VectorXd > > points3D = controller.reconstruct();

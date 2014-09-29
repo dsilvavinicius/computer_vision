@@ -32,9 +32,9 @@ namespace model
 			FullPivHouseholderQR< MatrixXd > qr( KR1 );
 			MatrixXd K = qr.matrixQR().triangularView<Upper>();
 			
-			cout << "=========== Read calibration matrix ==============="
+			cout << "=========== Read calibration matrix ===============" << endl
 				 << "QR: " << endl << qr.matrixQR() << endl << endl << "K: " << endl << K << endl << endl
-				 << "=========== Read calibration matrix end ===============";
+				 << "=========== Read calibration matrix end ===============" << endl << endl;
 			
 			camMatrices.push_back( K );
 		}
@@ -239,15 +239,14 @@ namespace model
 																					const MatrixXd& K0, const MatrixXd& K1)
 	{
 		vector< Correspondence > normalizedCorrespondences;
-		cout << "=============== Read correspondences =================" << endl << endl;
-		for( int i = 0; i < 8; ++i )
+		
+		for( int i = 0; i < correspondences.size(); ++i )
 		{
 			Correspondence correspondence = correspondences[ i ];
 			VectorXd p0 = K0.inverse() * correspondence.first; p0 = p0 / p0[ 2 ];
 			VectorXd p1 = K1.inverse() * correspondence.second; p1 = p1 / p1[ 2 ];
 			
 			Correspondence normalized( p0, p1 );
-			cout << correspondence << endl << endl << "Normalized" << endl << normalized << endl << endl;
 			
 			normalizedCorrespondences.push_back( normalized );
 		}
