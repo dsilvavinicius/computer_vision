@@ -58,7 +58,7 @@ namespace model
 
 		/** Tests the line reading for reconstruction. Checks the first and last correspondences of the first line and the
 		 * first correspondence of the last line */
-		TEST_F( ReconstructionControllerTest, DISABLED_LineReading )
+		TEST_F( ReconstructionControllerTest, LineReading )
 		{
 			VectorXd expected( 3 ); expected << 330.21, 283.428, 1.;
 			ASSERT_TRUE( m_lineCorrespondences[ 0 ][ 0 ].first.isApprox( expected, 1.0e-6 ) );
@@ -102,8 +102,8 @@ namespace model
 			waitKey();
 		}
 		
-		static shared_ptr< vector< VectorXd > > reconstruct( vector< Correspondence >& correspondences, MatrixXd& K0,
-															 MatrixXd& K1 )
+		static shared_ptr< vector< VectorXd > > reconstruct( vector< Correspondence >& correspondences, const MatrixXd& K0,
+															 const MatrixXd& K1 )
 		{
 			vector< Correspondence > normalized = ReconstructionController::normalizeWithCamCalibration( correspondences,
 																										 K0, K1 );
@@ -130,6 +130,18 @@ namespace model
 			return points3D;
 		}
 		
+		static void reconstructAndAppend( const vector< map< int, VectorXd > >& correspondencesPerPoint, const int& imgIdx0,
+										  const int& imgIdx1, const vector< MatrixXd >& Ks,
+										  vector< VectorXd >& out_appendTo )
+		{
+			vector< Correspondence > pointCorrespondencesFromPoints = ReconstructionController::
+				restrictPointCorrespondencesToImgs( correspondencesPerPoint, imgIdx0, imgIdx1 );
+			shared_ptr< vector< VectorXd > > points3D = reconstruct( pointCorrespondencesFromPoints, Ks[ imgIdx0 ],
+																	 Ks[ imgIdx1 ] );
+			
+			out_appendTo.insert( out_appendTo.end(), points3D->begin(), points3D->end() );
+		}
+		
 		TEST_F( ReconstructionControllerTest, Reconstruction )
 		{
 			vector< string > camMatrixFileNames( m_numImgs );
@@ -141,26 +153,23 @@ namespace model
 			}
 			vector< MatrixXd > Ks = ReconstructionController::readCalibrationMatrices( camMatrixFileNames );
 			
-			MatrixXd K0 = Ks[ 0 ];
-			MatrixXd K1 = Ks[ 1 ];
-			
-			cout << "K0: " << endl << K0 << endl << endl
-				 << "K1: " << endl << K1 << endl << endl;
-			
-			vector< Correspondence > pointCorrespondencesFromLines = ReconstructionController::lineCorrespToPointCorresp(
+			/*vector< Correspondence > pointCorrespondencesFromLines = ReconstructionController::lineCorrespToPointCorresp(
 				m_lineCorrespondences, 0 , 1 );
-			shared_ptr< vector< VectorXd > > lines3D = reconstruct( pointCorrespondencesFromLines, K0, K1 );
+			shared_ptr< vector< VectorXd > > lines3D = reconstruct( pointCorrespondencesFromLines, K0, K1 );*/
 			
-			vector< Correspondence > pointCorrespondencesFromPoints = ReconstructionController::
-				restrictPointCorrespondencesToImgs( m_pointCorrespondences, 0, 1 );
-			shared_ptr< vector< VectorXd > > points3D = reconstruct( pointCorrespondencesFromPoints, K0, K1 );
+			vector< VectorXd > allPoints;
+			reconstructAndAppend( m_pointCorrespondences, 0, 1, Ks, allPoints );
+			reconstructAndAppend( m_pointCorrespondences, 2, 3, Ks, allPoints );
+			reconstructAndAppend( m_pointCorrespondences, 4, 5, Ks, allPoints );
+			reconstructAndAppend( m_pointCorrespondences, 6, 7, Ks, allPoints );
+			reconstructAndAppend( m_pointCorrespondences, 8, 9, Ks, allPoints );
 			
 			QApplication app( g_argc, g_argv );
 			
 			QSurfaceFormat format;
 			format.setSamples(16);
 			
-			ReconstructionViewer viewer( *points3D , *lines3D, format );
+			ReconstructionViewer viewer( allPoints , /**lines3D,*/ format );
 			viewer.resize(640, 480);
 			viewer.show();
 			

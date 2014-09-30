@@ -9,7 +9,7 @@ namespace math
 	class ReconstructionRansac : public Ransac< Correspondence, CameraMatrixDlt >
 	{
 	public:
-		ReconstructionRansac( shared_ptr< vector< Correspondence > > correspondences, MatrixXd& K0, MatrixXd& K1  );
+		ReconstructionRansac( shared_ptr< vector< Correspondence > > correspondences, const MatrixXd& K0, const MatrixXd& K1  );
 	protected:
 		virtual CameraMatrixDlt createSolver( vector< Correspondence >& sample );
 	private:

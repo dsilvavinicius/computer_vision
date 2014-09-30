@@ -3,8 +3,8 @@
 
 namespace math
 {
-	ReconstructionRansac::ReconstructionRansac( shared_ptr< vector< Correspondence > > correspondences, MatrixXd& K0,
-												MatrixXd& K1 )
+	ReconstructionRansac::ReconstructionRansac( shared_ptr< vector< Correspondence > > correspondences, const MatrixXd& K0,
+												const MatrixXd& K1 )
 	: Ransac< Correspondence, CameraMatrixDlt >( correspondences, 8 ),
 	m_K0( make_shared< MatrixXd >( K0 ) ),
 	m_K1( make_shared< MatrixXd >( K1 ) )

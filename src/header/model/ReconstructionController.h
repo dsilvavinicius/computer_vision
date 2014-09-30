@@ -19,7 +19,7 @@ namespace model
 	public:
 		/** Build the reconstructor of 3d points, given the correspondences of projected images and the camera calibration
 		* matrices for each image. */
-		ReconstructionController( vector< Correspondence >& correspondences, MatrixXd& K0, MatrixXd& K1 );
+		ReconstructionController( vector< Correspondence >& correspondences, const MatrixXd& K0, const MatrixXd& K1 );
 		
 		static vector< MatrixXd > readCalibrationMatrices( vector< string >& camFileNames );
 		

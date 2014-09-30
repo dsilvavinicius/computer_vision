@@ -3,15 +3,15 @@
 
 namespace ui
 {
-	ReconstructionViewer::ReconstructionViewer( const vector< VectorXd >& points, const vector< VectorXd >& lines,
+	ReconstructionViewer::ReconstructionViewer( const vector< VectorXd >& points, /*const vector< VectorXd >& lines,*/
 												const QSurfaceFormat &format, QWindow *parent )
 		: QGLView(format, parent)
 	{
-		m_lines = make_shared< QVector3DArray >();
+		/*m_lines = make_shared< QVector3DArray >();
 		for( VectorXd point : lines )
 		{
 			m_lines->append( point[0], point[1], point[2] );
-		}
+		}*/
 		
 		m_points = make_shared< QVector3DArray >();
 		for( VectorXd point : points )
@@ -25,7 +25,7 @@ namespace ui
 		QGLCamera* cam = camera();
 		cam->setProjectionType( QGLCamera::Perspective );
 		cam->setFieldOfView( 60.0f );
-		cam->setNearPlane( 0.1f );
+		cam->setNearPlane( 0.0001f );
 		cam->setFarPlane( 10000.0f );
 		
 		painter->setCamera( cam );
@@ -37,9 +37,9 @@ namespace ui
 		
 		painter->setStandardEffect( QGL::FlatColor );
 		painter->setColor( QColor( 255, 255, 255 ) );
-		painter->clearAttributes();
+		/*painter->clearAttributes();
 		painter->setVertexAttribute( QGL::Position, *m_lines );
-		painter->draw( QGL::Lines, m_lines->size() );
+		painter->draw( QGL::Lines, m_lines->size() );*/
 		
 		painter->clearAttributes();
 		painter->setVertexAttribute( QGL::Position, *m_points );

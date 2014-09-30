@@ -17,7 +17,7 @@ namespace ui
 	{
 	public:
 		/** Note: Each sequential pair in lines vector forms a line. */
-		ReconstructionViewer( const vector< VectorXd >& points, const vector< VectorXd >& lines ,
+		ReconstructionViewer( const vector< VectorXd >& points, /*const vector< VectorXd >& lines ,*/
 							  const QSurfaceFormat &format, QWindow *parent = 0 );
 
 	protected:
@@ -31,7 +31,7 @@ namespace ui
 		QPoint m_lastMousePos;
 		shared_ptr< QVector3DArray > m_points;
 		/** Each sequential pair in this buffer forms a line. */
-		shared_ptr< QVector3DArray > m_lines;
+		//shared_ptr< QVector3DArray > m_lines;
 	};
 
 	using ReconstructionViewerPtr = shared_ptr< ReconstructionViewer >;

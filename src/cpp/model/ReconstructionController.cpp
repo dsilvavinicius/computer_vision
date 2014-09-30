@@ -7,7 +7,8 @@
 
 namespace model
 {
-	ReconstructionController::ReconstructionController( vector< Correspondence >& correspondences, MatrixXd& K0, MatrixXd& K1 )
+	ReconstructionController::ReconstructionController( vector< Correspondence >& correspondences, const MatrixXd& K0,
+														const MatrixXd& K1 )
 	: m_correspondences( make_shared< vector< Correspondence > >( correspondences ) )
 	{
 		if( correspondences.size() < 8 ) { throw logic_error("8 correspondences needed to compute essential matrix."); }
@@ -46,7 +47,7 @@ namespace model
 																					  const string& correspondenceFileName )
 	{
 		int numImgs = pointFileNames.size();
-		// [ 0 ] is the vector of points in img 0, [ 1 ] is the vector for lines in img 1, and so on.
+		// [ 0 ] is the vector of points in img 0, [ 1 ] is the vector for points in img 1, and so on.
 		vector< vector< VectorXd > > pointsPerImg( numImgs ); 
 		
 		for( int i = 0; i < numImgs; ++i )
@@ -95,9 +96,12 @@ namespace model
 					int pointIdx;
 					ss >> pointIdx;
 					
+					//cout << "Point " << correspondencesPerPoint.size() << endl << "imgidx: " << imgIdx << endl
+					//	 << "pointIdx:" << pointIdx << endl << endl;
+					
 					correspondentPoints[ imgIdx ] = pointsPerImg[ imgIdx ][ pointIdx ];
-					++imgIdx;
 				}
+				++imgIdx;
 			}
 			
 			correspondencesPerPoint.push_back( correspondentPoints );
@@ -187,8 +191,9 @@ namespace model
 					ss >> lineIdx;
 					
 					correspondentLines[ imgIdx ] = linesPerImg[ imgIdx ][ lineIdx ];
-					++imgIdx;
 				}
+				
+				++imgIdx;
 			}
 			
 			correspondencesPerLine.push_back( correspondentLines );
