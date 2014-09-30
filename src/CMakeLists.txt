@@ -47,11 +47,13 @@ add_definitions(${OpenGL_DEFINITIONS})
 find_package (Qt5Core REQUIRED)
 find_package (Qt5Gui REQUIRED)
 find_package (Qt5Widgets REQUIRED)
+find_package (Qt53D REQUIRED)
 find_package (Eigen3 REQUIRED)
 
 include_directories (${Qt5Core_INCLUDE_DIRS}
 	${Qt5Gui_INCLUDE_DIRS}
 	${Qt5Widgets_INCLUDE_DIRS}
+	${Qt53D_INCLUDE_DIRS}
 	${EIGEN3_INCLUDE_DIR}
 
 	${HEADER_DIR}/${UI_DIR}/
@@ -65,9 +67,10 @@ find_package (OpenCV REQUIRED)
 create_source_groups (UI_DIR MODEL_DIR MATH_DIR UTILS_DIR)
 
 add_library(Computer_Vision_Lib
-	${HEADER_DIR}/${UI_DIR}/ImageRectificator.h	${CPP_DIR}/${UI_DIR}/ImageRectificator.cpp
-	${HEADER_DIR}/${UI_DIR}/ClickableLabel.h	${CPP_DIR}/${UI_DIR}/ClickableLabel.cpp
-	${HEADER_DIR}/${UI_DIR}/SelectedPixel.h		${CPP_DIR}/${UI_DIR}/SelectedPixel.cpp
+	${HEADER_DIR}/${UI_DIR}/ImageRectificator.h			${CPP_DIR}/${UI_DIR}/ImageRectificator.cpp
+	${HEADER_DIR}/${UI_DIR}/ClickableLabel.h			${CPP_DIR}/${UI_DIR}/ClickableLabel.cpp
+	${HEADER_DIR}/${UI_DIR}/SelectedPixel.h				${CPP_DIR}/${UI_DIR}/SelectedPixel.cpp
+	${HEADER_DIR}/${UI_DIR}/ReconstructionViewer.h		${CPP_DIR}/${UI_DIR}/ReconstructionViewer.cpp
 	
 	${HEADER_DIR}/${MODEL_DIR}/RectificationController.h	${CPP_DIR}/${MODEL_DIR}/RectificationController.cpp
 	${HEADER_DIR}/${MODEL_DIR}/PanoramaController.h			${CPP_DIR}/${MODEL_DIR}/PanoramaController.cpp
@@ -92,6 +95,7 @@ target_link_libraries (Computer_Vision_Lib
 	Qt5::Core
 	Qt5::Gui
 	Qt5::Widgets
+	Qt5::3D
 	${OpenCV_LIBS}
 	${OPENGL_LIBRARIES}
 )

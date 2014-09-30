@@ -154,17 +154,15 @@ namespace math
 			correspondences[ 6 ] = Correspondence( p60, p61 );
 			correspondences[ 7 ] = Correspondence( p70, p71 );
 			
-			int numUsedImgs = 2;
-			vector< string > camMatrixFileNames( numUsedImgs );
-			for( int i = 0; i < numUsedImgs; ++i )
-			{
-				stringstream ss;
-				ss << "../../../src/images/house/3D/house.00" << i << ".P";
-				camMatrixFileNames[ i ] =  ss.str();
-			}
-			vector< MatrixXd > Ks = ReconstructionController::readCalibrationMatrices( camMatrixFileNames );
-			shared_ptr< MatrixXd > pK0 = make_shared< MatrixXd >( Ks[ 0 ] );
-			shared_ptr< MatrixXd > pK1 = make_shared< MatrixXd >( Ks[ 1 ] );
+			shared_ptr< MatrixXd > pK0 = make_shared< MatrixXd >( 3, 3 );
+			*pK0 << 667.077, -1.91488, 399.499,
+				    -3.39867e-14, 673.565, 266.288,
+				    8.83083e-17, 0, 1.00122;
+			
+			shared_ptr< MatrixXd > pK1 = make_shared< MatrixXd >( 3, 3 );
+			*pK1 << -655.409, -1.95048, -389.643,
+				    7.10543e-14, 652.5, -275.113,
+				    2.77556e-17, 0, -0.989163;
 			
 			cout << "=============== Camera matrices ====================" << endl << endl
 					<< "K:" << endl << *pK0 << endl << endl << "K':" << endl << *pK1 << endl << endl

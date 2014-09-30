@@ -2,11 +2,14 @@
 
 #include <gtest/gtest.h>
 #include <highgui.h>
+#include <QApplication>
+#include "ReconstructionViewer.h"
 
 extern "C" int g_argc;
 extern "C" char** g_argv;
 
 using namespace cv;
+using namespace ui;
 
 namespace model
 {
@@ -20,6 +23,7 @@ namespace model
 				m_numImgs = 10;
 				m_imgs = vector< Mat >( m_numImgs );
 				vector< string > lineFileNames( m_numImgs );
+				vector< string > pointFileNames( m_numImgs );
 				
 				for( int i = 0; i < m_numImgs; ++i )
 				{
@@ -27,20 +31,29 @@ namespace model
 					lineSS << "../../../src/images/house/correspondences/house.00" << i << ".lines";
 					lineFileNames[ i ] =  lineSS.str();
 					
+					stringstream pointSS;
+					pointSS << "../../../src/images/house/correspondences/house.00" << i << ".corners";
+					pointFileNames[ i ] = pointSS.str();
+					
 					stringstream imgSS;
 					imgSS << "../../../src/images/house/images/house.00" << i << ".pgm";
 					m_imgs[ i ] = imread( imgSS.str() );
 				}
 				
-				string correspondenceFileName = "../../../src/images/house/correspondences/house.nview-lines";
+				string lineCorrespondenceFileName = "../../../src/images/house/correspondences/house.nview-lines";
 				
 				m_lineCorrespondences = ReconstructionController::readLineCorrespondence( lineFileNames,
-																						  correspondenceFileName );
+																						  lineCorrespondenceFileName );
+				
+				string pointCorrespondenceFileName = "../../../src/images/house/correspondences/house.nview-corners";
+				m_pointCorrespondences = ReconstructionController::readPointCorrespondence( pointFileNames,
+																							pointCorrespondenceFileName );
 			}
 			
 			int m_numImgs;
 			vector< Mat > m_imgs;
 			vector< map< int, Line > > m_lineCorrespondences;
+			vector< map< int, VectorXd > > m_pointCorrespondences;
 		};
 
 		/** Tests the line reading for reconstruction. Checks the first and last correspondences of the first line and the
@@ -89,6 +102,34 @@ namespace model
 			waitKey();
 		}
 		
+		static shared_ptr< vector< VectorXd > > reconstruct( vector< Correspondence >& correspondences, MatrixXd& K0,
+															 MatrixXd& K1 )
+		{
+			vector< Correspondence > normalized = ReconstructionController::normalizeWithCamCalibration( correspondences,
+																										 K0, K1 );
+			
+			cout << "Correspondences:" << endl << correspondences << endl << endl;
+			cout << "Normalized correspondences:" << endl << normalized << endl << endl;
+			
+			ReconstructionController controller( normalized, K0, K1 );
+			shared_ptr< vector< VectorXd > > points3D = controller.reconstruct();
+			
+			shared_ptr< CameraMatrixDlt > solver = controller.getRansac()->getSolver();
+			MatrixXd P0 = solver->getP0();
+			MatrixXd P1 = solver->getSolution();
+			
+			cout << "================= Line Reconstruction results ===================" << endl << endl
+				 << "Final camera matrices:" << endl << endl << "P0: " << P0 << endl << endl << "P1: " << P1 << endl << endl
+				 << "Reconstructed points:" << endl << endl;
+			for( VectorXd point3D : *points3D )
+			{
+				cout << point3D << endl << endl;
+			}
+			cout << "================= Line Reconstruction results end ===================" << endl << endl;
+			
+			return points3D;
+		}
+		
 		TEST_F( ReconstructionControllerTest, Reconstruction )
 		{
 			vector< string > camMatrixFileNames( m_numImgs );
@@ -106,28 +147,24 @@ namespace model
 			cout << "K0: " << endl << K0 << endl << endl
 				 << "K1: " << endl << K1 << endl << endl;
 			
-			vector< Correspondence > correspondences = ReconstructionController::lineCorrespToPointCorresp( m_lineCorrespondences, 0 , 1 );
-			vector< Correspondence > normalized = ReconstructionController::normalizeWithCamCalibration( correspondences, K0, K1 );
+			vector< Correspondence > pointCorrespondencesFromLines = ReconstructionController::lineCorrespToPointCorresp(
+				m_lineCorrespondences, 0 , 1 );
+			shared_ptr< vector< VectorXd > > lines3D = reconstruct( pointCorrespondencesFromLines, K0, K1 );
 			
-			cout << "Correspondences:" << endl << correspondences << endl << endl;
-			cout << "Normalized correspondences:" << endl << normalized << endl << endl;
+			vector< Correspondence > pointCorrespondencesFromPoints = ReconstructionController::
+				restrictPointCorrespondencesToImgs( m_pointCorrespondences, 0, 1 );
+			shared_ptr< vector< VectorXd > > points3D = reconstruct( pointCorrespondencesFromPoints, K0, K1 );
 			
-			ReconstructionController controller( normalized, K0, K1 );
-			shared_ptr< vector< VectorXd > > points3D = controller.reconstruct();
+			QApplication app( g_argc, g_argv );
 			
-			shared_ptr< CameraMatrixDlt > solver = controller.getRansac()->getSolver();
-			MatrixXd P0 = solver->getP0();
-			MatrixXd P1 = solver->getSolution();
+			QSurfaceFormat format;
+			format.setSamples(16);
 			
-			cout << "================= Reconstruction results ===================" << endl << endl
-				 << "Final camera matrices:" << endl << endl << "P0: " << P0 << endl << endl << "P1: " << P1 << endl << endl
-				 << "Reconstructed points:" << endl << endl;
-			for( VectorXd point3D : *points3D )
-			{
-				cout << point3D << endl << endl;
-			}
+			ReconstructionViewer viewer( *points3D , *lines3D, format );
+			viewer.resize(640, 480);
+			viewer.show();
 			
-			cout << "================= Reconstruction results end ===================" << endl << endl;
+			app.exec();
 		}
 	}
 }
