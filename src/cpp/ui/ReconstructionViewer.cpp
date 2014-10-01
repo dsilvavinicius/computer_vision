@@ -81,7 +81,7 @@ namespace ui
 	void ReconstructionViewer::wheelEvent( QWheelEvent * ev )
 	{
 		QGLCamera* cam = camera();
-		QVector3D translation = cam->translation( 0.f, 0.f, ( float )ev->angleDelta().y() * 0.01f );
+		QVector3D translation = cam->translation( 0.f, 0.f, ( float )ev->angleDelta().y() * 0.001f );
 		cam->setEye( cam->eye() + translation );
 		cam->setCenter( cam->center() + translation );
 	}

@@ -33,9 +33,9 @@ namespace model
 			FullPivHouseholderQR< MatrixXd > qr( KR1 );
 			MatrixXd K = qr.matrixQR().triangularView<Upper>();
 			
-			cout << "=========== Read calibration matrix ===============" << endl
-				 << "QR: " << endl << qr.matrixQR() << endl << endl << "K: " << endl << K << endl << endl
-				 << "=========== Read calibration matrix end ===============" << endl << endl;
+			//cout << "=========== Read calibration matrix ===============" << endl
+			//	 << "QR: " << endl << qr.matrixQR() << endl << endl << "K: " << endl << K << endl << endl
+			//	 << "=========== Read calibration matrix end ===============" << endl << endl;
 			
 			camMatrices.push_back( K );
 		}
@@ -235,7 +235,7 @@ namespace model
 
 	shared_ptr< vector< VectorXd > > ReconstructionController::reconstruct()
 	{
-		MatrixXd E = m_ransac->compute( 0.5 );
+		MatrixXd E = m_ransac->compute( 10. );
 		shared_ptr< vector< VectorXd > > points3D = m_ransac->getSolver()->getPoints3D();
 		return points3D;
 	}

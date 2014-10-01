@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <highgui.h>
 #include <QApplication>
+#include <fstream>
 #include "ReconstructionViewer.h"
 
 extern "C" int g_argc;
@@ -10,6 +11,7 @@ extern "C" char** g_argv;
 
 using namespace cv;
 using namespace ui;
+using namespace std;
 
 namespace model
 {
@@ -58,7 +60,7 @@ namespace model
 
 		/** Tests the line reading for reconstruction. Checks the first and last correspondences of the first line and the
 		 * first correspondence of the last line */
-		TEST_F( ReconstructionControllerTest, LineReading )
+		TEST_F( ReconstructionControllerTest, DISABLED_LineReading )
 		{
 			VectorXd expected( 3 ); expected << 330.21, 283.428, 1.;
 			ASSERT_TRUE( m_lineCorrespondences[ 0 ][ 0 ].first.isApprox( expected, 1.0e-6 ) );
@@ -157,21 +159,47 @@ namespace model
 				m_lineCorrespondences, 0 , 1 );
 			shared_ptr< vector< VectorXd > > lines3D = reconstruct( pointCorrespondencesFromLines, K0, K1 );*/
 			
-			vector< VectorXd > allPoints;
-			reconstructAndAppend( m_pointCorrespondences, 0, 1, Ks, allPoints );
-			reconstructAndAppend( m_pointCorrespondences, 2, 3, Ks, allPoints );
-			reconstructAndAppend( m_pointCorrespondences, 4, 5, Ks, allPoints );
-			reconstructAndAppend( m_pointCorrespondences, 6, 7, Ks, allPoints );
-			reconstructAndAppend( m_pointCorrespondences, 8, 9, Ks, allPoints );
+			vector< VectorXd > reconstructedPoints;
+			reconstructAndAppend( m_pointCorrespondences, 0, 1, Ks, reconstructedPoints );
+			reconstructAndAppend( m_pointCorrespondences, 2, 3, Ks, reconstructedPoints );
+			reconstructAndAppend( m_pointCorrespondences, 4, 5, Ks, reconstructedPoints );
+			reconstructAndAppend( m_pointCorrespondences, 6, 7, Ks, reconstructedPoints );
+			reconstructAndAppend( m_pointCorrespondences, 8, 9, Ks, reconstructedPoints );
+			
+			// Read the expected points
+			ifstream ifs( "../../../src/images/house/3D/house.p3d" );
+			
+			if( ifs.fail() )
+			{
+				throw logic_error( "Cannot open point file." );
+			}
+			
+			vector< VectorXd > expectedPoints;
+			VectorXd point( 3 );
+			while( ifs >> point[ 0 ] >> point[ 1 ] >> point[ 2 ] )
+			{
+				expectedPoints.push_back( point );
+			}
+			ifs.close();
+			
+			// Render the expected and calculated points.
 			
 			QApplication app( g_argc, g_argv );
 			
-			QSurfaceFormat format;
-			format.setSamples(16);
+			QSurfaceFormat viewer0Format;
+			viewer0Format.setSamples(16);
 			
-			ReconstructionViewer viewer( allPoints , /**lines3D,*/ format );
-			viewer.resize(640, 480);
-			viewer.show();
+			ReconstructionViewer viewer0( expectedPoints, viewer0Format );
+			viewer0.resize( 640, 480 );
+			viewer0.show();
+			
+			QSurfaceFormat viewer1Format;
+			viewer1Format.setSamples(16);
+			
+			ReconstructionViewer viewer1( reconstructedPoints, viewer1Format );
+			viewer1.resize( 640, 480 );
+			viewer1.setPosition( 645, 0 );
+			viewer1.show();
 			
 			app.exec();
 		}
