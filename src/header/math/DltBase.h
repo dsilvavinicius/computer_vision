@@ -29,7 +29,7 @@ namespace math
 		
 		/** Scores the solution of this DLT instance with the number of inliers in the given set of
 		 * correspondences. */
-		virtual int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences ) = 0;
+		virtual int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences, const double& threshold ) = 0;
 	
 	protected:
 		/** Assembles the DLT normalizers and apply them on the sample points on normalization. Default implementation makes

@@ -188,7 +188,7 @@ namespace math
 		*m_resultH = computeP( *m_resultH );
 	}
 	
-	int CameraMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences )
+	int CameraMatrixDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences, const double& threshold )
 	{
 		m_points3D = make_shared< vector< VectorXd > >();
 		
@@ -217,8 +217,6 @@ namespace math
 			
 			distances.push_back( distance );
 		}
-		
-		double threshold = 2.;
 		
 		// Third, returns the percentage of outliers in the correspondence set.
 		int inliers = 0;

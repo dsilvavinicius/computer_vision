@@ -235,7 +235,7 @@ namespace model
 
 	shared_ptr< vector< VectorXd > > ReconstructionController::reconstruct()
 	{
-		MatrixXd E = m_ransac->compute();
+		MatrixXd E = m_ransac->compute( 0.5 );
 		shared_ptr< vector< VectorXd > > points3D = m_ransac->getSolver()->getPoints3D();
 		return points3D;
 	}

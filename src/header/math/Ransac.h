@@ -37,11 +37,8 @@ namespace math
 		
 		Ransac( vector< Correspondence >& set, int nElementsPerSample, double epsilon = 0.99 );
 		
-		/** Computes the result of the linear system.
-		 * @param evaluator evaluates the vector of samples and returns the system solution.
-		 * @param scorer scores the solution computed by evaluator, returning a new epsilon.
-		 */
-		MatrixXd compute();
+		/** Computes the result of the linear system. */
+		MatrixXd compute( double const& threshold );
 		
 		shared_ptr< Solver > getSolver();
 	
@@ -105,7 +102,7 @@ namespace math
 	CameraMatrixDlt Ransac< Correspondence, CameraMatrixDlt >::createSolver( vector< Correspondence >& sample );
 	
 	template< typename Correspondence, typename Solver >
-	MatrixXd Ransac< Correspondence, Solver >::compute()
+	MatrixXd Ransac< Correspondence, Solver >::compute( const double& threshold )
 	{
 		cout << "Starting max iters: " << m_nIter << endl << endl;
 		for( double iter = 0; iter < m_nIter && iter < 20000.; ++iter ) 
@@ -123,7 +120,7 @@ namespace math
 			Solver solver = createSolver( sample );
 			MatrixXd systemSol = solver.solve();
 			
-			int currInliers = solver.scoreSolution( m_set );
+			int currInliers = solver.scoreSolution( m_set, threshold );
 			double newEpsilon = 1 - ((double) currInliers /  m_set->size() );
 			cout << "Iter score: " << newEpsilon << endl << endl;
 			

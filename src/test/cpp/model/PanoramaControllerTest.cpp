@@ -16,7 +16,7 @@ namespace model
 			void SetUp() {}
 		};
 
-		TEST_F( PanoramaControllerTest, DISABLED_FromLeft )
+		TEST_F( PanoramaControllerTest, FromLeft )
 		{
 			vector< Mat > images;
 			for( int i = 1; i < 5; ++i )
@@ -30,7 +30,7 @@ namespace model
 			imwrite( "output/PanoramaYosemiteFromLeft.jpg", panorama );
 		}
 		
-		TEST_F( PanoramaControllerTest, DISABLED_FromCenter )
+		TEST_F( PanoramaControllerTest, FromCenter )
 		{
 			vector< Mat > images;
 			for( int i = 1; i < 5; ++i )

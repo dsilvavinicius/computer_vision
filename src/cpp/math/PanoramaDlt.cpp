@@ -26,7 +26,7 @@ namespace math
 		return A;
 	}
 	
-	int PanoramaDlt::scoreSolution( shared_ptr< vector< Correspondence > > correspondences )
+	int PanoramaDlt::scoreSolution( shared_ptr< vector< Correspondence > > correspondences, const double& threshold )
 	{
 		// First, calculates the distance variance.
 		vector< double > distances;
@@ -46,8 +46,6 @@ namespace math
 			distances.push_back( distance );
 		}
 		int numPoints = distances.size();
-		
-		double threshold = 2.;
 		
 		// Third, returns the percentage of outliers in the correspondence set.
 		int inliers = 0;

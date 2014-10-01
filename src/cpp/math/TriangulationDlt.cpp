@@ -124,7 +124,7 @@ namespace math
 		return point3D;
 	}
 	
-	int TriangulationDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences )
+	int TriangulationDlt::scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences, const double& threshold )
 	{
 		throw logic_error( "ScoreSolution is undefined for TriangulationDlt." );
 	}

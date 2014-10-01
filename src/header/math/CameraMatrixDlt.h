@@ -14,7 +14,7 @@ namespace math
 		CameraMatrixDlt( vector< Correspondence >& correspondences, shared_ptr< MatrixXd > K0, shared_ptr< MatrixXd > K1 );
 		
 		/** Verifies the number of inliers for the calculated camera matrices and saves the reconstructed 3D points. */
-		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences );
+		int scoreSolution( shared_ptr< vector< Correspondence > > allCorrespondences, const double& threshold );
 		
 		MatrixXd getP0() const;
 		
